@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Techora User Management</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#1B3C53',
+              'background-light': '#E3E3E3',
+              'background-dark': '#111827',
+              'surface-light': '#FFFFFF',
+              'surface-dark': '#1F2937'
+            },
+            fontFamily: {
+              display: ['Inter', 'sans-serif']
+            },
+            borderRadius: {
+              DEFAULT: '0.5rem'
+            }
+          }
+        }
+      }
+    </script>
+    <style type="text/tailwindcss">
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .sidebar-item-active {
+        @apply bg-primary text-white;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        @apply bg-transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        @apply bg-slate-300 dark:bg-slate-600 rounded-full;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        @apply bg-slate-400 dark:bg-slate-500;
+      }
+      .main-content-scroll {
+        height: calc(100vh - 64px);
+      }
+      #mobile-sidebar-toggle:checked ~ #sidebar-drawer {
+        transform: translateX(0);
+      }
+      #mobile-sidebar-toggle:checked ~ #sidebar-overlay {
+        display: block;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#E3E3E3] dark:bg-slate-950 text-slate-900 dark:text-slate-100 h-screen overflow-hidden flex relative"
+  >
+    <input class="hidden peer" id="mobile-sidebar-toggle" type="checkbox" />
+    <label
+      class="fixed inset-0 bg-slate-900/50 z-40 hidden lg:hidden"
+      for="mobile-sidebar-toggle"
+      id="sidebar-overlay"
+    ></label>
+    <aside
+      class="fixed inset-y-0 left-0 w-64 bg-surface-light dark:bg-surface-dark border-r border-slate-200 dark:border-slate-700 shadow-lg z-50 transition-transform duration-300 -translate-x-full lg:translate-x-0 lg:static lg:flex flex-col flex-shrink-0 h-full"
+      id="sidebar-drawer"
+    >
+      <div class="p-6 flex items-center justify-between lg:justify-start gap-3">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+          >
+            <span class="material-symbols-outlined text-white text-xl"
+              >layers</span
+            >
+          </div>
+          <span
+            class="text-xl font-bold text-primary dark:text-white tracking-tight"
+            >Techora</span
+          >
+        </div>
+        <label
+          class="lg:hidden cursor-pointer text-slate-500"
+          for="mobile-sidebar-toggle"
+        >
+          <span class="material-symbols-outlined">close</span>
+        </label>
+      </div>
+      <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl">grid_view</span>
+          <span class="font-medium">Dashboard</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl">shopping_bag</span>
+          <span class="font-medium">Orders</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl">inventory_2</span>
+          <span class="font-medium">Products</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl">category</span>
+          <span class="font-medium">Categories</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 sidebar-item-active rounded-lg shadow-sm"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl">group</span>
+          <span class="font-medium">Users</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl">favorite</span>
+          <span class="font-medium">Offers</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl"
+            >confirmation_number</span
+          >
+          <span class="font-medium">Coupons</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-xl">bar_chart</span>
+          <span class="font-medium">Reports</span>
+        </a>
+      </nav>
+      <div class="p-4 border-t border-slate-200 dark:border-slate-700">
+        <button
+          class="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+          onclick="document.documentElement.classList.toggle('dark')"
+        >
+          <span class="material-symbols-outlined text-lg">dark_mode</span>
+          <span class="text-sm font-medium">Switch Theme</span>
+        </button>
+      </div>
+    </aside>
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+      <header
+        class="h-16 bg-primary dark:bg-slate-900 flex items-center justify-between px-4 lg:px-8 text-white flex-shrink-0 z-20"
+      >
+        <div class="flex items-center gap-3">
+          <label
+            class="lg:hidden p-2 hover:bg-white/10 rounded-lg cursor-pointer flex items-center justify-center"
+            for="mobile-sidebar-toggle"
+          >
+            <span class="material-symbols-outlined">menu</span>
+          </label>
+          <div class="flex items-center gap-3">
+            <span
+              class="material-symbols-outlined text-xl hidden sm:inline-block"
+              >group</span
+            >
+            <span class="text-sm font-semibold tracking-widest uppercase"
+              >Users</span
+            >
+          </div>
+        </div>
+        <div class="flex items-center">
+          <button
+            class="hover:bg-white/10 p-2 rounded-lg transition-colors flex items-center gap-2 group"
+          >
+            <span
+              class="text-sm font-medium hidden sm:inline-block opacity-0 group-hover:opacity-100 transition-opacity"
+              >Logout</span
+            >
+            <span class="material-symbols-outlined">logout</span>
+          </button>
+        </div>
+      </header>
+      <main
+        class="flex-1 overflow-y-auto main-content-scroll p-4 lg:p-8 custom-scrollbar"
+      >
+        <div class="max-w-7xl mx-auto space-y-6">
+          <div class="space-y-1">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+              Users Management
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400">
+              View and manage platform users
+            </p>
+          </div>
+          <div
+            class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700"
+          >
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end"
+            >
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  >Search</label
+                >
+                <div class="relative">
+                  <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"
+                    >search</span
+                  >
+                  <input
+                    class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary transition-all"
+                    placeholder="Search by name, email"
+                    type="text"
+                  />
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  >Role</label
+                >
+                <select
+                  class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary transition-all"
+                >
+                  <option>All Roles</option>
+                  <option>Customer</option>
+                  <option>Admin</option>
+                  <option>Editor</option>
+                </select>
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  >Status</label
+                >
+                <select
+                  class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary transition-all"
+                >
+                  <option>All Status</option>
+                  <option>Active</option>
+                  <option>Blocked</option>
+                  <option>Pending</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-3">
+                <button
+                  class="flex-1 lg:flex-none bg-primary hover:opacity-90 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-all"
+                >
+                  Search
+                </button>
+                <button
+                  class="flex-1 lg:flex-none text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col"
+          >
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                  <tr
+                    class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
+                  >
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      User ID
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      Name
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      Email
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      Role
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center whitespace-nowrap"
+                    >
+                      Orders
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      Registered Date
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right whitespace-nowrap"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                  <tr
+                    class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    <td
+                      class="px-6 py-5 text-sm font-medium text-slate-600 dark:text-slate-300"
+                    >
+                      #USR-001
+                    </td>
+                    <td class="px-6 py-5">
+                      <div class="flex items-center gap-3">
+                        <img
+                          alt="Alex Johnson avatar"
+                          class="w-10 h-10 rounded-full object-cover border border-slate-100"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVt5-PCOu_iZYrnzuMWs_MRT8sXFm7-Kwfz4HgKcuyCP8ORWykT6XQxwCra2vdFkCKyM9QronIdaMiYf3zK-r9wAOn85iHJkhl1U6hUoUOke2sC1B2jLQObdAvE81tzJr3lGgMNtjqGEJrkbjlyT_0_2Mn4S2XhcXy4TLLXn5TASsmF7LG9zYRaH1z_C23789JrWFIBWyQqZN-zFqacagbpojjfkQ0oO_7GQnjy6R18V5k_3rupX6FAg0n-XHXFKcqXqtBwFZ6gFs"
+                        />
+                        <span
+                          class="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap"
+                          >Alex Johnson</span
+                        >
+                      </div>
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      alex.j@example.com
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Customer</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 text-center"
+                    >
+                      -
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Active</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      2023-08-12
+                    </td>
+                    <td class="px-6 py-5 text-right whitespace-nowrap">
+                      <button
+                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                      >
+                        <span class="material-symbols-outlined text-xl"
+                          >block</span
+                        >
+                      </button>
+                    </td>
+                  </tr>
+                  <tr
+                    class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    <td
+                      class="px-6 py-5 text-sm font-medium text-slate-600 dark:text-slate-300"
+                    >
+                      #USR-002
+                    </td>
+                    <td class="px-6 py-5">
+                      <div class="flex items-center gap-3">
+                        <img
+                          alt="Sarah Williams avatar"
+                          class="w-10 h-10 rounded-full object-cover border border-slate-100"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrxGFAWcQhGWjlrfJCFsklgNckHyZwszSfY66ob5fyE6wuFDeUCiQcOMi7VXSp77irdbd5W9_f2kmvfiZCUbuwQq-Qy4Kieu7EnFqPregYKaG1JmFWWo36XWEnq0Q69v8cMUsrDWrhRXNmxYzBe6EQZ8fFv8srwmI3YqEt18QsH1PJqGtqaMeNCZUmTUtFOgMh4rmc97I3WVcAstGlbu8rBCc2E7TAWjrlGMT0etfkbtGGFiMvETM0Dlm69EbB-eqfHY2m9i28smY"
+                        />
+                        <span
+                          class="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap"
+                          >Sarah Williams</span
+                        >
+                      </div>
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      sarah.w@example.com
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Customer</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 text-center"
+                    >
+                      24
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Active</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      2023-09-01
+                    </td>
+                    <td class="px-6 py-5 text-right whitespace-nowrap">
+                      <button
+                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                      >
+                        <span class="material-symbols-outlined text-xl"
+                          >block</span
+                        >
+                      </button>
+                    </td>
+                  </tr>
+                  <tr
+                    class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    <td
+                      class="px-6 py-5 text-sm font-medium text-slate-600 dark:text-slate-300"
+                    >
+                      #USR-003
+                    </td>
+                    <td class="px-6 py-5">
+                      <div class="flex items-center gap-3">
+                        <img
+                          alt="Michael Brown avatar"
+                          class="w-10 h-10 rounded-full object-cover border border-slate-100"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXDjHBHKz_W28Ze5oFKPC2mLG3yfpaEa8XTNbZ8k-T8PSE9CotQGPo6p3Y2NhvszMkWZRbgDeGEcNd2hKZghEmDcLSNFSpfZVkN0JzTTLEJcRRdtFz4kRHZlfFaU3516Q3tRq5n3Y6QLJT07bZIAUzL5LL68K2BbqIAmRPNQ3VOL-rJxQRK0xKLfrQZA9CdCOfzZ0ZUx5WLjT7WCOGqTRVT8ppIzqDPuP7-NwgfBPXEQHUxeeH8Ix22PfvoKnLra_W4rENYw9wN1I"
+                        />
+                        <span
+                          class="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap"
+                          >Michael Brown</span
+                        >
+                      </div>
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      m.brown99@example.com
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Customer</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 text-center"
+                    >
+                      12
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Blocked</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      2023-09-15
+                    </td>
+                    <td class="px-6 py-5 text-right whitespace-nowrap">
+                      <button class="text-primary hover:opacity-80 p-1">
+                        <span class="material-symbols-outlined text-xl"
+                          >settings_backup_restore</span
+                        >
+                      </button>
+                    </td>
+                  </tr>
+                  <tr
+                    class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    <td
+                      class="px-6 py-5 text-sm font-medium text-slate-600 dark:text-slate-300"
+                    >
+                      #USR-004
+                    </td>
+                    <td class="px-6 py-5">
+                      <div class="flex items-center gap-3">
+                        <img
+                          alt="Emily Davis avatar"
+                          class="w-10 h-10 rounded-full object-cover border border-slate-100"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVXmVJygcrTbrLo8P3bkMuwr-tZPDsik4WLWn_mxV7h6CwTQSMiIilNSp6FcvFVt52G6D1Rz1yAgJkuuLJkCIf2qMh7WOHb2YstaEiPHsIMF01999WXFM05Mi99LKtGRImh9hQOh52JCWIRw0Um-6H1U1tGpvmUOonD9BbLEyrn_y72wr5GDCEFRkWGEshwl6s1Iz1p-VUHvqyHBhWrMT3jh--hFIdagGsB43u-SXnu_xFUawXaOQ6NilJJ3gg73cNhRiZppamm8c"
+                        />
+                        <span
+                          class="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap"
+                          >Emily Davis</span
+                        >
+                      </div>
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      emily.davis@example.com
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Customer</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 text-center"
+                    >
+                      8
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Active</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      2023-10-02
+                    </td>
+                    <td class="px-6 py-5 text-right whitespace-nowrap">
+                      <button
+                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                      >
+                        <span class="material-symbols-outlined text-xl"
+                          >block</span
+                        >
+                      </button>
+                    </td>
+                  </tr>
+                  <tr
+                    class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    <td
+                      class="px-6 py-5 text-sm font-medium text-slate-600 dark:text-slate-300"
+                    >
+                      #USR-005
+                    </td>
+                    <td class="px-6 py-5">
+                      <div class="flex items-center gap-3">
+                        <img
+                          alt="James Wilson avatar"
+                          class="w-10 h-10 rounded-full object-cover border border-slate-100"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgXZi9hwicGwzwqJSMZFK26DlbAHrkd8Lk8EMrQNbWGjgr3lycE-Pvj8EOrTKmT87k62Vymozjwsz5HNHT17s4YKpo5ZlKzrCKrDYKVOu_qMU4qdUQmZGe1djjNlAKhXIrTQ1azQZEYUNUsfXMV2h40i7l9bnuynAm5CwhsyZcK2VtJVK8dvhur0zvFa2xoVJyi5_WiJS4vO2k6-46UwRwM6dAn-LJ0OGUqeOylzeVnmNpOvCnqiwoagT1scarGzfVRoFs_2Cr29k"
+                        />
+                        <span
+                          class="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap"
+                          >James Wilson</span
+                        >
+                      </div>
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      james.w@example.com
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Customer</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 text-center"
+                    >
+                      3
+                    </td>
+                    <td class="px-6 py-5">
+                      <span
+                        class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-full uppercase tracking-tight whitespace-nowrap"
+                        >Active</span
+                      >
+                    </td>
+                    <td
+                      class="px-6 py-5 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    >
+                      2023-10-20
+                    </td>
+                    <td class="px-6 py-5 text-right whitespace-nowrap">
+                      <button
+                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                      >
+                        <span class="material-symbols-outlined text-xl"
+                          >block</span
+                        >
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div
+              class="px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-200 dark:border-slate-700 bg-surface-light dark:bg-surface-dark"
+            >
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                Showing
+                <span class="font-semibold text-slate-900 dark:text-white"
+                  >1-5</span
+                >
+                of
+                <span class="font-semibold text-slate-900 dark:text-white"
+                  >48</span
+                >
+                users
+              </p>
+              <div
+                class="flex items-center gap-2 overflow-x-auto max-w-full pb-2 md:pb-0"
+              >
+                <button
+                  class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap"
+                >
+                  <span class="material-symbols-outlined text-base"
+                    >chevron_left</span
+                  >
+                  Previous
+                </button>
+                <div class="flex items-center gap-1">
+                  <button
+                    class="w-8 h-8 rounded flex items-center justify-center text-sm font-semibold bg-primary text-white"
+                  >
+                    1
+                  </button>
+                  <button
+                    class="w-8 h-8 rounded flex items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    2
+                  </button>
+                  <button
+                    class="w-8 h-8 rounded flex items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    3
+                  </button>
+                  <span class="text-slate-400 px-1">...</span>
+                  <button
+                    class="w-8 h-8 rounded flex items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    10
+                  </button>
+                </div>
+                <button
+                  class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap"
+                >
+                  Next
+                  <span class="material-symbols-outlined text-base"
+                    >chevron_right</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
