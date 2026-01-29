@@ -1,0 +1,182 @@
+:root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --primary-dark: #1b3b52;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #d1d5db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .otp-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .icon-header {
+            background-color: #f0f4f8;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .icon-header i {
+            font-size: 24px;
+            color: var(--primary-dark);
+        }
+
+        h2 {
+            font-size: 24px;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .phone-display {
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 25px;
+        }
+
+        .otp-inputs {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .otp-inputs input {
+            width: 50px;
+            height: 50px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .otp-inputs input:focus {
+            border-color: var(--primary-dark);
+        }
+
+        .timer-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .timer-row i {
+            color: #4b5563;
+        }
+
+        .verify-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-dark);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .verify-btn:hover {
+            opacity: 0.9;
+        }
+
+        .resend-text {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .resend-text span {
+            color: #4f46e5;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .change-contact {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-bottom: 25px;
+            text-decoration: none;
+        }
+
+        .security-footer {
+            background-color: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            text-align: left;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .security-footer i {
+            margin-top: 2px;
+            color: #6b7280;
+        }
+
+        .back-to-login {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            .otp-inputs input {
+                width: 40px;
+                height: 40px;
+            }
+        }
