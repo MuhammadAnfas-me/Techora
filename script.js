@@ -1,11 +1,13 @@
+import dotenv from "dotenv"
+dotenv.config({path : "./.env"})
+
 import express from "express"
 import  userRoute from "./routes/userRoute.js"
 import connectDB from "./config/connect.js"
 import session from "express-session"
-
-
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT
 const app = express()
+
 
 app.set("views")
 app.set("view engine","ejs")

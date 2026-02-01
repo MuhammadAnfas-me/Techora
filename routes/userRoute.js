@@ -2,12 +2,9 @@ import express from 'express'
 const router = express.Router()
 import * as userController from '../controllers/userAuth/authController.js'
 
-router.route("/Techora").get(userController.landing)
+router.route('/Techora').get(userController.landing)
 
-router
-  .route('/login')
-  .get(userController.loginLoad)
-  .post(userController.login)
+router.route('/login').get(userController.loginLoad).post(userController.login)
 
 router
   .route('/signup')
@@ -19,8 +16,13 @@ router
   .get(userController.otpLoad)
   .post(userController.otpVerify)
 
+router.route('/resendOtp').post(userController.resendOtp)
+
+router.route('/').get(userController.homeLoad)
+
 router
-  .route("/resendOtp")
-  .post(userController.resendOtp)
+  .route('/forgot-password')
+  .get(userController.forgotLoad)
+  .post(userController.forgotPassword)
 
 export default router

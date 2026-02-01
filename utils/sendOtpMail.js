@@ -91,7 +91,6 @@ export const sendOtp = async ({model , email , purpose , expiryTime})=>{
         {email},
         {
             otp : hashedOtp,
-            otpPurpose : purpose,
             otpExpiresAt : new Date(Date.now() + expiryTime * 60 * 1000),
             otpAttempts : 0
         }

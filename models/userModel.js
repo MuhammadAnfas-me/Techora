@@ -57,7 +57,8 @@ const userSchema = new mongoose.Schema(
     otpAttemps : {
       type : Number,
       default : 0
-    }
+    },
+    
 
   },
   { timestamps: true }

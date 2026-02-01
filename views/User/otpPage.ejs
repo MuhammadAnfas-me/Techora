@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="/styles/user/popup.css" />
     <script src="/js/popup.js" defer></script>
   </head>
-  <body  data-email="<%= email %>">
+  <body data-email="<%= email %>">
     <div id="toast" class="toast"></div>
     <div class="otp-card">
       <div class="icon-header">
@@ -100,163 +100,132 @@
     </a>
   </body>
   <script defer>
-    document.addEventListener('DOMContentLoaded', () => {
-      const message = sessionStorage.getItem('otpMessage')
-      if (message) {
-        showToast(message, 'error')
-        sessionStorage.removeItem('otpMessage')
-      }
+  document.addEventListener('DOMContentLoaded', () => {
+    /* ===============================
+       INITIAL SETUP
+    ================================ */
+    const inputs = [...document.querySelectorAll('.otp-input')]
+    const form = document.getElementById('otpForm')
+    const otpError = document.getElementById('otpError')
+    let resendBtn = document.getElementById('resendOtp')
+    const timerSpan = document.querySelector('.timer-row span')
+    const submitBtn = form.querySelector('button[type="submit"]')
 
-      /* ===============================
-     INITIAL SETUP
-  ================================ */
-      const inputs = [...document.querySelectorAll('.otp-input')]
-      const form = document.getElementById('otpForm')
-      const otpError = document.getElementById('otpError')
-      const resendBtn = document.getElementById('resendOtp')
-      const timerSpan = document.querySelector('.timer-row span')
-      const submitBtn = form.querySelector('button[type="submit"]')
-      const email = document.body.dataset.email
+    if (!inputs.length || !resendBtn) return
 
+    /* ===============================
+       EMAIL + PURPOSE SAFETY
+    ================================ */
+    let email = '<%= email %>' || sessionStorage.getItem('otpEmail')
+    let purpose = '<%= purpose %>' || 'EMAIL_VERIFICATION'
 
-      if (!inputs.length) return
+    if (!email || typeof email !== 'string') {
+      showError('Invalid session. Please restart the process.')
+      return
+    }
 
-      /* ===============================
-     ERROR HANDLING
-  ================================ */
-      const showError = msg => {
-        otpError.textContent = msg
-        otpError.style.display = 'block'
-      }
+    sessionStorage.setItem('otpEmail', email)
+    document.getElementById('email').textContent = email
 
-      const clearError = () => {
-        otpError.textContent = ''
-        otpError.style.display = 'none'
-      }
+    /* ===============================
+       ERROR HELPERS
+    ================================ */
+    function showError(msg) {
+      otpError.textContent = msg
+      otpError.style.display = 'block'
+    }
 
-      /* ===============================
-     OTP INPUT HANDLING
-  ================================ */
-      inputs.forEach((input, index) => {
-        input.addEventListener('input', () => {
-          clearError()
-          input.value = input.value.replace(/\D/g, '')
+    function clearError() {
+      otpError.textContent = ''
+      otpError.style.display = 'none'
+    }
 
-          if (input.value && index < inputs.length - 1) {
-            inputs[index + 1].focus()
-          }
-        })
+    /* ===============================
+       INPUT ENABLE / DISABLE
+    ================================ */
+    function disableInputs() {
+      inputs.forEach(i => (i.disabled = true))
+    }
 
-        input.addEventListener('keydown', e => {
-          if (e.key === 'Backspace' && !input.value && index > 0) {
-            inputs[index - 1].focus()
-          }
-        })
+    function enableInputs() {
+      inputs.forEach(i => {
+        i.disabled = false
+        i.value = ''
       })
+      inputs[0].focus()
+    }
 
-      /* ===============================
-     PASTE SUPPORT
-  ================================ */
-      inputs[0].addEventListener('paste', e => {
-        e.preventDefault()
-        const otp = e.clipboardData
-          .getData('text')
-          .replace(/\D/g, '')
-          .slice(0, 6)
+    function enableResend() {
+      resendBtn.style.pointerEvents = 'auto'
+      resendBtn.style.opacity = '1'
+    }
 
-        otp.split('').forEach((digit, i) => {
-          if (inputs[i]) inputs[i].value = digit
-        })
-
-        inputs[Math.min(otp.length, inputs.length) - 1].focus()
-      })
-
-      /* ===============================
-     FORM SUBMIT + FETCH
-  ================================ */
-      form.addEventListener('submit', async e => {
-        e.preventDefault()
-        clearError()
-
-        const otp = inputs.map(i => i.value).join('')
-        if (otp.length !== 6) {
-          showError('Please enter complete OTP')
-          return
-        }
-
-        submitBtn.disabled = true
-
-        try {
-          const res = await fetch('/otp-verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ otp })
-          })
-
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`)
-          }
-
-          const data = await res.json()
-
-          if (!data.success) {
-            showError(data.message || 'Invalid OTP')
-            if (data.message?.toLowerCase().includes('expired')) {
-              disableInputs()
-              enableResend()
-            }
-            return
-          }
-
-          sessionStorage.removeItem('expiryTime')
-          sessionStorage.setItem('success', data.message)
-          window.location.href = '/login'
-        } catch (err) {
-          console.error(err)
-          showError('Server error. Please try again.sssssssss')
-        } finally {
-          submitBtn.disabled = false
-        }
-      })
-
-      /* ===============================
-     TIMER LOGIC
-  ================================ */
-      const disableInputs = () => inputs.forEach(i => (i.disabled = true))
-
-      const enableResend = () => {
-        resendBtn.style.pointerEvents = 'auto'
-        resendBtn.style.opacity = '1'
-      }
-
+    function disableResend() {
       resendBtn.style.pointerEvents = 'none'
       resendBtn.style.opacity = '0.5'
+    }
 
-      let expiresAt = Number(sessionStorage.getItem('expiryTime'))
-      if (!expiresAt || isNaN(expiresAt)) {
-        expiresAt = Date.now() + 60 * 1000
-        sessionStorage.setItem('expiryTime', expiresAt)
-      }
+    /* ===============================
+       OTP INPUT HANDLING
+    ================================ */
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+        clearError()
+        input.value = input.value.replace(/\D/g, '')
 
-      let timeLeft = Math.floor((expiresAt - Date.now()) / 1000)
+        if (input.value && index < inputs.length - 1) {
+          inputs[index + 1].focus()
+        }
+      })
 
-      const updateTimer = () => {
-        const m = String(Math.floor(timeLeft / 60)).padStart(2, '0')
-        const s = String(timeLeft % 60).padStart(2, '0')
-        timerSpan.textContent = `${m}:${s} remaining`
-      }
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !input.value && index > 0) {
+          inputs[index - 1].focus()
+        }
+      })
+    })
 
-      if (timeLeft <= 0) {
-        timerSpan.textContent = 'OTP expired'
-        timerSpan.style.color = 'red'
-        disableInputs()
-        enableResend()
-        sessionStorage.removeItem('expiryTime')
-        return
-      }
+    /* ===============================
+       PASTE SUPPORT
+    ================================ */
+    inputs[0].addEventListener('paste', e => {
+      e.preventDefault()
+      const otp = e.clipboardData
+        .getData('text')
+        .replace(/\D/g, '')
+        .slice(0, 6)
 
+      otp.split('').forEach((digit, i) => {
+        if (inputs[i]) inputs[i].value = digit
+      })
+
+      inputs[Math.min(otp.length, inputs.length) - 1].focus()
+    })
+
+    /* ===============================
+       TIMER LOGIC (FIXED)
+    ================================ */
+    let timer
+    let expiresAt = Number(sessionStorage.getItem('expiryTime'))
+
+    if (!expiresAt || isNaN(expiresAt)) {
+      expiresAt = Date.now() + 60 * 1000
+      sessionStorage.setItem('expiryTime', expiresAt)
+    }
+
+    let timeLeft = Math.floor((expiresAt - Date.now()) / 1000)
+
+    function updateTimer() {
+      const m = String(Math.floor(timeLeft / 60)).padStart(2, '0')
+      const s = String(timeLeft % 60).padStart(2, '0')
+      timerSpan.textContent = `${m}:${s} remaining`
+    }
+
+    function startTimer() {
+      clearInterval(timer)
       updateTimer()
-      const timer = setInterval(() => {
+
+      timer = setInterval(() => {
         timeLeft--
         updateTimer()
 
@@ -269,40 +238,94 @@
           sessionStorage.removeItem('expiryTime')
         }
       }, 1000)
+    }
 
+    if (timeLeft <= 0) {
+      timerSpan.textContent = 'OTP expired'
+      timerSpan.style.color = 'red'
+      disableInputs()
+      enableResend()
+    } else {
+      disableResend()
+      startTimer()
+    }
 
-//----------------------------RESEND OTP----------------------------------------
+    /* ===============================
+       OTP VERIFY SUBMIT
+    ================================ */
+    form.addEventListener('submit', async e => {
+      e.preventDefault()
+      clearError()
 
+      const otp = inputs.map(i => i.value).join('')
+      if (otp.length !== 6) {
+        showError('Please enter complete OTP')
+        return
+      }
 
-      resendBtn.addEventListener('click', async () => {
-        try {
-          const response = await fetch('/resendOtp', {
-            method: 'POST',
-            headers: { 'Content-type': 'application/json' },
-            body: JSON.stringify({email})
-          })
-          const resendData = await response.json()
-          if (!response.ok) {
-            throw new Error(resendData.message ||`HTTP ${response.status}`)
-          }
+      submitBtn.disabled = true
 
-          if (!resendData.success) {
-          showToast(resendData.message, 'error')
-            resendBtn.style.pointerEvents = 'auto'
-            resendBtn.style.opacity = '1'
-            disableInputs()
-            return
-          }
+      try {
+        const res = await fetch('/otp-verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otp, email, purpose })
+        })
 
-          showToast(resendData.message,"success")
-          sessionStorage.setItem('expiryTime', Date.now() + 60 * 1000)
-          location.reload()
-        } catch (error) {
-          showError( error.message|| 'Server error. Please try again.afwa')
-          resendBtn.style.pointerEvents = 'auto'
-          resendBtn.style.opacity = '1'
+        const data = await res.json()
+
+        if (!res.ok || !data.success) {
+          showError(data.message || 'Invalid OTP')
+          return
         }
-      })
+
+        sessionStorage.removeItem('expiryTime')
+        sessionStorage.removeItem('otpEmail')
+        sessionStorage.setItem('success', data.message)
+        window.location.href = '/login'
+      } catch (err) {
+        showError('Server error. Please try again.')
+      } finally {
+        submitBtn.disabled = false
+      }
     })
-  </script>
+
+    /* ===============================
+       RESEND OTP (NO DOUBLE CALL)
+    ================================ */
+    resendBtn.replaceWith(resendBtn.cloneNode(true))
+    resendBtn = document.getElementById('resendOtp')
+
+    resendBtn.addEventListener('click', async () => {
+      try {
+        disableResend()
+        clearError()
+
+        const res = await fetch('/resendOtp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, purpose })
+        })
+
+        const data = await res.json()
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || 'Failed to resend OTP')
+        }
+
+        showToast(data.message, 'success')
+
+        const newExpiry = Date.now() + 60 * 1000
+        sessionStorage.setItem('expiryTime', newExpiry)
+        timeLeft = 60
+        timerSpan.style.color = ''
+        enableInputs()
+        startTimer()
+      } catch (err) {
+        showError(err.message)
+        enableResend()
+      }
+    })
+  })
+</script>
+
 </html>

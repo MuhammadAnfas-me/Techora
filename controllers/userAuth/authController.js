@@ -2,7 +2,6 @@ import express from 'express'
 import bcrypt from 'bcrypt'
 import { User } from '../../models/userModel.js'
 import { verifyOtp } from '../../services/authService/emailVerify.js'
-import sendOtpMail from '../../utils/sendOtpMail.js'
 import { sendOtp } from '../../utils/sendOtpMail.js'
 import session from 'express-session'
 const SALT_ROUND = 10
@@ -57,11 +56,11 @@ const login = async (req, res) => {
         purpose: 'Email_Verification',
         expiryTime: 1
       })
-      req.session.user = email
       return res.status(403).json({
         success : false,
         message : "Verify your Email address",
-        redirect : "/otp-verify"
+        redirect : "/otp-verify",
+        email
       })
     }
     res.status(200).json({
@@ -85,24 +84,29 @@ const signUp = async (req, res) => {
     const { name, email, password } = req.body
 
     const user = await User.findOne({ email })
-    if (user) return res.render('User/signup', { error: 'User already exists' })
     const hashedPassword = await bcrypt.hash(password, SALT_ROUND)
-    const newUser = new User({
-      fullName: name,
-      email,
-      password: hashedPassword,
-      isVerified: false
-    })
+    if (user) {
+      if(user.isVerified){
+        return res.render('User/signup', { error: 'User already exists' })
+      }
+    }
+    if(!user){
+      const newUser = new User({
+        fullName: name,
+        email,
+        password: hashedPassword,
+        isVerified: false
+      })
+      await newUser.save()
+    }
 
-    await newUser.save()
     sendOtp({
       model: User,
       email,
       purpose: 'Email_Verification',
       expiryTime: 1
     })
-    req.session.user = email
-    res.redirect('/otp-verify')
+    res.render('User/otpPage',{ email , purpose : "EMAIL_VERIFICATION"})
   } catch (er) {
     console.log(`Error from Signup, ${er}`)
     res.render('User/signup', { error: 'Something Wrong' })
@@ -112,18 +116,25 @@ const signUp = async (req, res) => {
 //---------------------Otp Page------------------------------
 
 const otpLoad = (req, res) => {
-  res.render('User/otpPage', { email: req.session.user, error: null })
+  res.render('User/otpPage', { email: null , purpose : null})
 }
 
 const otpVerify = async (req, res) => {
   try {
-    const otp = req.body.otp
-    const email = req.session.user
+    const {otp , email ,purpose} = req.body
+    if(!otp || !email || !purpose){
+      res.status(400).json({
+        success : false,
+        message : "Missing external fields"
+      })
+    }
     await verifyOtp({ model: User, email, enteredOtp: otp })
+    if(purpose == "EMAIL_VERIFICATION"){
     await User.updateOne({ email }, { $set: { isVerified: true } })
+  }
     res.status(200).json({
       success: true,
-      message: 'verified successfully'
+      message: purpose == "EMAIL_VERIFICATION" ? "Email verified" : "OTP verified"
     })
   } catch (er) {
     res.status(400).json({
@@ -135,7 +146,7 @@ const otpVerify = async (req, res) => {
 
 const resendOtp = async (req,res)=>{
   try {
-    const {email} = req.body
+    const {email,purpose} = req.body
     if(!email){
       return res.status(400).json({
         success : false,
@@ -150,14 +161,15 @@ const resendOtp = async (req,res)=>{
         message : "User not found"
       })
     }
-
+    if(purpose == "EMAIL_VERIFICATION"){
     if(user.isVerified){
       return res.status(400).json({
         success : false,
         message : "Email is already verified"
       })
     }
-    sendOtp({model : User , email , purpose : "Email_verification", expiryTime : 1})
+  }
+    sendOtp({model : User , email , purpose , expiryTime : 1})
     res.status(200).json({
       success : true,
       message : "OTP resent successfully"
@@ -171,4 +183,29 @@ const resendOtp = async (req,res)=>{
   }
 }
 
-export { landing , loginLoad, login, signupLoad, signUp, otpLoad, otpVerify ,resendOtp}
+// ------------------------------- Forgot Password--------------------------------//
+
+const forgotLoad = (req,res)=>{
+  res.render("User/forgotPassword",{error : null})
+}
+
+const forgotPassword = async(req,res)=>{
+  
+  const { email }= req.body
+  const user = await User.findOne({email})
+
+  if(!user) {
+    res.render("User/forgotPassword",{error : "Invalid Email"})
+  }
+  sendOtp({model : User , email , purpose : "Password_Reset" , expiryTime : 1})
+  res.render("User/otpPage",{email : email , purpose : "RESET_PASSWORD"})
+  
+}
+
+const homeLoad = (req,res)=>{
+  res.render("User/home")
+}
+
+export { landing , homeLoad ,  loginLoad, login, signupLoad, signUp, otpLoad, otpVerify ,resendOtp , forgotLoad , forgotPassword}
+
+

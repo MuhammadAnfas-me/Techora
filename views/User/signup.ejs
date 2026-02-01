@@ -9,10 +9,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="/styles/user/signup.css" />
-    <link rel="stylesheet" href="/public/styles/user/popup.css" />
-    <script defer src="/public/js/popup.js"></script>
+    <link rel="stylesheet" href="/styles/user/popup.css" />
+    <script defer src="/js/popup.js"></script>
   </head>
   <body>
+    <div id="toast" class="toast"></div>
     <div class="card">
       <h2>Create Account</h2>
       <% if(error){ %>
@@ -190,11 +191,12 @@
         }
 
         if (isValid) {
-          alert('Form submitted successfully 🎉')
-          e.target.submit()
-          sessionStorage.removeItem("expiryTime")
-          const expiryTime = Date.now() + 60 * 1000
-          sessionStorage('expiryTime', expiryTime)
+          setTimeout(()=>{
+            e.target.submit()
+            sessionStorage.removeItem("expiryTime")
+            const expiryTime = Date.now() + 60 * 1000
+            sessionStorage('expiryTime', expiryTime)
+          },800)
         }
       }
       // Eye-toggle Logic
