@@ -1,0 +1,399 @@
+/* Base Styles */
+:root {
+    --bg-color: #e5e7eb; 
+    --card-bg: #ffffff;
+    --text-main: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --primary-btn-bg: #1f2937;
+    --primary-btn-hover: #111827;
+    --danger-color: #ef4444;
+    --input-bg: #f9fafb;
+    --input-border: #d1d5db;
+    --focus-ring: #d1d5db; 
+}
+
+
+
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+/* Layout */
+.main-content {
+    padding: 40px 20px;
+    min-height: calc(100vh - 160px); /* Adjust based on header/footer height */
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* Page Header */
+.page-header {
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+}
+
+.page-header p {
+    color: #4b5563;
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Profile Card */
+.profile-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 32px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 0;
+    margin-bottom: 24px;
+}
+
+/* Avatar Section */
+.avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.avatar-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1f2937;
+    background-color: #fafafa; /* Slightly off-white input bg */
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: #9ca3af;
+    background-color: #fff;
+}
+
+.form-group input::placeholder {
+    color: #9ca3af;
+}
+
+.helper-text {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 6px;
+}
+
+/* Custom Select styling hack for cleaner arrow */
+.select-wrapper {
+    position: relative;
+}
+/* Ensure selects take full width */
+.select-wrapper select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Buttons */
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: #f3f4f6;
+}
+
+.btn-text-danger {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.btn-text-danger:hover {
+    text-decoration: underline;
+}
+
+.form-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 20px 32px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background-color: #fff; /* Ensure bg is white */
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primary-btn-bg);
+    border: 1px solid transparent;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-btn-hover);
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* Stack columns on mobile */
+        gap: 24px;
+        padding: 20px;
+    }
+    
+    .form-footer {
+        padding: 20px;
+    }
+
+    .main-content {
+        padding: 20px 10px;
+    }
+}
+
+
+
+/* =========================================
+   TECHORA PREMIUM CALENDAR (MASTER STYLE)
+   ========================================= */
+
+/* 1. Main Calendar Wrapper (Fixed Layout) */
+.flatpickr-calendar {
+    font-family: 'Inter', sans-serif;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    overflow: hidden;
+    
+    /* LAYOUT FIX: Force specific width to prevent cutting off */
+    width: 340px !important;
+}
+
+/* 2. Blue Header Section */
+.flatpickr-months {
+    background-color: #1f2937; /* Techora Dark Slate */
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 12px 0; /* Slightly taller for elegance */
+    align-items: center;
+}
+
+/* 3. Header Text & Navigation */
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    color: #ffffff; /* Sets 'currentColor' to white */
+    fill: transparent; /* Ensures no weird background fill */
+}
+.flatpickr-prev-month svg,
+.flatpickr-next-month svg {
+    stroke: currentColor;
+    fill: none;
+}
+
+/* 4. Premium Glass Dropdowns (Month & Year) */
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #ffffff;
+    padding: 6px 30px 6px 12px; /* Space for arrow */
+    margin: 0 4px;
+    
+    /* Custom White Arrow Icon */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 14px;
+}
+
+.flatpickr-current-month input.cur-year {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 6px 0 6px 8px;
+    margin: 0 4px;
+    width: 65px;
+}
+
+/* Options inside dropdown */
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+    background-color: #1f2937;
+    color: #fff;
+}
+
+/* 5. Weekday Labels */
+.flatpickr-weekdays {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    height: 36px;
+    align-items: center;
+    
+}
+
+span.flatpickr-weekday {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 13px;
+   
+}
+
+/* 6. Calendar Grid (Layout Fix) */
+.flatpickr-innerContainer {
+    padding: 15px; /* Internal padding */
+    background: #ffffff;
+    
+}
+
+.flatpickr-days {
+    width: 100% !important; /* Ensure it fills the 340px container */
+}
+
+/* 7. Individual Days */
+.flatpickr-day {
+    /* MATH FIX: 100% / 7 = 14.28% */
+    flex-basis: 14.28% !important; 
+    max-width: 14.28% !important;
+    
+    border-radius: 8px;
+    height: 38px;
+    line-height: 38px;
+    margin: 0 !important; /* Remove margin to fix overflow */
+    border: 1px solid transparent; /* Keeps spacing consistent */
+    color: #374151;
+    font-weight: 500;
+}
+
+/* Hover State */
+.flatpickr-day:hover, 
+.flatpickr-day:focus {
+    background: #f3f4f6;
+    border-color: #f3f4f6;
+}
+
+/* 8. Selected Day (The Blue Style) */
+.flatpickr-day.selected, 
+.flatpickr-day.selected:hover {
+    background: #1f2937 !important;
+    border-color: #1f2937 !important;
+    color: #ffffff;
+    box-shadow: 0 4px 6px rgba(31, 41, 55, 0.25);
+}
+
+/* Today's Date */
+.flatpickr-day.today {
+    border: 2px solid #1f2937;
+    color: #1f2937;
+}
+.flatpickr-day.today:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+/* Grayed out days */
+.flatpickr-day.prevMonthDay, 
+.flatpickr-day.nextMonthDay {
+    color: #d1d5db;
+}

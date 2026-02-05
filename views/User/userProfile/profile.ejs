@@ -1,0 +1,139 @@
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Profile" ,email : user.email , name : user.fullName}) %>
+    <link rel="stylesheet" href="/styles/user/userProfile/profile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+
+    <main class="main-content">
+        <div class="container">
+
+            <section class="profile-header-card">
+                <div class="profile-info">
+                    <div class="profile-avatar-large">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                            alt="Michael Anderson">
+                    </div>
+                    <div class="profile-details">
+                        <h1>
+                            <%= user.fullName %>
+                        </h1>
+                        <div class="profile-meta">
+                            <span><i class="fas fa-envelope"></i>
+                                <%= user.email %>
+                            </span>
+                            <span><i class="fas fa-phone-alt"></i>
+                                <%= user.number ? user.number : "---" %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button onclick="editProfile()" class="btn btn-primary">Edit Profile</button>
+                    <button onclick="changePass()" class="btn btn-secondary">Change Password</button>
+                </div>
+            </section>
+
+            <section class="details-container">
+                <div class="tabs-wrapper">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="profile">Profile</button>
+                        <button class="tab-btn" data-tab="orders">My Orders</button>
+                        <button class="tab-btn" data-tab="wallet">Wallet</button>
+                        <button class="tab-btn" data-tab="referrals">Referrals</button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="profile">
+                    <div class="info-grid">
+
+                        <div class="info-card">
+                            <h2>Personal Information</h2>
+
+                            <div class="info-row">
+                                <span class="label">Full Name</span>
+                                <span class="value">
+                                    <%= user.fullName %>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Email</span>
+                                <span class="value">
+                                    <%= user.email %>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Phone Number</span>
+                                <span class="value">
+                                    <%= user.number ? user.number : "---" %>
+                                </span>
+                            </div>
+                            <div class="info-row border-none">
+                                <span class="label">Member Since</span>
+                                <% const date=user.createdAt %>
+                                    <span class="value">
+                                        <%= new Date(user.createdAt).toLocaleDateString("en-US", { month: "long" ,
+                                            day: "numeric" , year: "numeric" }) %>
+                                    </span>
+                            </div>
+                        </div>
+
+                        <div class="info-card address-card">
+                            <div>
+                                <h2>Primary Address</h2>
+                                <div class="address-details">
+                                    <h3><%= address.type %> Address</h3>
+                                    <p><%= address.addressLine1 %></p>
+                                    <p><%= address.addressLine2 %></p>
+                                    <p><%= address.city %></p>
+                                    <p><%= address.country %></p>
+                                </div>
+                            </div>
+                            <button onclick="manageAddress()" class="btn btn-primary btn-block">Manage Addresses</button>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <%- include("../../partitials/user/footer.ejs") %>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Tab Switching Logic
+                const tabBtns = document.querySelectorAll('.tab-btn');
+
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // Remove active class from all buttons
+                        tabBtns.forEach(b => b.classList.remove('active'));
+
+                        // Add active class to clicked button
+                        btn.classList.add('active');
+
+                        // For demo: Log the tab switch
+                        console.log(`Switched to tab: ${btn.dataset.tab}`);
+                    });
+                });
+
+                
+               
+            });
+
+            function editProfile(){
+                window.location.href = `/profile/edit`
+            }
+            function changePass(){
+                window.location.href = "/profile/password"
+            }
+            function manageAddress(){
+                window.location.href = "/profile/address"
+            }
+        </script>
+        </body>
+
+        </html>

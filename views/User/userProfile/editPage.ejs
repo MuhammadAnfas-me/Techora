@@ -1,0 +1,233 @@
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Profile" ,email : user.email,name : user.fullName}) %>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="/js/popup.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="/styles/user/userProfile/editPage.css">
+<link rel="stylesheet" href="/styles/user/popup.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+
+
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>Edit Profile</h1>
+                <p>Update your personal information</p>
+            </div>
+
+            <form class="profile-card" id="profileForm">
+                <div class="form-grid">
+
+                    <div class="column">
+                        <h2 class="section-title">Personal Details</h2>
+
+                        <div class="avatar-section">
+                            <div class="avatar-wrapper">
+                                <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" id="userAvatar">
+                            </div>
+                            <div class="avatar-actions">
+                                <button type="button" class="btn-secondary" id="changePhotoBtn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                        </path>
+                                        <circle cx="12" cy="13" r="4"></circle>
+                                    </svg>
+                                    Change Photo
+                                </button>
+                                <button type="button" class="btn-text-danger" id="removePhotoBtn">Remove</button>
+                                <input type="file" id="fileInput" hidden accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" placeholder="Enter your full name"
+                                value="<%= user.fullName %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" placeholder="Enter your email"
+                                value="<%= user.email %>" disabled>
+                            <span class="helper-text">Email cannot be changed</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number"
+                                value="<%= user.number ? user.number : "" %>">
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <h2 class="section-title">Account Details</h2>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth</label>
+                            <input type="text" id="dob" name="dob" value="<%= user.dob ? user.dob.toISOString().slice(0,10) : "" %>" placeholder="Select date of birth">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <div class="select-wrapper">
+                                <select id="gender" name="gender">
+                                    <option value="male" <%=user.gender==="male" ? "selected" : "" %> >Male</option>
+                                    <option value="female" <%=user.gender==="female" ? "selected" : "" %> >Female
+                                    </option>
+                                    <option value="other" <%=user.gender==="other" ? "selected" : "" %> > Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="country">Country / Region</label>
+                            <div class="select-wrapper">
+                                <select id="country" name="country">
+                                    <option value="United States" <%=user.country==="United States" ? "selected" : "" %>>United
+                                        States</option>
+                                    <option value="United Kingdom" <%=user.country==="United Kingdom" ? "selected" : "" %>>United
+                                        Kingdom</option>
+                                    <option value="Canada" <%=user.country==="Canada" ? "selected" : "" %>>Canada</option>
+                                    <option value="India" <%=user.country==="India" ? "selected" : "" %>>India</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <%- include("../../partitials/user/footer.ejs") %>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+
+                // --- Image Upload Logic ---
+                const changePhotoBtn = document.getElementById('changePhotoBtn');
+                const fileInput = document.getElementById('fileInput');
+                const userAvatar = document.getElementById('userAvatar');
+                const removePhotoBtn = document.getElementById('removePhotoBtn');
+
+                // Default avatar fallback
+                const defaultAvatarUrl = "https://i.pravatar.cc/150?img=11";
+                const placeholderUrl = "https://via.placeholder.com/150?text=User";
+
+                // Trigger file input when clicking "Change Photo"
+                changePhotoBtn.addEventListener('click', () => {
+                    fileInput.click();
+                });
+
+                // Handle file selection
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            userAvatar.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Handle Remove Photo
+                removePhotoBtn.addEventListener('click', () => {
+                    // In a real app, this would likely trigger an API call or reset a form field
+                    // Here we just visually reset it to a placeholder
+                    if (confirm("Are you sure you want to remove your profile photo?")) {
+                        userAvatar.src = placeholderUrl;
+                        fileInput.value = ""; // Clear input
+                    }
+                });
+
+                if(window.flatpickr){
+                    flatpickr("#dob", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y",
+                maxDate: "today",
+                disableMobile: true,
+                allowInput: true,
+                animate: true,
+
+                // ✅ Premium month navigation (no dropdown)
+                monthSelectorType: "dropdown",
+
+                prevArrow: `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18l-6-6 6-6"
+                            stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        `,
+                                    nextArrow: `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 6l6 6-6 6"
+                            stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        `
+            });
+                }
+
+
+                // --- Form Submission ---
+                const profileForm = document.getElementById('profileForm');
+                if(!profileForm) return
+                profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const fullName = document.getElementById("fullName").value.trim()
+                    const number = document.getElementById("phone").value.trim()
+                    const dob = document.getElementById("dob").value
+                    const gender = document.getElementById("gender").value
+                    const country = document.getElementById("country").value
+
+                    // Simulating a save action
+                    const btn = profileForm.querySelector('.btn-primary');
+                    const originalText = btn.innerHTML;
+
+                    try{
+                        
+                        btn.innerHTML = 'Saving...';
+                        btn.disabled = true;
+                        const res = await axios.patch(`/profile/edit`,{
+                            fullName,
+                            number,
+                            dob,
+                            gender,
+                            country
+                        })
+                        showToast(res.data.message || "Updated successfully")
+                        setTimeout(()=>{
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        },800)
+                        setTimeout(()=>{
+                            window.location.href = "/profile"
+                        },1000)
+                    }catch(er){
+                        showToast(er.response?.data?.message || "Something went wrong","error")
+                    }
+                })
+            });
+
+            
+
+
+
+        </script>

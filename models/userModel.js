@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
+      trim : true,
       required: true
     },
     email: {
@@ -13,7 +14,9 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true
+      required: function(){
+        return !this.googleId
+      }
     },
     profileImage: {
       type: String,
@@ -26,7 +29,7 @@ const userSchema = new mongoose.Schema(
     number: {
       type: Number
     },
-    dateOfBirth: {
+    dob: {
       type: Date
     },
     gender: {
@@ -54,10 +57,17 @@ const userSchema = new mongoose.Schema(
     otpExpiresAt :{
       type : Date
     },
-    otpAttemps : {
-      type : Number,
-      default : 0
+    googleId : {
+      type : String,
+      unique : true,
+      sparse : true
     },
+    resetToken : {
+      type : String, 
+    },
+    resetTokenExpiry :{
+      type : String
+    }
     
 
   },

@@ -84,7 +84,7 @@ const otpTemplate = (otp) => {
   `
 }
 
-export const sendOtp = async ({model , email , purpose , expiryTime})=>{
+export const sendOtp = async ({model , email  , expiryTime})=>{
     const otp = generateOtp();
     const hashedOtp = await bcrypt.hash(otp,10);
     await model.updateOne(

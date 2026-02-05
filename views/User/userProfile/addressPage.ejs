@@ -1,0 +1,304 @@
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Profile" , email  , name }) %>
+<link rel="stylesheet" href="/styles/user/userProfile/addressPage.css">
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Manage Addresses</h1>
+                <p class="page-subtitle">View and manage your saved shipping addresses</p>
+            </div>
+
+            <!-- Address Card Container -->
+            <div class="address-card">
+                <div class="card-header">
+                    <h2 class="card-title">Saved Addresses</h2>
+                    <button class="btn-primary" id="addAddressBtn">
+                        <span class="material-symbols-outlined">add</span>
+                        Add New Address
+                    </button>
+                </div>
+
+                <!-- Address List -->
+                <div class="address-list">
+                    <!-- Address Item 1 - Default -->
+
+                    <% if (!addresses || addresses.length === 0) { %>
+
+                        <div class="empty-state">
+                          <span class="material-symbols-outlined empty-icon">location_on</span>
+                          <h3>No addresses saved</h3>
+                          <p>You haven’t added any shipping address yet. Add one to checkout faster.</p>
+                          <button type="button" class="btn-primary" onclick="openModal()">
+                            <span class="material-symbols-outlined">add</span>
+                            Add your first address
+                          </button>
+                        </div>
+                    
+                    <% } else { %>
+
+                    <% addresses.forEach((address)=>{ %>
+
+                    
+                    
+                    <div class="address-item">
+                        <div class="address-info">
+                            <div class="address-header">
+                                <h3 class="address-title"> <%=address.type%> Address</h3>
+                               <% if(address.default){ %>
+                                <span class="default-badge">Default Address</span>
+                               <% }%>
+                            </div>
+                            <div class="address-details">
+                                <p class="address-name"><%=address.fullName%></p>
+                                <p><%=address.addressLine1%></p>
+                                <p><%=address.addressLine2%></p>
+                                <p><%=address.city%></p>
+                                <p><%=address.country%></p>
+                                <div class="address-phone">
+                                    <span class="material-symbols-outlined">call</span>
+                                    <span><%=address.phone%></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="address-actions">
+                            <button class="btn-secondary"  onclick="editAddress('<%= address._id %>')">
+                                <span class="material-symbols-outlined">edit</span>
+                                Edit
+                            </button>
+                            <button class="btn-delete" onclick="deleteAddress('<%= address._id %>')">
+                                <span class="material-symbols-outlined">delete</span>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <% }) %>
+                  <% } %>
+                    <!-- Address Item 2 -->
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Add New Address</h2>
+                    <p class="modal-subtitle">Enter your address details</p>
+                </div>
+                <button class="modal-close" id="closeModalBtn">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form class="modal-form" id="addressForm">
+                <div class="form-group">
+                    <label class="form-label">Full Name <span class="required">*</span></label>
+                    <input type="text" id="name" class="form-input" placeholder="Enter full name" required>
+                    <input type="hidden" id="addressId">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" class="form-input" placeholder="Enter phone number" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address Line 1 <span class="required">*</span></label>
+                    <input type="text" id="address1" class="form-input" placeholder="Street address, P.O. box" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address Line 2</label>
+                    <input type="text" id="address2" class="form-input" placeholder="Apartment, suite, unit, building, floor, etc.">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">City <span class="required">*</span></label>
+                        <input type="text" id="city" class="form-input" placeholder="Enter city" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">State <span class="required">*</span></label>
+                        <input type="text" id="state" class="form-input" placeholder="Enter state" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">ZIP / Postal Code <span class="required">*</span></label>
+                        <input type="text" id="zipCode" class="form-input" placeholder="Enter ZIP code" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Country <span class="required">*</span></label>
+                        <select class="form-input" id="country" required>
+                            <option value="" disabled hidden>Select country</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Canada">Canada</option>
+                            <option value="India">India</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address Label <span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="label" value="Home" checked>
+                            <span>Home</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="label" value="Work">
+                            <span>Work</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="label" value="Other">
+                            <span>Other</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" id="defaultAddress" class="checkbox-input">
+                    <label for="defaultAddress" class="checkbox-label">Set as default address</label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn-submit">
+                        <span class="submit-indicator"></span>
+                        Save Address
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <%- include("../../partitials/user/footer.ejs") %>
+
+    <script>
+        // ===================================
+// DRAWER/MODAL FUNCTIONALITY
+// ===================================
+
+const modalOverlay = document.getElementById('modalOverlay');
+const modalContent = document.getElementById('modalContent');
+const addAddressBtn = document.getElementById('addAddressBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const addressForm = document.getElementById('addressForm');
+
+// Open Drawer
+function openModal() {
+    modalOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Close Drawer
+function closeModal() {
+    modalOverlay.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// Event Listeners
+addAddressBtn.addEventListener('click', openModal);
+closeModalBtn.addEventListener('click', closeModal);
+cancelBtn.addEventListener('click', closeModal);
+
+// Close when clicking outside
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        closeModal();
+    }
+});
+
+// Close on ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// ===================================
+// FORM VALIDATION
+// ===================================
+
+const formInputs = document.querySelectorAll('.form-input');
+
+
+addressForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("addressId").value
+    // Collect values
+    const addressData = {
+      fullName: document.getElementById("name").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      addressLine1: document.getElementById("address1").value.trim(),
+      addressLine2: document.getElementById("address2").value.trim(),
+      city: document.getElementById("city").value.trim(),
+      state: document.getElementById("state").value.trim(),
+      zipCode: document.getElementById("zipCode").value.trim(),
+      country: document.getElementById("country").value,
+      type: document.querySelector('input[name="label"]:checked').value,
+      default: document.getElementById("defaultAddress").checked 
+    };
+
+    try {
+        if(id){
+            const res = await axios.patch(`/profile/address/${id}`,addressData)
+            showToast(res.data?.message || "Address edited successfully")
+        }else{
+            const res = await axios.post("/profile/address",addressData)
+            showToast(res.data?.message || "Address added successfully")
+        }
+        closeModal()
+        location.reload()
+    } catch (err) {
+        showToast(err.response?.data?.message || "Something went wrong","error")
+    }
+  });
+
+
+ async function editAddress(id){
+    try{
+        const res = await axios.get(`/profile/address/${id}`)
+        const data = res.data.address
+    document.getElementById("name").value = data.fullName
+    document.getElementById("phone").value = data.phone 
+    document.getElementById("address1").value =  data.addressLine1 
+    document.getElementById("address2").value =  data.addressLine2 || ""
+    document.getElementById("city").value = data.city 
+    document.getElementById("state").value = data.state 
+    document.getElementById("zipCode").value = data.zipCode 
+    document.getElementById("country").value = data.country 
+    document.querySelector(`input[name="label"][value="${data.type}"]`).checked  = true
+    document.getElementById("defaultAddress").checked =  Boolean(data.default) 
+
+    document.getElementById("addressId").value = id
+    openModal()
+    }catch(er){
+        showToast("Failed to load address","error")
+    }
+  }
+  
+ async function deleteAddress(id){
+    try {
+        if(confirm("Are you sure")){
+      const res = await axios.delete(`/profile/address/${id}`)
+      location.reload()
+      showToast(res.data.message || "Deleted successfully")
+        }
+    } catch (error) {
+        
+    }
+  }
+
+  </script>
+</body>
+</html>

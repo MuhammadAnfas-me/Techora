@@ -282,7 +282,12 @@
         sessionStorage.removeItem('expiryTime')
         sessionStorage.removeItem('otpEmail')
         sessionStorage.setItem('success', data.message)
-        window.location.href = '/login'
+        if(purpose == "RESET_PASSWORD"){
+          sessionStorage.setItem("resetToken",data.resetToken)
+        window.location.href = '/reset-password'
+        }else{
+          window.location.href = "/login"
+        }
       } catch (err) {
         showError('Server error. Please try again.')
       } finally {

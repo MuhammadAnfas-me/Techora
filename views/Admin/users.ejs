@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techora User Management</title>
+    <link rel="stylesheet" href="/styles/admin/users.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <span class="material-symbols-outlined">layers</span>
+                </div>
+                <span class="logo-text">Techora</span>
+            </div>
+            <button class="sidebar-close" id="sidebarClose">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item">
+                <span class="material-symbols-outlined">grid_view</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="material-symbols-outlined">shopping_bag</span>
+                <span>Orders</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="material-symbols-outlined">inventory_2</span>
+                <span>Products</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="material-symbols-outlined">category</span>
+                <span>Categories</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <span class="material-symbols-outlined">group</span>
+                <span>Users</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="material-symbols-outlined">favorite</span>
+                <span>Offers</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="material-symbols-outlined">confirmation_number</span>
+                <span>Coupons</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="theme-toggle" id="themeToggle">
+                <span class="material-symbols-outlined">dark_mode</span>
+                <span>Switch Theme</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div class="header-title">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>USERS</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="logout-btn">
+                    <span class="logout-text">Logout</span>
+                    <span class="material-symbols-outlined">logout</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="content-container">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">Users Management</h1>
+                    <p class="page-subtitle">View and manage platform users</p>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="filters-card">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label class="filter-label">Search</label>
+                            <div class="search-input-wrapper">
+                                <span class="material-symbols-outlined search-icon">search</span>
+                                <input type="text" class="filter-input" placeholder="Search by name, email">
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">Role</label>
+                            <select class="filter-input">
+                                <option>All Roles</option>
+                                <option>Customer</option>
+                                <option>Admin</option>
+                                <option>Editor</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <select class="filter-input">
+                                <option>All Status</option>
+                                <option>Active</option>
+                                <option>Blocked</option>
+                                <option>Pending</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button class="btn-primary">Search</button>
+                            <button class="btn-secondary">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-card">
+                    <div class="table-wrapper">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th class="text-center">Orders</th>
+                                    <th>Status</th>
+                                    <th>Registered Date</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(user=>{ %>
+                                <tr>
+                                    <td class="user-id"><%= user._id %></td>
+                                    <td>
+                                        <div class="user-info">
+                                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVt5-PCOu_iZYrnzuMWs_MRT8sXFm7-Kwfz4HgKcuyCP8ORWykT6XQxwCra2vdFkCKyM9QronIdaMiYf3zK-r9wAOn85iHJkhl1U6hUoUOke2sC1B2jLQObdAvE81tzJr3lGgMNtjqGEJrkbjlyT_0_2Mn4S2XhcXy4TLLXn5TASsmF7LG9zYRaH1z_C23789JrWFIBWyQqZN-zFqacagbpojjfkQ0oO_7GQnjy6R18V5k_3rupX6FAg0n-XHXFKcqXqtBwFZ6gFs" alt="Alex Johnson">
+                                            <span class="user-name"><%= user.fullName %></span>
+                                        </div>
+                                    </td>
+                                    <td class="user-email"><%= user.email %></td>
+                                    <td>
+                                        <span class="badge badge-role"><%= user.role %></span>
+                                    </td>
+                                    <td class="text-center">-</td>
+                                    <td>
+                                        <span class="badge badge-active"><%= user.blocked ? "BLOCKED" : "ACTIVE" %></span>
+                                    </td>
+                                    <td class="user-date">2023-08-12</td>
+                                    <td class="text-right">
+                                        <button class="action-btn block-btn">
+                                            <span class="material-symbols-outlined"><%= user.blocked ? "block" : "settings_backup_restore" %></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                                <tr>
+                                    <td class="user-id">#USR-002</td>
+                                    <td>
+                                        <div class="user-info">
+                                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrxGFAWcQhGWjlrfJCFsklgNckHyZwszSfY66ob5fyE6wuFDeUCiQcOMi7VXSp77irdbd5W9_f2kmvfiZCUbuwQq-Qy4Kieu7EnFqPregYKaG1JmFWWo36XWEnq0Q69v8cMUsrDWrhRXNmxYzBe6EQZ8fFv8srwmI3YqEt18QsH1PJqGtqaMeNCZUmTUtFOgMh4rmc97I3WVcAstGlbu8rBCc2E7TAWjrlGMT0etfkbtGGFiMvETM0Dlm69EbB-eqfHY2m9i28smY" alt="Sarah Williams">
+                                            <span class="user-name">Sarah Williams</span>
+                                        </div>
+                                    </td>
+                                    <td class="user-email">sarah.w@example.com</td>
+                                    <td>
+                                        <span class="badge badge-role">Customer</span>
+                                    </td>
+                                    <td class="text-center">24</td>
+                                    <td>
+                                        <span class="badge badge-active">Active</span>
+                                    </td>
+                                    <td class="user-date">2023-09-01</td>
+                                    <td class="text-right">
+                                        <button class="action-btn block-btn">
+                                            <span class="material-symbols-outlined">block</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="user-id">#USR-003</td>
+                                    <td>
+                                        <div class="user-info">
+                                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXDjHBHKz_W28Ze5oFKPC2mLG3yfpaEa8XTNbZ8k-T8PSE9CotQGPo6p3Y2NhvszMkWZRbgDeGEcNd2hKZghEmDcLSNFSpfZVkN0JzTTLEJcRRdtFz4kRHZlfFaU3516Q3tRq5n3Y6QLJT07bZIAUzL5LL68K2BbqIAmRPNQ3VOL-rJxQRK0xKLfrQZA9CdCOfzZ0ZUx5WLjT7WCOGqTRVT8ppIzqDPuP7-NwgfBPXEQHUxeeH8Ix22PfvoKnLra_W4rENYw9wN1I" alt="Michael Brown">
+                                            <span class="user-name">Michael Brown</span>
+                                        </div>
+                                    </td>
+                                    <td class="user-email">m.brown99@example.com</td>
+                                    <td>
+                                        <span class="badge badge-role">Customer</span>
+                                    </td>
+                                    <td class="text-center">12</td>
+                                    <td>
+                                        <span class="badge badge-blocked">Blocked</span>
+                                    </td>
+                                    <td class="user-date">2023-09-15</td>
+                                    <td class="text-right">
+                                        <button class="action-btn unblock-btn">
+                                            <span class="material-symbols-outlined">settings_backup_restore</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="user-id">#USR-004</td>
+                                    <td>
+                                        <div class="user-info">
+                                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVXmVJygcrTbrLo8P3bkMuwr-tZPDsik4WLWn_mxV7h6CwTQSMiIilNSp6FcvFVt52G6D1Rz1yAgJkuuLJkCIf2qMh7WOHb2YstaEiPHsIMF01999WXFM05Mi99LKtGRImh9hQOh52JCWIRw0Um-6H1U1tGpvmUOonD9BbLEyrn_y72wr5GDCEFRkWGEshwl6s1Iz1p-VUHvqyHBhWrMT3jh--hFIdagGsB43u-SXnu_xFUawXaOQ6NilJJ3gg73cNhRiZppamm8c" alt="Emily Davis">
+                                            <span class="user-name">Emily Davis</span>
+                                        </div>
+                                    </td>
+                                    <td class="user-email">emily.davis@example.com</td>
+                                    <td>
+                                        <span class="badge badge-role">Customer</span>
+                                    </td>
+                                    <td class="text-center">8</td>
+                                    <td>
+                                        <span class="badge badge-active">Active</span>
+                                    </td>
+                                    <td class="user-date">2023-10-02</td>
+                                    <td class="text-right">
+                                        <button class="action-btn block-btn">
+                                            <span class="material-symbols-outlined">block</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="user-id">#USR-005</td>
+                                    <td>
+                                        <div class="user-info">
+                                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgXZi9hwicGwzwqJSMZFK26DlbAHrkd8Lk8EMrQNbWGjgr3lycE-Pvj8EOrTKmT87k62Vymozjwsz5HNHT17s4YKpo5ZlKzrCKrDYKVOu_qMU4qdUQmZGe1djjNlAKhXIrTQ1azQZEYUNUsfXMV2h40i7l9bnuynAm5CwhsyZcK2VtJVK8dvhur0zvFa2xoVJyi5_WiJS4vO2k6-46UwRwM6dAn-LJ0OGUqeOylzeVnmNpOvCnqiwoagT1scarGzfVRoFs_2Cr29k" alt="James Wilson">
+                                            <span class="user-name">James Wilson</span>
+                                        </div>
+                                    </td>
+                                    <td class="user-email">james.w@example.com</td>
+                                    <td>
+                                        <span class="badge badge-role">Customer</span>
+                                    </td>
+                                    <td class="text-center">3</td>
+                                    <td>
+                                        <span class="badge badge-active">Active</span>
+                                    </td>
+                                    <td class="user-date">2023-10-20</td>
+                                    <td class="text-right">
+                                        <button class="action-btn block-btn">
+                                            <span class="material-symbols-outlined">block</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <p class="pagination-info">
+                            Showing <span class="font-semibold">1-5</span> of <span class="font-semibold">48</span> users
+                        </p>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                                Previous
+                            </button>
+                            <div class="pagination-pages">
+                                <button class="page-btn active">1</button>
+                                <button class="page-btn">2</button>
+                                <button class="page-btn">3</button>
+                                <span class="pagination-dots">...</span>
+                                <button class="page-btn">10</button>
+                            </div>
+                            <button class="pagination-btn">
+                                Next
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script >
+        // ===================================
+// SIDEBAR TOGGLE (Mobile)
+// ===================================
+
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const sidebarClose = document.getElementById('sidebarClose');
+
+// Open sidebar
+function openSidebar() {
+    sidebar.classList.add('active');
+    sidebarOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Close sidebar
+function closeSidebar() {
+    sidebar.classList.remove('active');
+    sidebarOverlay.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// Event listeners
+mobileMenuBtn.addEventListener('click', openSidebar);
+sidebarClose.addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Close sidebar when clicking a nav item on mobile
+const navItems = document.querySelectorAll('.nav-item');
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        if (window.innerWidth < 1024) {
+            closeSidebar();
+        }
+    });
+});
+
+// Close sidebar on window resize if desktop size
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) {
+        closeSidebar();
+    }
+});
+
+// ===================================
+// THEME TOGGLE
+// ===================================
+
+const themeToggle = document.getElementById('themeToggle');
+
+// Toggle theme
+function toggleTheme() {
+    document.body.classList.toggle('dark');
+    
+    // Save preference
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+// Load saved theme preference
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+    }
+}
+
+// Event listener
+themeToggle.addEventListener('click', toggleTheme);
+
+// Load theme on page load
+loadTheme();
+
+// ===================================
+// TABLE ACTIONS (Optional Demo)
+// ===================================
+
+// Block/Unblock user buttons
+const blockButtons = document.querySelectorAll('.block-btn');
+const unblockButtons = document.querySelectorAll('.unblock-btn');
+
+blockButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        const userName = row.querySelector('.user-name').textContent;
+        
+        if (confirm(`Block user "${userName}"?`)) {
+            console.log('User blocked:', userName);
+            // You would handle this with your backend
+        }
+    });
+});
+
+unblockButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        const userName = row.querySelector('.user-name').textContent;
+        
+        if (confirm(`Unblock user "${userName}"?`)) {
+            console.log('User unblocked:', userName);
+            // You would handle this with your backend
+        }
+    });
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+:root {
+    --bg-color: #f1f5f9;
+    --card-border: #cbd5e1;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --primary-blue: #1e3a53; /* Matching the Techora Navy */
+}
+
+.password-page {
+    background-color: var(--bg-color);
+    padding: 60px 20px;
+    min-height: 70vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.password-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.page-title h1 {
+    font-size: 28px;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.page-title p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.form-card {
+    background: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background-color: #f8fafc;
+    font-size: 14px;
+}
+
+.status-dot {
+    position: absolute;
+    right: 15px;
+    width: 10px;
+    height: 10px;
+    background-color: #94a3b8; /* Default gray dot */
+    border-radius: 50%;
+}
+
+.requirements-box {
+    background-color: #f1f5f9;
+    border-radius: 6px;
+    padding: 20px;
+    margin-top: 25px;
+}
+
+.requirements-box h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.requirements-box ul {
+    list-style: none;
+    padding: 0;
+}
+
+.requirements-box li {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.requirements-box li::before {
+    content: "●";
+    margin-right: 10px;
+    font-size: 10px;
+    color: #64748b;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn-cancel {
+    background: #f8fafc;
+    border: 1px solid var(--card-border);
+    padding: 10px 25px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.btn-update {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.input-wrapper {
+        position: relative;
+    }
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+        font-size: 1rem;
+        z-index: 10;
+    }
+    .toggle-password:hover {
+        color: #333;
+    }
+    /* Validation classes */
+    .valid { color: green; }
+    .invalid { color: red; }
+
+/* Responsive */
+@media (max-width: 480px) {
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+    .btn-cancel, .btn-update {
+        width: 100%;
+    }
+}

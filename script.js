@@ -2,14 +2,17 @@ import dotenv from "dotenv"
 dotenv.config({path : "./.env"})
 
 import express from "express"
-import  userRoute from "./routes/userRoute.js"
+import  userRoute from "./routes/user/userRoute.js"
+import authRoute from "./routes/user/authRoute.js"
+import adminRoute from "./routes/admin/adminRoute.js"
 import connectDB from "./config/connect.js"
 import session from "express-session"
+import passport from "passport"
+
 const PORT = process.env.PORT
 const app = express()
 
 
-app.set("views")
 app.set("view engine","ejs")
 app.use(express.static("public"))
 app.use(express.json())
@@ -24,9 +27,14 @@ app.use(
         }
     })
 )
+app.use(passport.initialize())
+app.use(passport.session())
 
 
+import "./config/passport.js"
+app.use("/auth",authRoute)
 app.use("/",userRoute)
+app.use("/admin",adminRoute)
 
 
 
