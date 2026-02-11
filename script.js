@@ -8,6 +8,9 @@ import adminRoute from "./routes/admin/adminRoute.js"
 import connectDB from "./config/connect.js"
 import session from "express-session"
 import passport from "passport"
+import nocache from "nocache"
+import { setUser } from "./middlewares/user/auth.js"
+
 
 const PORT = process.env.PORT
 const app = express()
@@ -29,13 +32,14 @@ app.use(
 )
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(setUser)
 
 
 import "./config/passport.js"
 app.use("/auth",authRoute)
 app.use("/",userRoute)
 app.use("/admin",adminRoute)
-
+app.use(nocache())
 
 
 connectDB()

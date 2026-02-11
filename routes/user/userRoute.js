@@ -2,7 +2,8 @@ import express from 'express'
 const router = express.Router()
 import * as userController from '../../controllers/user/authController.js'
 import * as profileController from '../../controllers/user/profileController.js'
-import * as middlewares from '../../middlewares/auth.js'
+import * as middlewares from '../../middlewares/user/auth.js'
+import upload from '../../middlewares/user/upload.js'
 
 router.route('/Techora').get(userController.landing)
 
@@ -13,7 +14,7 @@ router
 
 router
   .route('/signup')
-  .get(middlewares.isLogged, userController.signupLoad)
+  .get(middlewares.isLogged, middlewares.isBlocked, userController.signupLoad)
   .post(userController.signUp)
 
 router
@@ -23,7 +24,9 @@ router
 
 router.route('/resendOtp').post(userController.resendOtp)
 
-router.route('/').get(middlewares.checkAuth, userController.homeLoad)
+router
+  .route('/')
+  .get(middlewares.checkAuth, middlewares.isBlocked, userController.homeLoad)
 
 router
   .route('/forgot-password')
@@ -39,27 +42,56 @@ router.route('/success').get(userController.resetConfirmation)
 
 router
   .route('/profile')
-  .get(middlewares.checkAuth, profileController.profileLoad)
+  .get(
+    middlewares.checkAuth,
+    middlewares.isBlocked,
+    profileController.profileLoad
+  )
 
 router
   .route('/profile/edit')
-  .get(middlewares.checkAuth, profileController.editProfileLoad)
+  .get(
+    middlewares.checkAuth,
+    middlewares.isBlocked,
+    profileController.editProfileLoad
+  )
   .patch(profileController.editProfile)
 
 router
   .route('/profile/password')
-  .get(middlewares.checkAuth, profileController.passwordeditLoad)
+  .get(
+    middlewares.checkAuth,
+    middlewares.isBlocked,
+    profileController.passwordeditLoad
+  )
   .patch(profileController.editPassword)
 router
   .route('/profile/address')
-  .get(middlewares.checkAuth, profileController.addressLoad)
+  .get(
+    middlewares.checkAuth,
+    middlewares.isBlocked,
+    profileController.addressLoad
+  )
   .post(profileController.addAddress)
 
 router
   .route('/profile/address/:id')
-  .get(profileController.addressEditLoad)
+  .get(
+    middlewares.checkAuth,
+    middlewares.isBlocked,
+    profileController.addressEditLoad
+  )
   .patch(profileController.editAddress)
   .delete(profileController.deleteAddress)
+
+router
+  .route('/profile/image')
+  .patch(upload.single('profileImage'), profileController.updateProfileImage)
+  .delete(profileController.removeProfileImage)
+
+router.route('/profile/edit/email').post(profileController.emailChange)
+
+router.route('/profile/edit/email-verify').post(profileController.emailVerify)
 
 router.route('/logout').get(userController.logout)
 

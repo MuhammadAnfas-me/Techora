@@ -11,10 +11,14 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="/styles/user/login.css" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   </head>
   <body>
     <main class="container">
       <div id="toast" class="toast"></div>
+
+      
 
       <header class="header">
         <h1>Welcome Back</h1>
@@ -95,7 +99,13 @@
         By continuing, you agree to our <a href="#">Terms of Service</a> and
         <a href="#">Privacy Policy</a>
       </footer>
+      <% if(blocked){ %>
+        <script>
+          showToast("Your account has been blocked","error")
+        </script>
+          <% } %>
     </main>
+
 
     <script>
       // Logic for the eye toggle
@@ -123,7 +133,7 @@
 
       document.addEventListener('DOMContentLoaded', function () {
         const sessionMessage = sessionStorage.getItem('success')
-        if (sessionMessage && sessionMessage != "undefined") {
+        if (sessionMessage && sessionMessage != 'undefined') {
           showToast(sessionMessage)
           sessionStorage.removeItem('success')
         }
@@ -160,39 +170,38 @@
 
         if (isValid) {
           try {
-            sessionStorage.removeItem("expiryTime")
-            
-            const res = await fetch('/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, password })
-            })
+            sessionStorage.removeItem('expiryTime')
 
-            const data = await res.json()
-            if(!res.ok){
-              showToast("Server error, Try again later.","error")
-            }
-
-            if (!data.success) {
-              if (data.redirect) {
-                const expiryTime = Date.now() + 60 * 1000
-                sessionStorage.setItem('expiryTime', expiryTime)
-                sessionStorage.setItem('otpMessage', data.message)
-                sessionStorage.setItem("otpEmail",email)
-                window.location.href = data.redirect
-                return
+            const res = await axios.post(
+              '/login',
+              {
+                email,
+                password
               }
-              handleError(data.message)
-              return
-            }
-
+            )
             // ✅ SUCCESS
             showToast('Logined Successfully 🎉')
             setTimeout(() => {
               window.location.href = '/'
             }, 800)
           } catch (err) {
-            showToast('Server error. Try again later.', 'error')
+            const data = err.response?.data
+            if (err.response?.status === 403 && data?.redirect) {
+              showToast(data?.message)
+                const expiryTime = Date.now() + 60 * 1000
+                sessionStorage.setItem('expiryTime', expiryTime)
+                sessionStorage.setItem('otpMessage', data?.message || "Verify your email address")
+                sessionStorage.setItem("isVerified",false)
+                sessionStorage.setItem('otpEmail', email)
+                setTimeout(()=>{
+                  window.location.assign(data.redirect)
+                },800)
+                return
+              }
+            showToast(
+              err.response?.data?.message || 'Server error. Try again later.',
+              'error'
+            )
           }
         }
 
@@ -210,8 +219,8 @@
         }
       }
 
-      function googleAuth(){
-        window.location.href = "/auth/google"
+      function googleAuth() {
+        window.location.href = '/auth/google'
       }
     </script>
   </body>

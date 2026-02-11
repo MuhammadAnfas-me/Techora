@@ -50,73 +50,6 @@ ul { list-style: none; }
 .btn-secondary:hover { background-color: #9ca3af; }
 .btn-block { display: block; width: 100%; }
 
-/* Header / Navbar */
-/* .navbar {
-    background-color: #F9FAFB;
-    border-bottom: 1px solid #E5E7EB;
-    padding: 15px 0;
-}
-
-.nav-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.nav-top-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: auto;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 20px;
-    color: var(--primary-blue);
-}
-
-.logo-icon {
-    width: 32px;
-    height: 32px;
-    background-color: var(--primary-blue);
-    border-radius: 8px;
-}
-
-.main-nav { display: flex; gap: 30px; }
-.nav-link { color: var(--text-dark); font-weight: 500; font-size: 14px; white-space: nowrap; }
-.nav-link i { font-size: 10px; margin-left: 4px; }
-
-.nav-actions { display: flex; align-items: center; gap: 20px; }
-
-.search-box input {
-    padding: 8px 12px;
-    background-color: #E5E7EB;
-    border: none;
-    border-radius: 6px;
-    width: 200px;
-    outline: none;
-}
-
-.icon-group { display: flex; gap: 15px; }
-.icon-link { position: relative; color: var(--text-dark); font-size: 18px; }
-
-.badge {
-    position: absolute;
-    top: -8px; right: -8px;
-    background-color: var(--primary-blue);
-    color: white;
-    font-size: 10px;
-    width: 16px; height: 16px;
-    display: flex; justify-content: center; align-items: center;
-    border-radius: 50%;
-}
-
-.user-avatar-small img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; } */
 
 /* Utilities for Responsive Display */
 .mobile-only { display: none !important; }
@@ -202,6 +135,28 @@ ul { list-style: none; }
     display: flex;
     flex-direction: column;
 }
+.empty-address {
+  text-align: center;
+  padding: 24px 12px;
+}
+
+.empty-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.empty-title {
+  font-weight: 600;
+  color: #1B3C53;
+  margin-bottom: 6px;
+}
+
+.empty-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 18px;
+}
+
 
 .info-card h2 { font-size: 16px; color: var(--primary-blue); margin-bottom: 20px; font-weight: 700; }
 .info-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; }

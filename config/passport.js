@@ -1,6 +1,7 @@
 import  passport from "passport";
 import {Strategy as GoogleStrategy} from "passport-google-oauth20"
 import {User} from "../models/userModel.js"
+import generateUserId from "../utils/generateUserId.js";
 
 
 passport.use(
@@ -15,17 +16,26 @@ passport.use(
                 let user = await User.findOne({
                     $or : [{googleId : profile.id},{email:profile.emails[0].value}]
                 })
-
+               
                 if(!user){
+                    const userId = generateUserId()
                     user = await User.create({
+                        userId,
                         fullName : profile.displayName,
                         email : profile.emails[0].value,
                         googleId : profile.id,
+                        profileImage : {
+                            url : process.env.DEFAULT_IMAGE,
+                            publicId : ""
+                        },
                         isVerified : true
                     })
                 }else{
                     if(!user.googleId) user.googleId = profile.id
                     if(!user.isVerified) user.isVerified = true
+                    if(!user.profileImage.url){
+                        user.profileImage = {url : process.env.DEFAULT_IMAGE,publicId : ""}
+                    } 
                     await user.save()
                 }
                 return done(null,user)

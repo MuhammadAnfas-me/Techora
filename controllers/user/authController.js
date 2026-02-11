@@ -3,7 +3,8 @@ import bcrypt from 'bcrypt'
 import { User } from '../../models/userModel.js'
 import { verifyOtp } from '../../services/authService/emailVerify.js'
 import { sendOtp } from '../../utils/sendOtpMail.js'
-import crypto from "crypto"
+import generateUserId from '../../utils/generateUserId.js'
+import crypto from 'crypto'
 const SALT_ROUND = 10
 
 const getErrorMessage = msg => {
@@ -35,25 +36,29 @@ const landing = (req, res) => {
 
 //Login Section
 const loginLoad = (req, res) => {
-  res.render('User/login', { message: null })
+  res.render('User/login', { message: null ,blocked : req.query.blocked || false})
 }
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body
-    const user = await User.findOne({ email })
-    if (!user) {
+    const user = await User.findOne({ email,role : "Customer"})
+    if (!user || !user.password) {
       throw new Error('USER_NOT_EXISTS')
     }
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
       throw new Error('PASSWORD_NOT_MATCH')
     }
+    if(user.isBlocked){
+      return res.status(400).json({success : false , message : "You have blocked"})
+    }
     if (!user.isVerified) {
-      sendOtp({
+     await sendOtp({
         model: User,
         email,
-        expiryTime: 1
+        expiryTime: 1,
+        name : user?.fullName       
       })
       return res.status(403).json({
         success: false,
@@ -62,8 +67,7 @@ const login = async (req, res) => {
         email
       })
     }
-    
-    req.session.user = {email ,name : user.fullName , userId : user._id }
+    req.session.user = {email : user.email , name : user.fullName , userId : user.userId}
     res.status(200).json({
       success: true,
       message: 'Logined Succesfully'
@@ -92,11 +96,18 @@ const signUp = async (req, res) => {
       }
     }
     if (!user) {
+      const userId = generateUserId()
       const newUser = new User({
+        userId,
         fullName: name,
         email,
         password: hashedPassword,
-        isVerified: false
+        profileImage : {
+          url : process.env.DEFAULT_IMAGE,
+          publicId : ""
+        },
+        isVerified: false,
+        role : "Customer"
       })
       await newUser.save()
     }
@@ -104,7 +115,8 @@ const signUp = async (req, res) => {
     sendOtp({
       model: User,
       email,
-      expiryTime: 1
+      expiryTime: 1,
+      name
     })
     res.render('User/otpPage', { email, purpose: 'EMAIL_VERIFICATION' })
   } catch (er) {
@@ -131,23 +143,25 @@ const otpVerify = async (req, res) => {
     await verifyOtp({ model: User, email, enteredOtp: otp })
     if (purpose == 'EMAIL_VERIFICATION') {
       await User.updateOne({ email }, { $set: { isVerified: true } })
-    }else{
-      const rawToken = await crypto.randomBytes(32).toString("hex")
-      const user = await User.findOne({email})
+    } else {
+      const rawToken = await crypto.randomBytes(32).toString('hex')
+      const user = await User.findOne({ email })
       user.resetToken = rawToken
-      user.resetTokenExpiry = Date.now() + 10 * 60 * 1000 
+      user.resetTokenExpiry = Date.now() + 10 * 60 * 1000
       await user.save()
 
       return res.json({
-        success : true,
-        resetToken : rawToken,
-        redirect : "/reset-password"
+        success: true,
+        resetToken: rawToken,
+        redirect: '/reset-password'
       })
     }
     res.status(200).json({
       success: true,
       message:
-        purpose == 'EMAIL_VERIFICATION' ? 'Account created successfully' : 'OTP verified'
+        purpose == 'EMAIL_VERIFICATION'
+          ? 'Account created successfully'
+          : 'OTP verified'
     })
   } catch (er) {
     res.status(400).json({
@@ -181,10 +195,14 @@ const resendOtp = async (req, res) => {
           message: 'Email is already verified'
         })
       }
-    }else{
-      
+    } else {
     }
-    sendOtp({ model: User, email, expiryTime: 1 })
+    sendOtp({
+      model: User,
+      email,
+      expiryTime: 1,
+      name: user?.fullName
+    })
     res.status(200).json({
       success: true,
       message: 'OTP resent successfully'
@@ -211,69 +229,70 @@ const forgotPassword = async (req, res) => {
   if (!user) {
     res.render('User/forgotPassword', { error: 'Invalid Email' })
   }
-  sendOtp({ model: User, email, expiryTime: 1 })
+  sendOtp({
+    model: User,
+    email,
+    expiryTime: 1,
+    name: user?.fullName
+  })
   res.render('User/otpPage', { email: email, purpose: 'RESET_PASSWORD' })
 }
 
-const homeLoad = async(req, res) => {
-  if(req.user){
-    return res.render('User/home',{email : req.user.email , name : req.user.fullName})
-  }
-  const user = req.session.user 
-  res.render('User/home',{email : user.email , name : user.name})
+const homeLoad = async (req, res) => {
+  res.render('User/home')
 }
 
 const logout = (req, res) => {
   req.session.user = null
   req.user = null
-  req.session.destroy(()=>{
-    res.clearCookie("connecet.sid")
+  req.session.destroy(() => {
+    res.clearCookie('connecet.sid')
     res.redirect('/login')
   })
 }
 
-const passwordReset = (req,res)=>{
-  res.render("User/resetPassword")
+const passwordReset = (req, res) => {
+  res.render('User/resetPassword')
 }
 
-const resetPassword = async (req,res)=>{
-  try{
+const resetPassword = async (req, res) => {
+  try {
+    const { password, resetToken } = req.body
 
-    const {password , resetToken} = req.body
-
-  if (!password || !resetToken) {
+    if (!password || !resetToken) {
       return res.status(400).json({
         success: false,
-        message: "Invalid request"
-      });
+        message: 'Invalid request'
+      })
     }
 
-  const user = await User.findOne({
-    resetToken,
-    resetTokenExpiry : {$gt : Date.now()}
-  })
+    const user = await User.findOne({
+      resetToken,
+      resetTokenExpiry: { $gt: Date.now() }
+    })
 
-  if(!user) return res.status(400).json({success : false ,message : "Your time expired"})
+    if (!user)
+      return res
+        .status(400)
+        .json({ success: false, message: 'Your time expired' })
 
-  user.password = await bcrypt.hash(password,SALT_ROUND)
-  user.resetToken = undefined
-  user.resetTokenExpiry = undefined
+    user.password = await bcrypt.hash(password, SALT_ROUND)
+    user.resetToken = undefined
+    user.resetTokenExpiry = undefined
 
-  await user.save()
-  return res.json({success : true ,message : "Password updated succesfully"})
-
-  }catch(er){
-    console.error("Reset password error :",error)
+    await user.save()
+    return res.json({ success: true, message: 'Password updated succesfully' })
+  } catch (er) {
+    console.error('Reset password error :', error)
     return res.status(500).json({
-      success : false,
-      message : "Server error"
+      success: false,
+      message: 'Server error'
     })
   }
-  
 }
 
-const resetConfirmation = (req,res)=>{
-  res.render("User/resetSuccess")
+const resetConfirmation = (req, res) => {
+  res.render('User/resetSuccess')
 }
 
 export {

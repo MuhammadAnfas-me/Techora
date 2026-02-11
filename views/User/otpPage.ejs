@@ -166,7 +166,7 @@
     }
 
     /* ===============================
-       OTP INPUT HANDLING
+           OTP INPUT HANDLING
     ================================ */
     inputs.forEach((input, index) => {
       input.addEventListener('input', () => {
@@ -186,7 +186,7 @@
     })
 
     /* ===============================
-       PASTE SUPPORT
+            PASTE SUPPORT
     ================================ */
     inputs[0].addEventListener('paste', e => {
       e.preventDefault()
@@ -203,7 +203,7 @@
     })
 
     /* ===============================
-       TIMER LOGIC (FIXED)
+              TIMER LOGIC 
     ================================ */
     let timer
     let expiresAt = Number(sessionStorage.getItem('expiryTime'))
@@ -281,7 +281,12 @@
 
         sessionStorage.removeItem('expiryTime')
         sessionStorage.removeItem('otpEmail')
+        if(sessionStorage.getItem("isVerified")){
+          sessionStorage.setItem('success', "Account verified successfully")
+        }else{
         sessionStorage.setItem('success', data.message)
+        sessionStorage.removeItem("isVerfied")
+        }
         if(purpose == "RESET_PASSWORD"){
           sessionStorage.setItem("resetToken",data.resetToken)
         window.location.href = '/reset-password'

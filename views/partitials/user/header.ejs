@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="/styles/partitials/user/header.css">
     <link rel="stylesheet" href="/styles/partitials/user/footer.css">
     <link rel="stylesheet" href="/styles/user/popup.css">
-    <script src="/js/partitials/user.js"></script>
+    <script src="/js/partitials/User/user.js"></script>
     <script src="/js/popup.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
@@ -82,19 +82,19 @@
                         </button>
                         <div class="profile-wrapper">
                             <button class="avatar">
-                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtTrjRAlctod5AOhfP-PYvxOyLivcmayZNTJUXu__RcI6TA5GJDnb2CupvH0TaWCVKpZj7zENTOS4-s5jwz3wXeNR8mH3QccEPQiY25O8mIgT5PodqghM_PRb_wUg4Cxkp-ZwDA_RFyNEaAC_ICR-1vKUU_iz4MwMKpH4WKeNRcJk47LAA1GQa0FChhP2uONfmoBPrbmeUOe2QVtZt81hIPdSUT5FTCHgkgqhbTVRAvpBple5GSkIPXdGOQnmSbsUff6mmrAOdtgtu"
+                                <img src="<%= user.profileImage.url  %>"
                                     alt="Avatar">
                             </button>
                             <div class="profile-dropdown dropdown-menu">
                                 <div class="profile-header">
-                                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtTrjRAlctod5AOhfP-PYvxOyLivcmayZNTJUXu__RcI6TA5GJDnb2CupvH0TaWCVKpZj7zENTOS4-s5jwz3wXeNR8mH3QccEPQiY25O8mIgT5PodqghM_PRb_wUg4Cxkp-ZwDA_RFyNEaAC_ICR-1vKUU_iz4MwMKpH4WKeNRcJk47LAA1GQa0FChhP2uONfmoBPrbmeUOe2QVtZt81hIPdSUT5FTCHgkgqhbTVRAvpBple5GSkIPXdGOQnmSbsUff6mmrAOdtgtu"
+                                    <img src="<%= user.profileImage.url %>"
                                         alt="User">
                                     <div>
                                         <h5>
-                                            <%=name %>
+                                            <%= user.fullName %>
                                         </h5>
                                         <p class="user-email">
-                                            <%=email %>
+                                            <%= user.email %>
                                         </p>
                                     </div>
                                 </div>

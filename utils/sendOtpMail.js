@@ -2,12 +2,12 @@ import nodeMailer from 'nodemailer'
 import bcrypt from "bcrypt"
 import { generateOtp }from "../services/authService/emailVerify.js"
 
-const sendOtpMail = async (reciverEmail, otp) => {
+const sendOtpMail = async (reciverEmail, otp,name) => {
   const transporter = nodeMailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'anfasmuhammadkclm@gmail.com',
-      pass: 'xrlvvdyimavltuea'
+      user: process.env.MAILER_USER,
+      pass: process.env.MAILER_PASS
     }
   })
 
@@ -15,12 +15,12 @@ const sendOtpMail = async (reciverEmail, otp) => {
     from: `"Techora" <anfasmuhammadkclm@gmail.com>`,
     to: reciverEmail,
     subject: 'Verify Your Account',
-    html: otpTemplate(otp)
+    html: otpTemplate(otp,name)
   })
   console.log('Email sended')
 }
 
-const otpTemplate = (otp) => {
+const otpTemplate = (otp,name) => {
     return `
 <!DOCTYPE html>
 <html>
@@ -30,17 +30,17 @@ const otpTemplate = (otp) => {
       <!-- Header -->
       <div style="background:#1B3C53; padding:20px; text-align:center;">
         <h1 style="margin:0; color:#ffffff; font-size:22px; letter-spacing:1px;">
-          TECHORA
+          Techora
         </h1>
       </div>
 
       <!-- Body -->
       <div style="padding:30px; color:#333;">
-        <p style="margin-top:0;">Hello,</p>
+        <p style="margin-top:0;">Hi ${name},</p>
 
         <p>
-          You requested to verify your <strong>Techora</strong> account.
-          Please use the One-Time Password (OTP) below:
+          We received a request to verify your Techora account.
+          Please use the one-time verification code below:
         </p>
 
         <!-- OTP Box -->
@@ -60,7 +60,7 @@ const otpTemplate = (otp) => {
         </div>
 
         <p style="font-size:14px; color:#555;">
-          This OTP is valid for <strong>1 minute</strong>.  
+          This OTP is valid for 1 minute.  
           Do not share this code with anyone.
         </p>
 
@@ -84,7 +84,7 @@ const otpTemplate = (otp) => {
   `
 }
 
-export const sendOtp = async ({model , email  , expiryTime})=>{
+export const sendOtp = async ({model , email  , expiryTime, name})=>{
     const otp = generateOtp();
     const hashedOtp = await bcrypt.hash(otp,10);
     await model.updateOne(
@@ -96,7 +96,7 @@ export const sendOtp = async ({model , email  , expiryTime})=>{
         }
     )
 
-    await sendOtpMail(email,otp)
+    await sendOtpMail(email,otp,name)
 }
 
 export default sendOtpMail

@@ -1,7 +1,12 @@
 import mongoose from 'mongoose'
+import { type } from 'os'
 
 const userSchema = new mongoose.Schema(
   {
+    userId : {
+      type : String,
+      required : true
+    },
     fullName: {
       type: String,
       trim : true,
@@ -19,8 +24,8 @@ const userSchema = new mongoose.Schema(
       }
     },
     profileImage: {
-      type: String,
-      default: ''
+      url : {type : String , default : "https://res.cloudinary.com/dfdv6skgg/image/upload/v1770472518/avathar_gzz3bh.jpg"},
+      publicId : {type : String, default : ""}
     },
     isBlocked: {
       type: Boolean,
@@ -50,6 +55,10 @@ const userSchema = new mongoose.Schema(
     isVerified :{
       type : Boolean,
       default : false,
+    },
+    role : {
+      type : String,
+      required : true
     },
     otp : {
       type : String,
