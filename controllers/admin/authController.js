@@ -4,6 +4,7 @@ import { User } from '../../models/userModel.js'
 const loginLoad = (req, res) => {
   res.render('Admin/login.ejs')
 }
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body

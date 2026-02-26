@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Users Management - Techora</title>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+(function() {
+  const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+  if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+})();
+</script>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/styles/admin/category/categoryList.css" />
+    <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+    <link rel="stylesheet" href="/styles/user/popup.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/popup.js" defer></script>
+    <script src="/js/partitials/Admin/sidebar.js" defer></script>
+  </head>
+
+  <body>
+    <!-- Include Sidebar -->
+    <div id="toast" class="toast"></div>
+    <%- include("../../partitials/admin/sidebar.ejs",{ currentPage }) %>
+
+    <div class="main-wrapper">
+      <!-- Include Header -->
+      <%- include("../../partitials/admin/header.ejs",{currentPage}) %>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="content-container">
+          <div class="page-header">
+            <h1 class="page-title">Categories Management</h1>
+            <p class="page-subtitle">
+              Manage product categories for mobile phones and accessories
+            </p>
+          </div>
+
+          <!-- Custom Confirm Modal -->
+          <div class="confirm-overlay" id="confirmOverlay">
+            <div class="confirm-box">
+              <h3 id="confirmTitle">Confirm Action</h3>
+              <p id="confirmMessage">Are you sure?</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" id="confirmCancel">Cancel</button>
+                <button class="btn-confirm" id="confirmOk">Confirm</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="filters-card category-filters-card">
+            <div class="category-toolbar">
+              <div class="category-toolbar-left">
+                <div class="category-search">
+                  <span class="material-symbols-outlined category-search-icon"
+                    >search</span
+                  >
+                  <input
+                    type="text"
+                    class="category-search-input"
+                    id="category-search-input"
+                    placeholder="Search category by name"
+                    value="<%= filter.search || "" %>"
+                  />
+                  <!-- Clear Button -->
+                  <span
+                    class="material-symbols-outlined category-clear-icon"
+                    id="categoryClearBtn"
+                    style="display: none; cursor: pointer">
+                    close
+                  </span>
+                </div>
+
+                <select class="category-filter-select" id="statusSelect" name="status">
+                  <option value="" <%= !filter.status ? "selected" : "" %>>All Status</option>
+                  <option value="Active" <%= filter.status==="Active" ? "selected" : ""  %>>Active</option>
+                  <option value="Inactive" <%= filter.status==="Inactive" ? "selected" : ""  %>>Inactive</option>
+                </select>
+              </div>
+
+              <button
+                class="btn-primary category-add-btn"
+                type="button"
+                onclick="window.location.href='/admin/category/add'"
+              >
+                <span class="material-symbols-outlined" style="font-size: 18px"
+                  >add</span
+                >
+                Add New Category
+              </button>
+            </div>
+          </div>
+
+          
+
+          <div class="table-card category-table-card">
+            <div class="table-wrapper category-table-wrapper">
+              <table class="category-table">
+                <thead>
+                  <tr>
+                    <th>Category Name</th>
+                    <th>Category Type</th>
+                    <th>Total Products</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                    <th class="category-center">Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody id="categoryTbody">
+                  <% categories.forEach((item)=> { %>
+                  <tr>
+                    <td class="category-name"><%= item.name %></td>
+                    <td class="category-muted"><%= item.type %></td>
+                    <td class="category-muted"><%= item.totalProducts %></td>
+
+                    <td>
+                      <span
+                        class="category-status <%= item.isActive ? 'category-status-active' : 'category-status-inactive' %>"
+                      >
+                        <%= item.isActive ? "Active" : "Inactive" %>
+                      </span>
+                    </td>
+
+                    <td class="category-muted"><%= item.createdAt.toISOString().split('T')[0] %></td>
+
+                    <td class="category-center">
+                      <div class="category-actions">
+                        <button
+                          class="category-edit-btn"
+                          type="button"
+                          title="Edit",
+                          onclick="window.location.href='/admin/category/edit'"
+                        >
+                          <span class="material-symbols-outlined">edit</span>
+                        </button>
+
+                        <label
+                          class="category-switch"
+                          title="Active / Inactive"
+                        >
+                          <input type="checkbox" class="toggleBtn" <%=item.isActive ? 'checked' : ''
+                          %>  data-id="<%= category._id %>" />
+                          <span class="category-slider"></span>
+                        </label>
+                      </div>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+              <div class="confirm-overlay" id="confirmOverlay">
+                                    <div class="confirm-box">
+                                        <h3 id="confirmTitle">Confirm Action</h3>
+                                        <p id="confirmMessage">Are you sure?</p>
+                                        <div class="confirm-actions">
+                                            <button class="btn-cancel" id="confirmCancel">Cancel</button>
+                                            <button class="btn-confirm" id="confirmOk">Confirm</button>
+                                        </div>
+                                    </div>
+                                </div>
+            
+            <% const qs = new URLSearchParams({
+                        ...(filter?.search ? { search: filter.search } : {}),
+                        ...(filter?.status ? { status: filter.status } : {}),
+                      }).toString();
+                    %>
+                    <div class="category-pagination">
+  <p id="pageInfo" class="category-page-info">Loading...</p>
+
+  <div class="pagination-controls">
+    <button id="prevBtn" class="category-page-btn" type="button" disabled>
+      <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+
+    <button id="nextBtn" class="category-page-btn" type="button" disabled>
+      <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+  </div>
+</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+
+    </body>
+    <script>
+     const searchInput = document.getElementById("category-search-input");
+const statusSelect = document.getElementById("statusSelect");
+const clearBtn = document.getElementById("categoryClearBtn");
+const tbody = document.getElementById("categoryTbody");
+const toggleBtn = document.getElementById("toggleBtn")
+
+const pageInfo = document.getElementById("pageInfo");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+let state = {
+  page: 1,
+  totalPages: 1,
+  search: "",
+  status: "",
+  total : 0
+};
+
+function debounce(fn, delay = 400) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function renderRows(categories) {
+  if (!categories.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="category-muted" style="text-align:center; padding:16px;">
+          No categories found
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = categories.map((item) => `
+    <tr data-id="${item._id}">
+      <td class="category-name">${item.name ?? ""}</td>
+      <td class="category-muted">${item.type ?? ""}</td>
+      <td class="category-muted">${item.totalProducts ?? 0}</td>
+
+      <td>
+        <span class="category-status ${item.isActive ? "category-status-active" : "category-status-inactive"}">
+          ${item.isActive ? "Active" : "Inactive"}
+        </span>
+      </td>
+
+      <td class="category-muted">${item.createdAt ? formatDate(item.createdAt) : ""}</td>
+
+      <td class="category-center">
+        <div class="category-actions">
+          <button class="category-edit-btn" type="button" onclick="window.location.href='/admin/category/${item._id}'" title="Edit">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+
+          <label class="category-switch" title="Active / Inactive">
+            <input type="checkbox" class="toggleBtn" ${item.isActive ? "checked" : ""}  data-id="${item._id}" />
+            <span class="category-slider"></span>
+          </label>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function renderPagination() {
+  const start = state.total === 0 ? 0 : (state.page-1)*5+1;
+  const end = Math.min(state.page*5,state.total)
+
+  if (pageInfo) pageInfo.textContent =  `Showing ${start}-${end} of ${state.total} categories`;
+  if (prevBtn) prevBtn.disabled = state.page <= 1;
+  if (nextBtn) nextBtn.disabled = state.page >= state.totalPages;
+}
+
+async function loadCategories({ page = 1, keepFocus = false } = {}) {
+  state.page = page;
+
+  const q = searchInput.value.trim();
+  const status = statusSelect.value;
+
+  state.search = q;
+  state.status = status;
+
+  clearBtn.style.display = q ? "block" : "none";
+
+  const params = new URLSearchParams();
+  params.set("page", String(state.page));
+  if (q) params.set("search", q);
+  if (status) params.set("status", status);
+
+  try {
+    const res = await axios.get(`/admin/category/api?${params.toString()}`);
+
+    if (!res.data?.success) {
+      showToast(res.data?.message || "Failed", "error");
+      return;
+    }
+  
+
+    renderRows(res.data.categories);
+    state.totalPages = res.data.totalPages || 1;
+    state.page = res.data.page || 1;
+    state.total = res.data.total || 0;
+    renderPagination();
+
+    // keep focus for search UX
+    if (keepFocus) {
+      searchInput.focus();
+      const len = searchInput.value.length;
+      searchInput.setSelectionRange(len, len);
+    }
+
+  } catch (err) {
+    console.error(err.message);
+    showToast("Something went wrong ", "error");
+  }
+}
+
+const debouncedLoad = debounce(() => loadCategories({ page: 1, keepFocus: true }), 400);
+
+// Events
+searchInput.addEventListener("input", debouncedLoad);
+
+statusSelect.addEventListener("change", () => {
+  loadCategories({ page: 1, keepFocus: true });
+});
+
+clearBtn.addEventListener("click", () => {
+  searchInput.value = "";
+  clearBtn.style.display = "none";
+  loadCategories({ page: 1, keepFocus: true });
+});
+
+prevBtn.addEventListener("click", () => {
+  loadCategories({ page: Math.max(state.page - 1, 1), keepFocus: true });
+});
+
+nextBtn.addEventListener("click", () => {
+  loadCategories({ page: Math.min(state.page + 1, state.totalPages), keepFocus: true });
+});
+
+// Initial load
+window.addEventListener("DOMContentLoaded", () => {
+  loadCategories({ page: 1 });
+});
+
+
+
+document.addEventListener("change", (e) => {
+  if (!e.target.classList.contains("toggleBtn")) return;
+
+  const checkbox = e.target;
+  const id = checkbox.dataset.id;
+
+  const newValue = checkbox.checked;
+
+  // ✅ revert UI immediately (so cancel keeps original UI)
+  checkbox.checked = !newValue;
+
+  showConfirm("Are you sure to change status of this category?", async () => {
+    try {
+      // ✅ only change after user confirms
+      checkbox.checked = newValue;
+
+      const res = await axios.patch(`/admin/category/${id}`, { isActive: newValue });
+      showToast(res.data?.message || "Status updated successfully");
+      setTimeout(() => loadCategories(), 600);
+    } catch (error) {
+      // ✅ revert if API fails
+      checkbox.checked = !newValue;
+      showToast(error.response?.data?.message || "Failed to update status", "error");
+    }
+  });
+});
+
+
+    </script>
+  
+</html>

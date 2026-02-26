@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Category - Techora</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="/styles/admin/category/editPage.css" />
+    <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+    <link rel="stylesheet" href="/styles/user/popup.css">
+    <script>
+        (function () {
+            const collapsed = localStorage.getItem('sidebarCollapsed') === 'true'
+            if (collapsed)
+                document.documentElement.classList.add('sidebar-collapsed')
+        })()
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/partitials/Admin/sidebar.js" defer></script>
+    <script src="/js/popup.js"></script>
+</head>
+
+<body>
+    <%- include("../../partitials/admin/sidebar.ejs",{ currentPage }) %>
+
+        <div class="main-wrapper">
+            <%- include("../../partitials/admin/header.ejs",{currentPage}) %>
+
+                <main class="main-content">
+                    <div class="content-container">
+                        <div class="page-header">
+                            <h1 class="page-title">Edit Category</h1>
+                            <p class="page-subtitle">Update category details and visibility</p>
+                        </div>
+
+                        <form class="category-form">
+                            <div class="add-category-grid">
+                                <div class="add-category-left">
+                                    <div class="card form-card">
+                                        <h3 class="card-title">Category Information</h3>
+                                        <p class="card-subtitle">
+                                            Enter the basic information for this category
+                                        </p>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Category Name</label>
+                                            <input type="text" id="categoryName" class="form-control"
+                                                placeholder="e.g. Smartphones"
+                                                value="<%= category.name ? category.name : "" %>" />
+                                            <div class="error-message" id="nameError"></div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Category Type</label>
+                                            <div class="select-wrapper">
+                                                <select id="categoryType" class="form-control">
+                                                    <option value="Smartphones" <%=category.type==="Smartphones"
+                                                        ? "selected" : "" %> selected>
+                                                        Smartphones
+                                                    </option>
+                                                    <option value="Accessories" <%=category.type==="Accessories"
+                                                        ? "selected" : "" %> >Accessories</option>
+                                                </select>
+                                                <div class="error-message" id="typeError"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Category Description</label>
+                                            <textarea id="categoryDescription" class="form-control" rows="4"
+                                                placeholder="Enter a brief description of the category..."><%= category.description ? category.description : "  " %></textarea>
+                                            <div class="error-message" id="descriptionError"></div>
+                                        </div>
+
+                                        <div class="form-info-grid">
+                                            <div class="info-item">
+                                                <span class="info-label">Total Products</span>
+                                                <span class="info-value">128 Products</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Created Date</span>
+                                                <span class="info-value">Oct 24, 2023</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Last Updated</span>
+                                                <span class="info-value">2 hours ago</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions-bar">
+                                        <div class="actions-left">
+                                            <button type="submit" class="btn-primary">
+                                                Save Changes
+                                            </button>
+                                            <button type="button" class="btn-cancel"
+                                                onclick="window.history.back()">Cancel</button>
+                                        </div>
+                                        <button type="button" class="btn-delete"
+                                            onclick="deleteCategory('<%= category._id %>')">
+                                            Delete Category
+                                        </button>
+                                    </div>
+                                </div>
+
+                                
+
+                                <div class="add-category-right">
+                                    <div class="card status-card">
+                                        <h3 class="card-title">Status & Visibility</h3>
+
+                                        <div class="status-toggle-group">
+                                            <div class="status-text">
+                                                <span class="status-label">Status</span>
+                                                <span class="status-desc">Category visibility on store</span>
+                                            </div>
+
+                                            <label class="category-switch">
+                                                <input id="statusToggle" type="checkbox" <%=category.isActive
+                                                    ? "checked" : "" %>/>
+                                                <span class="category-slider"></span>
+                                            </label>
+                                        </div>
+
+                                        <div class="status-badge <%= category.isActive ? "active" : "inactive" %>" id="statusBadge">
+                                            <span class="status-dot"></span>
+                                            <span id="statusText"><%= category.isActive ? "Active" : "Inactive" %></span>
+                                        </div>
+
+                                        <p class="status-help-text">
+                                            Inactive categories will be hidden from the storefront menu
+                                            and search results.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="confirm-overlay" id="confirmOverlay">
+                                    <div class="confirm-box">
+                                        <h3 id="confirmTitle">Confirm Action</h3>
+                                        <p id="confirmMessage">Are you sure?</p>
+                                        <div class="confirm-actions">
+                                            <button class="btn-cancel" id="confirmCancel">Cancel</button>
+                                            <button class="btn-confirm" id="confirmOk">Confirm</button>
+                                        </div>
+                                    </div>
+                                </div>
+                    </div>
+                </main>
+        </div>
+</body>
+<script>
+    const statusToggle = document.getElementById('statusToggle');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+
+    statusToggle.addEventListener('change', function () {
+        if (this.checked) {
+            // Switch to Active State
+            statusBadge.classList.add('active');
+            statusBadge.classList.remove('inactive');
+            statusText.textContent = 'Active';
+        } else {
+            // Switch to Inactive State
+            statusBadge.classList.remove('active');
+            statusBadge.classList.add('inactive');
+            statusText.textContent = 'Inactive';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('.category-form');
+
+        // Inputs
+        const nameInput = document.getElementById('categoryName');
+        const typeInput = document.getElementById('categoryType');
+        const descInput = document.getElementById('categoryDescription');
+
+        // Error Elements
+        const nameError = document.getElementById('nameError');
+        const typeError = document.getElementById('typeError');
+        const descError = document.getElementById('descriptionError');
+
+        // 1. Form Submit Listener
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            let isValid = true;
+
+            // Reset previous errors
+            clearErrors();
+
+            // Validate Name
+            if (nameInput.value.trim() === "") {
+                showError(nameInput, nameError, "Category name is required");
+                isValid = false;
+            } else if (!/^[a-zA-Z\s]+$/.test(nameInput.value.trim())) {
+                showError(nameInput, nameError, "Category name should only contain letters");
+                isValid = false;
+            }
+
+            // Validate Type
+            if (typeInput.value === "") {
+                showError(typeInput, typeError, "Please select a category type");
+                isValid = false;
+            }
+
+            // Validate Description
+            if (descInput.value.trim() === "") {
+                showError(descInput, descError, "Description cannot be empty");
+                isValid = false;
+            }
+
+            // If invalid, prevent submission
+            if (!isValid) return
+            const categoryData = {
+                name: nameInput.value.trim(),
+                description: descInput.value.trim(),
+                type: typeInput.value.trim(),
+                isActive: statusToggle.checked
+            }
+
+            /*-----------------------FETCHING DATA-------------------------------*/
+
+            try {
+                const res = await axios.patch(`/admin/category/<%=category._id%>`, categoryData)
+                showToast(res.data?.message || "Category updated successfully")
+                setTimeout(() => {
+                    window.location.href = "/admin/category"
+                }, 900)
+            } catch (er) {
+                showToast(er.response?.data?.message || "Something went wrong", "error")
+                console.error(er)
+            }
+
+        });
+
+        // 2. Real-time Error Clearing (User Experience)
+        // Removes error as soon as user types
+        nameInput.addEventListener('input', () => clearSingleError(nameInput, nameError));
+        typeInput.addEventListener('change', () => clearSingleError(typeInput, typeError));
+        descInput.addEventListener('input', () => clearSingleError(descInput, descError));
+
+        // Helper Functions
+        function showError(input, errorElement, message) {
+            input.classList.add('error');
+            input.classList.add('shake'); // Optional animation
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
+
+            // Remove shake animation after it plays
+            setTimeout(() => input.classList.remove('shake'), 300);
+        }
+
+        function clearErrors() {
+            const inputs = [nameInput, typeInput, descInput];
+            const errors = [nameError, typeError, descError];
+
+            inputs.forEach(input => input.classList.remove('error'));
+            errors.forEach(error => error.style.display = "none");
+        }
+
+        function clearSingleError(input, errorElement) {
+            input.classList.remove('error');
+            errorElement.style.display = "none";
+        }
+
+    });
+    function deleteCategory(id) {
+        showConfirm("Are you sure to Delete this category?",async ()=>{
+            try {
+                const res = await axios.delete(`/admin/category/${id}`)
+                showToast(res.data.message || "Category deleted successfully")
+                setTimeout(()=> window.history.back() , 600)
+            } catch (error) {
+                showToast(error.response?.data?.message || "Failed to delete category","error")
+            }
+        })
+    }
+</script>
+
+</html>

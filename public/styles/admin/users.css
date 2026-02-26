@@ -1,3 +1,4 @@
+
 /* ===================================
    CSS RESET & VARIABLES
    =================================== */
@@ -10,7 +11,7 @@
 :root {
     /* Colors */
     --primary: #1B3C53;
-    --bg-light: #E3E3E3;
+    --bg-light: #EEF2F6;
     --surface-light: #FFFFFF;
     --surface-dark: #1F2937;
     
@@ -73,21 +74,15 @@ body.dark {
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
-    margin-left: var(--sidebar-width);
-    transition: margin-left var(--transition-speed) ease;
 }
 
-/* Adjust main wrapper when sidebar is collapsed */
-body.sidebar-collapsed .main-wrapper {
-    margin-left: var(--sidebar-collapsed-width);
-}
 
 /* ===================================
    MAIN CONTENT
    =================================== */
 .main-content {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: scroll;
     padding: 2rem;
 }
 
@@ -526,85 +521,7 @@ body.dark .pagination-btn:hover {
     font-size: 20px;
 }
 
-/* ===================================
-   RESPONSIVE DESIGN
-   =================================== */
 
-/* Mobile (up to 639px) */
-@media (max-width: 639px) {
-    .main-content {
-        padding: 1rem;
-    }
-    
-    .page-title {
-        font-size: 1.5rem;
-    }
-}
-
-/* Tablet (640px to 1023px) */
-@media (min-width: 640px) and (max-width: 1023px) {
-    .filters-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .filter-actions {
-        grid-column: span 2;
-    }
-}
-
-/* Mobile & Tablet (up to 1023px) */
-@media (max-width: 1023px) {
-    /* Main wrapper no margin on mobile */
-    .main-wrapper {
-        margin-left: 0 !important;
-    }
-    
-    body.sidebar-collapsed .main-wrapper {
-        margin-left: 0 !important;
-    }
-}
-
-/* Large Tablet (768px) */
-@media (min-width: 768px) {
-    .pagination {
-        flex-direction: row;
-    }
-}
-
-/* Desktop (1024px and up) */
-@media (min-width: 1024px) {
-    /* Main wrapper adjusts to sidebar */
-    .main-wrapper {
-        margin-left: var(--sidebar-width);
-    }
-    
-    /* Adjust for collapsed sidebar */
-    body.sidebar-collapsed .main-wrapper {
-        margin-left: var(--sidebar-collapsed-width);
-    }
-    
-    /* Filter grid layout */
-    .filters-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .filter-actions {
-        grid-column: auto;
-        flex-direction: row;
-    }
-    
-    .btn-primary,
-    .btn-secondary {
-        flex: none;
-    }
-}
-
-/* Wide Desktop (1280px) */
-@media (min-width: 1280px) {
-    .content-container {
-        padding: 0 1rem;
-    }
-}
 .search-input-wrapper {
   position: relative;
 }
@@ -692,6 +609,96 @@ body.dark .pagination-btn:hover {
 
 .btn-confirm:hover {
   opacity: 0.9;
+}
+
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+
+/* Mobile (up to 639px) */
+@media (max-width: 639px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* Tablet (640px to 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .filter-actions {
+        grid-column: span 2;
+    }
+}
+
+/* Mobile & Tablet (up to 1023px) */
+@media (max-width: 1023px) {
+    /* Main wrapper no margin on mobile */
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
+    
+    body.sidebar-collapsed .main-wrapper {
+        margin-left: 0 !important;
+    }
+}
+
+/* Large Tablet (768px) */
+@media (min-width: 768px) {
+    .pagination {
+        flex-direction: row;
+    }
+}
+
+body.preload .main-wrapper,
+body.preload .sidebar {
+  transition: none !important;
+}
+/* Desktop (1024px and up) */
+@media (min-width: 1024px) {
+    /* Main wrapper adjusts to sidebar */
+    .main-wrapper {
+        margin-left: var(--sidebar-width);
+        transition: margin-left var(--transition-speed) ease;
+    }
+    
+    /* Adjust for collapsed sidebar */
+    body.sidebar-collapsed .main-wrapper,
+  html.sidebar-collapsed .main-wrapper {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+    
+    /* Filter grid layout */
+    .filters-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .filter-actions {
+        grid-column: auto;
+        flex-direction: row;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        flex: none;
+    }
+}
+body.preload .main-wrapper,
+body.preload .sidebar {
+  transition: none !important;
+}
+/* Wide Desktop (1280px) */
+@media (min-width: 1280px) {
+    .content-container {
+        padding: 0 1rem;
+    }
 }
 
 @keyframes scaleIn {

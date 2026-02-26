@@ -1,8 +1,5 @@
-import dotenv from "dotenv"
-dotenv.config({path : "./.env"})
-
 import express from "express"
-import  userRoute from "./routes/user/userRoute.js"
+import userRoute from "./routes/user/userRoute.js"
 import authRoute from "./routes/user/authRoute.js"
 import adminRoute from "./routes/admin/adminRoute.js"
 import connectDB from "./config/connect.js"
@@ -30,6 +27,7 @@ app.use(
         }
     })
 )
+app.use(nocache())
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(setUser)
@@ -39,7 +37,6 @@ import "./config/passport.js"
 app.use("/auth",authRoute)
 app.use("/",userRoute)
 app.use("/admin",adminRoute)
-app.use(nocache())
 
 
 connectDB()

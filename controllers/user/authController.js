@@ -51,7 +51,7 @@ const login = async (req, res) => {
       throw new Error('PASSWORD_NOT_MATCH')
     }
     if(user.isBlocked){
-      return res.status(400).json({success : false , message : "You have blocked"})
+      return res.status(400).json({success : false , message : "You have been blocked"})
     }
     if (!user.isVerified) {
      await sendOtp({

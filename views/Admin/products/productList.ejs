@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Products Management - Techora</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      (function() {
+        const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+      })();
+    </script>
+    
+    <link rel="stylesheet" href="/styles/admin/products/productsList.css" />
+    <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+    <link rel="stylesheet" href="/styles/user/popup.css" />
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/popup.js" defer></script>
+    <script src="/js/partitials/Admin/sidebar.js" defer></script>
+  </head>
+
+  <body>
+    <div id="toast" class="toast"></div>
+    <%- include("../../partitials/admin/sidebar.ejs",{ currentPage }) %>
+
+    <div class="main-wrapper">
+      <%- include("../../partitials/admin/header.ejs",{currentPage}) %>
+
+      <main class="main-content">
+        <div class="content-container">
+          
+          <div class="page-header-wrapper">
+            <div class="page-header-left">
+              <h1 class="page-title">Products Management</h1>
+              <p class="page-subtitle">Manage mobile phones and accessories</p>
+            </div>
+            <button class="btn-primary" type="button" onclick="window.location.href='/admin/products/add'">
+              <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
+              Add New Product
+            </button>
+          </div>
+
+          <div class="filters-card">
+  <select class="filter-select" id="categorySelect">
+    <option value="">Category</option>
+    <option value="Smartphones">Smartphones</option>
+    <option value="Audio">Audio</option>
+    <option value="Tablets">Tablets</option>
+  </select>
+
+  <select class="filter-select" id="brandSelect">
+    <option value="">Brand</option>
+    <option value="Apple">Apple</option>
+    <option value="Samsung">Samsung</option>
+    <option value="Google">Google</option>
+    <option value="Sony">Sony</option>
+  </select>
+
+  <select class="filter-select" id="stockStatusSelect">
+    <option value="">Stock Status</option>
+    <option value="In Stock">In Stock</option>
+    <option value="Low Stock">Low Stock</option>
+    <option value="Out of Stock">Out of Stock</option>
+  </select>
+
+  <!-- ✅ NEW: Sort dropdown -->
+  <select class="filter-select" id="sortSelect">
+    <option value="">Sort By</option>
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+    <option value="name_asc">Name (A → Z)</option>
+    <option value="name_desc">Name (Z → A)</option>
+    <option value="stock_high">Stock (High → Low)</option>
+    <option value="stock_low">Stock (Low → High)</option>
+  </select>
+
+  <div class="search-wrapper">
+    <input type="text" id="search-input" placeholder="Search products" />
+    <span
+      class="material-symbols-outlined clear-icon"
+      id="clearBtn"
+      style="display: none;"
+      >close</span
+    >
+  </div>
+
+  <div class="filter-actions">
+    <button class="btn-primary" id="searchBtn" style="background-color: #1B3C53;">Search</button>
+    <button class="btn-primary" id="applySortBtn" style="background-color: #1B3C53;">Apply Sort</button>
+  </div>
+</div>
+
+          <div class="table-card">
+            <div style="overflow-x: auto;">
+              <table class="product-table">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Brand</th>
+                    <th>Price Range</th>
+                    <th>Total Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="productTbody">
+                  
+                  <tr>
+                    <td>
+                      <div class="product-image"><span class="material-symbols-outlined">image</span></div>
+                    </td>
+                    <td>
+                      <div class="product-details">
+                        <span class="product-name">iPhone 15 Pro Max</span>
+                        <span class="product-variants">4 variants available • <a href="#" class="view-variants">View variants</a></span>
+                      </div>
+                    </td>
+                    <td><span class="category-pill cat-smartphones">Smartphones</span></td>
+                    <td>Apple</td>
+                    <td>₹1,59,900 – ₹1,99,900</td>
+                    <td>45</td>
+                    <td><span class="status-pill status-in-stock">In Stock</span></td>
+                    <td>
+                      <div class="action-icons">
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="product-image" style="background-color: #1f2937;"><span class="material-symbols-outlined" style="color: #4b5563;">smartphone</span></div>
+                    </td>
+                    <td>
+                      <div class="product-details">
+                        <span class="product-name">Galaxy S24 Ultra</span>
+                        <span class="product-variants">3 variants available • <a href="#" class="view-variants">View variants</a></span>
+                      </div>
+                    </td>
+                    <td><span class="category-pill cat-smartphones">Smartphones</span></td>
+                    <td>Samsung</td>
+                    <td>₹1,29,999 – ₹1,59,999</td>
+                    <td>12</td>
+                    <td><span class="status-pill status-low-stock">Low Stock</span></td>
+                    <td>
+                      <div class="action-icons">
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="product-image" style="background-color: #f9fafb;"><span class="material-symbols-outlined" style="color: #9ca3af;">smartphone</span></div>
+                    </td>
+                    <td>
+                      <div class="product-details">
+                        <span class="product-name">Pixel 8 Pro</span>
+                        <span class="product-variants">2 variants available • <a href="#" class="view-variants">View variants</a></span>
+                      </div>
+                    </td>
+                    <td><span class="category-pill cat-smartphones">Smartphones</span></td>
+                    <td>Google</td>
+                    <td>₹1,06,999</td>
+                    <td>0</td>
+                    <td><span class="status-pill status-out-of-stock">Out of Stock</span></td>
+                    <td>
+                      <div class="action-icons">
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="product-image" style="background-color: #f3f4f6;"><span class="material-symbols-outlined" style="color: #4b5563;">headphones</span></div>
+                    </td>
+                    <td>
+                      <div class="product-details">
+                        <span class="product-name">WH-1000XM5</span>
+                        <span class="product-variants">2 variants available • <a href="#" class="view-variants">View variants</a></span>
+                      </div>
+                    </td>
+                    <td><span class="category-pill cat-audio">Audio</span></td>
+                    <td>Sony</td>
+                    <td>₹29,990</td>
+                    <td>85</td>
+                    <td><span class="status-pill status-in-stock">In Stock</span></td>
+                    <td>
+                      <div class="action-icons">
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="product-image"><span class="material-symbols-outlined">tablet_mac</span></div>
+                    </td>
+                    <td>
+                      <div class="product-details">
+                        <span class="product-name">iPad Pro 12.9"</span>
+                        <span class="product-variants">4 variants available • <a href="#" class="view-variants">View variants</a></span>
+                      </div>
+                    </td>
+                    <td><span class="category-pill cat-tablets">Tablets</span></td>
+                    <td>Apple</td>
+                    <td>₹1,12,900 – ₹2,00,000</td>
+                    <td>32</td>
+                    <td><span class="status-pill status-in-stock">In Stock</span></td>
+                    <td>
+                      <div class="action-icons">
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="product-image"><span class="material-symbols-outlined">tablet_mac</span></div>
+                    </td>
+                    <td>
+                      <div class="product-details">
+                        <span class="product-name">iPad Pro 12.9"</span>
+                        <span class="product-variants">4 variants available • <a href="#" class="view-variants">View variants</a></span>
+                      </div>
+                    </td>
+                    <td><span class="category-pill cat-tablets">Tablets</span></td>
+                    <td>Apple</td>
+                    <td>₹1,12,900 – ₹2,00,000</td>
+                    <td>32</td>
+                    <td><span class="status-pill status-in-stock">In Stock</span></td>
+                    <td>
+                      <div class="action-icons">
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
+                      </div>
+                    </td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="pagination-bar">
+              <div class="page-info">Showing 1-8 of 1,248 products</div>
+              <div class="pagination-controls">
+                <button class="page-btn" type="button" disabled>
+                  <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span> Previous
+                </button>
+                <span class="page-number active">1</span>
+                <span class="page-number">2</span>
+                <span class="page-number">3</span>
+                <span class="page-number" style="cursor:default;">...</span>
+                <span class="page-number">156</span>
+                <button class="page-btn" type="button">
+                  Next <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </body>
+
+  <script>
+    // NOTE: The automatic fetch on page load has been removed to preserve the dummy HTML data above.
+    // If you want to reconnect this to your backend API later, uncomment your standard `loadProducts` functions!
+    // sidebarState.js (load on all admin pages)
+
+  </script>
+</html>

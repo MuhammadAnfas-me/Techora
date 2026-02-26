@@ -1,79 +1,90 @@
-import {User} from "../../models/userModel.js"
-import formatDateForInput from "../../services/dateFormat.js"
+import { User } from '../../models/userModel.js'
+import formatDateForInput from '../../services/dateFormat.js'
 
-const userList = async(req,res)=>{
+const escapeRegex = (text="") => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const userListApi = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const limit = 5
+    const skip = (page - 1) * limit
 
-    try {
-        const page = parseInt(req.query.page) || 1
-        const limit = 5
-        const skip = (page-1)*limit
+    const search = (req.query.search || '').trim()
+    const role = (req.query.role || '').trim()
+    const status = (req.query.status || '').trim()
 
-        const search = (req.query.search || "").trim()
-        const role = (req.query.role || "").trim()
-        const status = (req.query.status || "").trim()
+    const filter = {}
 
-        const filter = {}
-
-        if(search){
-            filter.$or = [
-                {fullName : {$regex : search,$options : "i"} },
-                {email : {$regex : search,$options : "i"}}
-            ]
-        }
-
-        if(role) filter.role = role
-
-        if(status === "Active") filter.isBlocked = false
-        if(status === "Blocked") filter.isBlocked = true 
-
-        const totalUsers = await User.countDocuments(filter)
-        const totalPages = Math.ceil(totalUsers/limit)
-
-        const users = await User.find(filter).sort({updateAt : -1}).skip(skip).limit(limit)
-
-        res.render("Admin/users.ejs",{
-            users,
-            page,
-            totalUsers,
-            totalPages,
-            filter : {search,role,status}
-        })
-    } catch (err) {
-        console.error(err)
-        return
+    if (search) {
+      const rx = new RegExp(escapeRegex(search), "i");
+      filter.$or = [{ fullName: rx }, { email: rx }];
     }
+
+    if (role) filter.role = role
+
+    if (status === 'Active') filter.isBlocked = false
+    if (status === 'Blocked') filter.isBlocked = true
+    
+    const totalUsers = await User.countDocuments(filter)
+    const totalPages = Math.ceil(totalUsers / limit)
+
+    const users = await User.find(filter)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+    return res.status(200).json({
+      success : true,
+      users,
+      page,
+      totalUsers,
+      totalPages,
+      filter: { search, role, status }
+    })
+  } catch (err) {
+    console.error("Error from categoryList :",err)
+    return res.status(500).json({success:false , message : "Servor error"})
+  }
+}
+
+const userList = (req,res)=>{
+  try {
+    return res.render("admin/users", {
+      currentPage: "users",
+      users:[],
+      totalUsers: 0 ,
+      totalPages : 1 ,
+      page : 1,
+      filter : {search : "" , role : "" , status : ""}
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Server error");
+  }
 }
 
 const blockUser = async (req, res) => {
-  console.log("call reached")
+  console.log('call reached')
   try {
-    const id = req.params.id;
+    const id = req.params.id
 
     const user = await User.findById(id)
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' })
     }
 
     // Toggle block status
-    user.isBlocked = !user.isBlocked;
+    user.isBlocked = !user.isBlocked
 
-    await user.save();
+    await user.save()
 
-    res.json({
+   return res.json({
       success: true,
-      message: user.isBlocked ? "User blocked" : "User unblocked"
-    });
-
+      message: user.isBlocked ? 'User blocked' : 'User unblocked',
+      isBlocked : user.isBlocked
+    })
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
   }
-};
-
-
-
-
-export {
-    userList,
-    blockUser
 }
+
+export { userList, userListApi, blockUser }

@@ -19,42 +19,42 @@
     </div>
 
     <nav class="sidebar-nav">
-        <a href="/dashboard" class="nav-item" title="Dashboard">
+        <a href="#" class="nav-item <%= currentPage === "dashboard" ? 'active' : '' %>" title="Dashboard">
             <span class="material-symbols-outlined">grid_view</span>
             <span class="hide-on-collapse">Dashboard</span>
         </a>
         
-        <a href="/orders" class="nav-item" title="Orders">
+        <a href="#" class="nav-item <%= currentPage === "orders" ? 'active' : '' %>" title="Orders">
             <span class="material-symbols-outlined">shopping_bag</span>
             <span class="hide-on-collapse">Orders</span>
         </a>
 
-        <a href="/products" class="nav-item" title="Products">
+        <a href="/admin/products" class="nav-item <%= currentPage === "products" ? "active" : '' %>" title="Products">
             <span class="material-symbols-outlined">inventory_2</span>
             <span class="hide-on-collapse">Products</span>
         </a>
 
-        <a href="/categories" class="nav-item" title="Categories">
+        <a href="/admin/category" class="nav-item <%= currentPage === "category" ? 'active' : '' %>" title="Categories">
             <span class="material-symbols-outlined">category</span>
             <span class="hide-on-collapse">Categories</span>
         </a>
 
-        <a href="/users" class="nav-item active" title="Users">
+        <a href="/admin/users" class="nav-item <%= currentPage === "users" ? 'active' : '' %>" title="Users">
             <span class="material-symbols-outlined">group</span>
             <span class="hide-on-collapse">Users</span>
         </a>
 
-        <a href="/offers" class="nav-item" title="Offers">
+        <a href="#" class="nav-item <%= currentPage === "offers" ? "active" : '' %>" title="Offers">
             <span class="material-symbols-outlined">local_offer</span>
             <span class="hide-on-collapse">Offers</span>
         </a>
 
-        <a href="/coupons" class="nav-item" title="Coupons">
+        <a href="#" class="nav-item <%= currentPage === 'coupons' ? 'active' : '' %>" title="Coupons">
             <span class="material-symbols-outlined">confirmation_number</span>
             <span class="hide-on-collapse">Coupons</span>
         </a>
 
-        <a href="/reports" class="nav-item" title="Reports">
+        <a href="#" class="nav-item <%= currentPage === 'reports' ? 'active' : '' %>" title="Reports">
             <span class="material-symbols-outlined">bar_chart</span>
             <span class="hide-on-collapse">Reports</span>
         </a>

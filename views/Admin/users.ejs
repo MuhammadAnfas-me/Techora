@@ -8,24 +8,32 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    
+    <script>
+  (function() {
+      const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+      if (collapsed) {
+        document.documentElement.classList.add("sidebar-collapsed");
+      }
+      })();
+    </script>
     <!-- CSS Files -->
     <link rel="stylesheet" href="/styles/admin/users.css">
     <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css">
     <link rel="stylesheet" href="/styles/user/popup.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    
+    <script src="/js/popup.js" defer></script>
+    <script src="/js/partitials/Admin/sidebar.js" defer></script>
 </head>
 <body>
 
     <!-- Include Sidebar -->
     <div id="toast" class="toast"></div>
-    <%- include("../partitials/admin/sidebar.ejs") %>
+    <%- include("../partitials/admin/sidebar.ejs",{  currentPage }) %>
 
     <div class="main-wrapper">
         
         <!-- Include Header -->
-         <%- include("../partitials/admin/header.ejs") %>
+         <%- include("../partitials/admin/header.ejs",{currentPage}) %>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -49,7 +57,7 @@
 
                         <div class="filter-group">
                             <label class="filter-label">Role</label>
-                            <select class="filter-input" name="role">
+                            <select class="filter-input" id="role" name="role">
                                 <option value="">All Roles</option>
                                 <option value="Customer" <%= filter?.role ==="Customer" ? "selected" : "" %>>Customer</option>
                                 <option value="Admin" <%= filter?.role === "Admin" ? "selected ": "" %>>Admin</option>
@@ -58,7 +66,7 @@
 
                         <div class="filter-group">
                             <label class="filter-label" >Status</label>
-                            <select class="filter-input" name="status">
+                            <select class="filter-input" id="status" name="status">
                                 <option value="">All Status</option>
                                 <option value="Active"<%= filter?.status === "Active" ? "selected" : "" %>>Active</option>
                                 <option value="Blocked" <%= filter?.status === "Blocked" ? "selected" : "" %>>Blocked</option>
@@ -66,8 +74,7 @@
                         </div>
 
                         <div class="filter-actions">
-                            <button class="btn-primary" type="submit">Search</button>
-                            <button class="btn-secondary" type="button" onclick="window.location.href='/admin/users'">Reset</button>
+                            <button class="btn-primary" id="resetButton" type="button" onclick="resetQuery()">Reset</button>
                         </div>
                     </div>
                 </form>
@@ -101,7 +108,7 @@
                                     <th class="text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="userTbody">
                                 <% users.forEach(user => { %>
                                     
                                 
@@ -114,12 +121,12 @@
                                         </div>
                                     </td>
                                     <td class="user-email"><%= user.email %></td>
-                                    <td><span class="badge badge-role">Customer</span></td>
+                                    <td><span class="badge badge-role"><%= user.role %></span></td>
                                     <td class="text-center">-</td>
-                                    <td><span class="badge <%= user.isBlocked ? 'badge-blocked' : 'badge-active' %>" ><%= user.isBlocked ? "Blocked" : "Active" %></span></td>
+                                    <td><span class="badge status-badge <%= user.isBlocked ? 'badge-blocked' : 'badge-active' %>" ><%= user.isBlocked ? "Blocked" : "Active" %></span></td>
                                     <td class="user-date"><%= user.createdAt.toISOString().split('T')[0] %></td>
                                     <td class="text-right">
-                                        <button class="action-btn block-btn" onclick="blockUser('<%= user._id %>')" >
+                                        <button class="action-btn block-btn" onclick="blockUser('<%= user._id %>',this)" >
                                             <span class="material-symbols-outlined" style="<%= user?.isBlocked ? 'color:red;' : '' %>">block</span>
                                         </button>
                                     </td>
@@ -136,36 +143,238 @@
                       }).toString();
                     %>
                     
+                    
+
                     <div class="pagination">
-                        <p class="pagination-info">Showing 1-5 of <%= totalUsers %> users</p>
-                        <div class="pagination-controls">
-                            <button class="pagination-btn" onclick="location.href='/admin/users?page=<%= Math.max(page-1,1) %> <%= qs ? `&${qs}` : '' %>' " <%= page<= 1 ? 'disabled' : " " %>><span class="material-symbols-outlined">chevron_left</span></button>
-                            <button class="pagination-btn" onclick="location.href='/admin/users?page=<%= Math.min(page+1,totalPages) %> <%= qs ? `&${qs}` : '' %> ' " <%= page >= totalPages ? "disabled" : "" %>><span class="material-symbols-outlined">chevron_right</span></button>
-                        </div>
-                    </div>
+  <p id="pageInfo" class="pagination-info">Loading...</p>
+
+  <div class="pagination-controls">
+    <button id="prevBtn" class="pagination-btn" type="button" disabled>
+      <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+
+    <button id="nextBtn" class="pagination-btn" type="button" disabled>
+      <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+  </div>
+</div>
                 </div>
             </div>
         </main>
     </div>
-    <script src="/js/popup.js"></script>
-    <script src="/js/partitials/Admin/sidebar.js"></script>
-    <script>
-        async function blockUser(id) {
+    
+    <script >
+       window.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.getElementById("searchInput");
+  const roleInput = document.getElementById("role")
+  const statusInput = document.getElementById("status")
+
+  const clearBtn = document.getElementById("clearSearch");
+  const resetButton = document.getElementById("resetButton")
+  const userTbody = document.getElementById("userTbody");
+
+  const pageInfo = document.getElementById("pageInfo");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+
+let state = {
+  page: 1,
+  totalPages: 1,
+  total : 0
+};
+  if (!searchInput || !clearBtn || !userTbody) {
+    console.log("Missing elements:", { searchInput, clearBtn, userTbody });
+    return;
+  }
+
+  function debounce(fn, delay = 400) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  function toggleClearBtn() {
+    clearBtn.style.display = searchInput.value.trim() ? "block" : "none";
+  }
+
+  function escapeHtml(str = "") {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function renderPagination() {
+  const start = state.total === 0 ? 0 : (state.page-1)*5+1;
+  const end = Math.min(state.page*5,state.total)
+
+  if (pageInfo) pageInfo.textContent =  `Showing ${start}-${end} of ${state.total} categories`;
+  if (prevBtn) prevBtn.disabled = state.page <= 1;
+  if (nextBtn) nextBtn.disabled = state.page >= state.totalPages;
+}
+
+
+  function renderUsers(users) {
+    if (!users.length) {
+      userTbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; padding:16px;">
+            No users found
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    userTbody.innerHTML = users.map(user => {
+      const profileUrl = user.profileImage?.url || "/images/default-user.png";
+      const blocked = !!user.isBlocked;
+
+      return `
+        <tr>
+          <td class="user-id">${escapeHtml(user.userId || "-")}</td>
+          <td>
+            <div class="user-info">
+              <img src="${escapeHtml(profileUrl)}" alt="${escapeHtml(user.fullName || "User")}">
+              <span class="user-name">${escapeHtml(user.fullName || "")}</span>
+            </div>
+          </td>
+          <td class="user-email">${escapeHtml(user.email || "")}</td>
+          <td><span class="badge badge-role">${escapeHtml(user.role || "")}</span></td>
+          <td class="text-center">-</td>
+          <td>
+            <span class="badge status-badge ${blocked ? "badge-blocked" : "badge-active"}">
+              ${blocked ? "Blocked" : "Active"}
+            </span>
+          </td>
+          <td class="user-date">${formatDate(user.createdAt)}</td>
+          <td class="text-right">
+            <button class="action-btn block-btn" onclick="blockUser('${user._id}', this)">
+              <span class="material-symbols-outlined" style="${blocked ? "color:red;" : ""}">block</span>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  async function fetchUsers(keepFocus = false) {
+    const q = searchInput.value.trim();
+    const r = roleInput.value.trim()
+    const s = statusInput.value.trim()
+    toggleClearBtn();
+
+    try {
+      const params = new URLSearchParams(); 
+      params.set("page", String(state.page));
+      if (q) params.set("search", q);
+      if (r) params.set("role",r)
+      if (s) params.set("status",s)
+
+      console.log("Calling:", `/admin/users/api?${params.toString()}`); // ✅ debug
+
+      const res = await axios.get(`/admin/users/api?${params.toString()}`);
+
+      if (!res.data?.success) {
+        showToast(res.data?.message || "Failed", "error");
+        return;
+      }
+
+      renderUsers(res.data.users || []);
+      state.totalPages = res.data.totalPages || 1;
+      state.page = res.data.page || 1;
+      state.total = res.data.totalUsers || 0;
+      renderPagination();
+
+      if (keepFocus) {
+        searchInput.focus();
+        const len = searchInput.value.length;
+        searchInput.setSelectionRange(len, len);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Something went wrong", "error");
+    }
+  }
+
+  const debouncedFetch = debounce(fetchUsers, 400);
+
+  // Init
+  toggleClearBtn();
+  fetchUsers()
+
+  searchInput.addEventListener("input", ()=> debouncedFetch(true));
+  roleInput.addEventListener("change", ()=> debouncedFetch());
+  statusInput.addEventListener("change",()=> debouncedFetch());
+
+  clearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    roleInput.value = ""
+    statusInput.value = ""
+    toggleClearBtn();
+    fetchUsers();
+  });
+  resetButton.addEventListener("click",()=>{
+    searchInput.value = "";
+    roleInput.value = ""
+    statusInput.value = ""
+    fetchUsers();
+  })
+
+  prevBtn.addEventListener("click", () => {
+  state.page = Math.max(state.page - 1, 1);
+  fetchUsers()
+});
+
+nextBtn.addEventListener("click", () => {
+  state.page = Math.min(state.page + 1, state.totalPages)
+  fetchUsers()
+});
+});
+
+async function blockUser(id,btn) {
             showConfirm("Are you sure you want to block/unblock this user?",async ()=>{
 
             try {
               const res = await axios.patch(`/admin/users/block/${id}`);
             
-              if (res.data.success) {
-                location.reload(); // reload page after update
+              if (!res.data.success) {
+                showToast(!res.data.message || "Failed" ,"error")
+                return
               }
-          
+              const isBlocked = res.data.isBlocked
+
+              const icon = btn.querySelector("span");
+              const row = btn.closest("tr");
+              const statusBadge = row.querySelector(".status-badge");
+
+              icon.style.color = isBlocked ? "red" : "";
+
+              statusBadge.classList.remove("badge-active", "badge-blocked");
+              statusBadge.classList.add(isBlocked ? "badge-blocked" : "badge-active");
+              statusBadge.textContent = isBlocked ? "Blocked" : "Active"
+
+              showToast(res.data.message )
             } catch (error) {
                 console.error(error)
-              showToast("Something went wrong");
+              showToast("Something went wrong","error");
             }
         })
-        }           
+        } 
     </script>
 </body>
 </html>

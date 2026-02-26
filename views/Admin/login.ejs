@@ -38,6 +38,7 @@
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="admin@mobilemart.com" required>
+                    <small id="emailError" style="color: red;"></small>
                 </div>
 
                 <div class="form-group">
@@ -48,6 +49,7 @@
                             <span class="material-symbols-rounded">visibility</span>
                         </button>
                     </div>
+                    <small id="passwordError" style="color: red;"></small>
                 </div>
 
                 <button type="submit" class="btn-submit">
@@ -79,12 +81,26 @@
             passwordIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
         });
 
-
         document.getElementById("Form").addEventListener("submit",async(e)=>{
             e.preventDefault()
           try {
             const email = document.getElementById("email").value.trim()
             const password = document.getElementById("password").value
+            const emailError = document.getElementById("emailError")
+            const passwordError = document.getElementById("passwordError")
+
+            let isValid = true 
+            emailError.textContent = ""
+            passwordError.textContent = ""
+            if(email === ""){
+                emailError.textContent = "-Enter valid Email"
+                isValid = false
+            }
+            if(password == ""){
+                passwordError.textContent = "-Please enter your password"
+                isValid = false
+            }
+            if(isValid){
             const res = await axios.post("/admin/login",{
               email,
               password 
@@ -93,6 +109,7 @@
             setTimeout(()=>{
                 window.location.href = "/admin/users"
             },800)
+        }
           } catch (error) {
             showToast(error.response?.data?.message || "Failed to login","error")
           }

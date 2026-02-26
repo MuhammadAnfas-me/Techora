@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techora - Mobile Accessories</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/user/products/productPage.css">
+</head>
+<body>
+
+    <%- include("../../partitials/user/header.ejs",{tittle : "Techora | Products" , name , email}) %>
+
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <div class="main-layout">
+            
+            <aside class="sidebar">
+                <div class="filter-card">
+                    <div class="filter-header">
+                        <h2 class="filter-title">Filters</h2>
+                        <button class="clear-btn">Clear All</button>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h3>Category</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Charging & Power</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Audio Accessories</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Protection Accessories</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Mounts & Stands</label>
+                        </div>
+                    </div>
+                    
+                    <hr class="divider">
+                    
+                    <div class="filter-section">
+                        <h3>Brand</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Apple</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Samsung</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Google</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Sony</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Bose</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Noise</label>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="filter-section">
+                        <h3>Price Range</h3>
+                        <div style="padding: 0 0.5rem;">
+                            <input type="range" min="0" max="500" value="400" class="range-slider">
+                            <div class="price-labels">
+                                <span>$0</span>
+                                <span>$500+</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="filter-section">
+                        <h3>Compatibility</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Android</label>
+                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> iPhone</label>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            <section class="content-area">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Mobile Accessories</h1>
+                        <p class="page-subtitle">Showing 48 products</p>
+                    </div>
+                    <div class="sort-wrapper">
+                        <span class="page-subtitle">Sort by:</span>
+                        <select class="sort-select">
+                            <option>Relevance</option>
+                            <option>Newest</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mobile-actions">
+                    <button class="mobile-btn" onclick="toggleDrawer('mobile-filter-drawer', true)">
+                        <div class="h-5 w-5"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4.5h18m-18 5h18m-18 5h18m-18 5h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                        Filters
+                    </button>
+                    <button class="mobile-btn" onclick="toggleDrawer('mobile-sort-drawer', true)">
+                        <div class="h-5 w-5"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7h18M6 12h12m-9 5h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                        Sort
+                    </button>
+                </div>
+
+                <div class="product-grid">
+                    
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXBwDgzyEsFhzrqQPpFAls75xXHX2dHN4XmNpJgrkKuzokea_ombspwGxVRae-_Rj6NDA-E-uhx2pz2nMWbFu9RKdm0HVU0Cvrg49nFanP526ZgwIjpkhpM3QqjokSAjZSH-6cZM98K4hS5bs_kk9mrfKmcHHmHQbt5kgG8yd9gwttJm5c65jthqoeYYwvbdEq1MFTArsIuSYJpsip_zKmDYtQC_xs918-FzBbtRzJN1xSuZWVpPbphtkbLWprN4sADqSJgjWlgZ0" alt="MagSafe Wireless Charger" class="card-img">
+                            <span class="badge-new">New</span>
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Apple</span>
+                            <h3 class="card-title">MagSafe Wireless Charger - Fast Charging Pad</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(124)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$39.99</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPdsiYsQ6f5i19VrSAKIkdaJEQqQF5fQGXHS0gk6MXaIRdv1bfRXcuDUSYBaGT_SploaUmoOyoMmLwo2ck2gs10ydY2PAz8eaP-JfYShPHO98tMFnpl0MNRdL02OEvZMsiMNR1K6n7TQpJmX7oBOPJ4joJJQSP_-MmnaM1BjIAwkxazpmJsGR7e6eDCGN-dg4aD3P94eKhuEpuk_8rHDc7qlY6ttIOeJ3Dv-xM7Lh6jFhfjhsfEroWTnHmEMmUaOE2O9UZLRwlEOM" alt="Bose QuietComfort Earbuds II" class="card-img">
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Bose</span>
+                            <h3 class="card-title">QuietComfort Earbuds II - Noise Cancelling</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(89)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$299.00</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqkCXyIo3ubrcClENq5gdRwYaX8LsdaYijvrr68MSolxBPg2Lkvb5orHm7AmK3M_E98SWmwkSX9KXQeZwuIFN832rdaBS1l3PleeMV3KOqKl5kknXp3LLV0CnnSetI4PGH7xpnLNT0jX5IwT3golRnnD_nzKpUtglLHyrw7J2iuTsupPj_5eWfdgnkbh5Jfxse9qnSlbQuDgzJHNofwUiUrfObYmrchwD5Tc-yggeqEKb1yMsxrlb5O-m_FbuwTQEE7jOdiYWyQjs" alt="Galaxy Buds Pro 2" class="card-img">
+                            <span class="badge-sale">-20%</span>
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Samsung</span>
+                            <h3 class="card-title">Galaxy Buds Pro 2 - Premium Sound Quality</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(188)</span>
+                            </div>
+                            <div class="card-footer">
+                                <div class="price-group">
+                                    <span class="price">$159.99</span>
+                                    <span class="price-old">$199.99</span>
+                                </div>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDA3ZvQSr5abUREOqrdogKNw1_obv_hHpDM5xXo3QisYLRYj6ILXKZpOmuqxdL3bDMVERrjRzblSCdSL6dVOHjZnoExRE1aVMuPGup_9hvQWxQocjpilxTQZrAXDVc71MOsd_QRsn3dsIT4DEUOx9pb8CM9Zyu7QNnM7iXV3NQ5zT6qcD073SDa6xGYkbUxm_TU7FNODkvdhW7zv95RWCJahS-EBRSjZ2Anpb00NxxXUV4qUfGV5ZI8VSNZlwJ8ml1cXbxVZg7l-f4" alt="Sony WH-1000XM5" class="card-img">
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Sony</span>
+                            <h3 class="card-title">WH-1000XM5 Wireless Headphones - Industry</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(342)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$399.99</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqi6QN3G_Gg-OZMAfUwsJBXLL3Z0BQDl1cAT2qfJyvw7G5x70krkQQeBUFIxePFnmpqkU62cBDKU1z4xPFOgKQeLBItS1EIG0XV0P-HBnLE3VE-tNwzi-prpoJqMvwFM_FUlCCXEEsn18InKZ-_J6A5bryllu76J_VnH1i7rx3STfgfu8C2r48bB610kJ6v4I91aPGYas3hcnlSDdZlqzFEVEgUIbRnWLqA5PeXMK_L7VwJehtLHk77eADo1YBniuOcnP4urLJssA" alt="Noise Buds VS201" class="card-img">
+                            <span class="badge-best">Bestseller</span>
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Noise</span>
+                            <h3 class="card-title">Noise Buds VS201 - True Wireless Earbuds</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(587)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$49.99</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4DZetvtQre6TVkTtDK0Ac8QJxy0oEVlq_eg0INzcCxqODKdfbYPKksYh57MV0CgI0_gooxhb5icSwjRQeHgWQi-N0Xdd8h39VnSra5HA4ULRBvKxq90TWjcNpoxI2WiNHAVEFngDG5yt55JjyRihBoMGnMyWU7hKOxS7NbzfobOSJS8zqVbdvXefMjAwD_pVKhMwHXjeMeiOl1S-wjpvL2n42SR2GAH0-XK2i52uo03nwbSuk6Ht7KSAC4fafZuPOmPRH1Vdiv3U" alt="Pixel Stand 2" class="card-img">
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Google</span>
+                            <h3 class="card-title">Pixel Stand 2 - Wireless Charging Station</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(78)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$79.00</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2eBEVVl1b3_Sa41t4miBlIj8wjo4_GLFnrWegMIQdSrxNWfbwhWrJkQugnYnvYamnPpXBsFFRFF4u-ryKIj4JTytuEHZJOCT9hgmH09zYCsJOxytv6fgrOtMXzmYLlj0xH9AjB70aEx1fdUl3fc9JvSOWK7VxoGvNXVHgYz3ucf-zXSrR4o6jmsUZZWY76USorNDKuG-wH_AsNA_74dJ7qElYJo37xC6zpPnlshgrxsf_sm11kyeU1hbCT8GF0ZGeeOOFQw0nHXo" alt="iPhone 15 Pro Silicone Case" class="card-img">
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Apple</span>
+                            <h3 class="card-title">iPhone 15 Pro Silicone Case - Ocean Blue</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(234)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$49.00</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXJbTsO5jGXEC6nUsRB5XBX9JyzuDCgSG6C5BVrHdytKRf_OrHwK6xSYg7zUjkpDJNRkdmD2Q5SMVRIHfrHtP85g9Wl4Dgv-wncAwBQ8vFJd6Hmry0omReZ6nogtIRpzl2NYPX6DoJKY06mM18pU3zoeCSJkGoCe0ngZyU9MZxEv0VFKb1dTh8KjhKvF5R2S5JS8lMcyyTBV6wnroLkq4mWtG_DFj6rCsPMdmoLuqiyT3HCoxJ6hSxnkgnSy73Uex-lVlojNzzRUI" alt="45W Super Fast Charging Adapter" class="card-img">
+                            <span class="badge-new">New</span>
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Samsung</span>
+                            <h3 class="card-title">45W Super Fast Charging Adapter - USB-C</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(187)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$29.99</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYqbFs3CWObQccVLx1EoRd89adIcmAyMZToCIh8gxLnjF1E5uTwPKkaCEc2fX2pmPHjO2vGTHmarsHklO40XfbvGaudrDT95g1lHUHt15h_ohZUNO66Utj9epvyfPI3Iz_Adtl36dcSTX6xDPjIm09yC1hT1GgZ0y3uO53czhaphBfShXHwYKF8GJi5y8XImN9QJhizoC5yxIQcYpmXYbCqoyc9SNAJZWUBbQ8a-PiEqiEtKLzzfaUknmZHIaC2zy0K8Agh2GOD3Q" alt="Pixel Buds Pro" class="card-img">
+                            <button class="fav-btn">
+                                <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
+                            </button>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <span class="card-brand">Google</span>
+                            <h3 class="card-title">Pixel Buds Pro - Active Noise Cancellation</h3>
+                            <div class="rating-wrapper">
+                                <div class="stars">
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                    <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
+                                </div>
+                                <span class="review-count">(156)</span>
+                            </div>
+                            <div class="card-footer">
+                                <span class="price">$199.99</span>
+                                <button class="add-btn">
+                                    <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                                    <span class="add-text">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                </div>
+                <nav class="pagination">
+                    <a href="#" class="page-link page-link-nav">
+                        <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                        Previous
+                    </a>
+                    <a href="#" class="page-link active">1</a>
+                    <a href="#" class="page-link">2</a>
+                    <a href="#" class="page-link">3</a>
+                    <span style="font-size: 0.875rem; color: var(--slate-400); padding: 0.5rem;">...</span>
+                    <a href="#" class="page-link">8</a>
+                    <a href="#" class="page-link page-link-nav">
+                        Next
+                        <div class="h-4 w-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                    </a>
+                </nav>
+                </section>
+            </div>
+    </main>
+    
+    <%- include("../../partitials/user/footer.ejs") %>
+
+    <div id="mobile-filter-drawer" class="drawer" aria-modal="true" role="dialog">
+        <div class="drawer-backdrop" onclick="toggleDrawer('mobile-filter-drawer', false)"></div>
+        <div class="drawer-content-right">
+            <div class="drawer-header">
+                <h2 class="drawer-title">Filters</h2>
+                <button class="close-btn" onclick="toggleDrawer('mobile-filter-drawer', false)">
+                    <div class="h-6 w-6"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                </button>
+            </div>
+            <div class="drawer-body">
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem; color: var(--slate-700);">Category</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Charging & Power</label>
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Audio Accessories</label>
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Protection Accessories</label>
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Mounts & Stands</label>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem; color: var(--slate-700);">Brand</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Apple</label>
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Samsung</label>
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Google</label>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem; color: var(--slate-700);">Price Range</h3>
+                    <input type="range" min="0" max="500" value="400" class="range-slider">
+                    <div class="price-labels"><span>$0</span><span>$500+</span></div>
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem; color: var(--slate-700);">Compatibility</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> Android</label>
+                        <label class="checkbox-label"><input type="checkbox" class="checkbox-input"> iPhone</label>
+                    </div>
+                </div>
+            </div>
+            <div class="drawer-footer">
+                <button class="btn-full" onclick="toggleDrawer('mobile-filter-drawer', false)">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobile-sort-drawer" class="drawer" aria-modal="true" role="dialog">
+        <div class="drawer-backdrop" onclick="toggleDrawer('mobile-sort-drawer', false)"></div>
+        <div class="drawer-content-bottom">
+            <div class="drawer-header">
+                <h2 class="drawer-title">Sort By</h2>
+                <button class="close-btn" onclick="toggleDrawer('mobile-sort-drawer', false)">
+                    <div class="h-6 w-6"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                </button>
+            </div>
+            <div class="drawer-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <button class="sort-option active" onclick="toggleDrawer('mobile-sort-drawer', false)">
+                    Relevance
+                    <div class="h-5 w-5" style="color: var(--slate-800);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                </button>
+                <button class="sort-option" onclick="toggleDrawer('mobile-sort-drawer', false)">Newest</button>
+                <button class="sort-option" onclick="toggleDrawer('mobile-sort-drawer', false)">Price: Low to High</button>
+                <button class="sort-option" onclick="toggleDrawer('mobile-sort-drawer', false)">Price: High to Low</button>
+            </div>
+            <div class="drawer-footer" style="padding-bottom: 2.5rem;">
+                <button class="btn-full-light" onclick="toggleDrawer('mobile-sort-drawer', false)">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDrawer(drawerId, isOpen) {
+            const drawer = document.getElementById(drawerId);
+            if (isOpen) {
+                drawer.classList.add('is-open');
+            } else {
+                drawer.classList.remove('is-open');
+            }
+        }
+    </script>
+</body>
+</html>

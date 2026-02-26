@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add New Product - Techora</title>
+    
+    
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script>
+        (function () {
+            const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+            if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+        })();
+    </script>
+
+    <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+    <link rel="stylesheet" href="/styles/user/popup.css" />
+    <link rel="stylesheet" href="/styles/admin/products/addPage.css">
+    <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js" defer></script>
+    <script src="/js/admin/products/addPage.js" defer></script>
+    <script src="/js/popup.js" defer></script>
+    <script src="/js/partitials/Admin/sidebar.js" defer></script>
+
+</head>
+
+<body>
+    <div id="toast" class="toast"></div>
+    <%- include("../../partitials/admin/sidebar.ejs",{ currentPage }) %>
+
+        <div class="main-wrapper">
+            <%- include("../../partitials/admin/header.ejs",{currentPage}) %>
+
+                <main class="main-content">
+                    <div class="content-container">
+
+                        <a href="/admin/products" class="back-link">
+                            <span class="material-symbols-outlined">chevron_left</span> Back to Products
+                        </a>
+
+                        <h1 class="page-title">Add New Product</h1>
+                        <p class="page-subtitle">Enter product details for mobile phones and accessories</p>
+                        <div id="cropModal" class="crop-modal">
+  <div class="crop-box">
+    <div class="crop-header">
+      <h3>Crop Image</h3>
+      <button id="cropCloseBtn" type="button">✕</button>
+    </div>
+
+    <div class="crop-body">
+      <img id="cropImage"/>
+    </div>
+
+    <div class="crop-actions">
+      <button id="cropCancelBtn" type="button">Cancel</button>
+      <button id="cropSaveBtn" type="button">Crop & Use</button>
+    </div>
+  </div>
+</div>
+
+                        <form action="/admin/products/add" method="POST" id="addProductForm"  enctype="multipart/form-data" novalidate>
+
+                            <div class="form-card">
+  <h2 class="card-title">Basic Information</h2>
+  
+  <div class="basic-info-grid">
+    <div class="form-group" style="margin: 0;">
+      <label>Product Name <span class="required">*</span></label>
+      <input type="text" class="form-control" placeholder="Enter product name" required>
+    </div>
+    <div class="form-group" style="margin: 0;">
+      <label>Category <span class="required">*</span></label>
+      <select class="form-control" required>
+        <option value="">Select category</option>
+        <option value="smartphones">Smartphones</option>
+        <option value="accessories">Accessories</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="basic-info-grid">
+    <div class="form-group" style="margin: 0;">
+      <label>Brand <span class="required">*</span></label>
+      <select class="form-control" style="max-width: 200px;" required>
+        <option value="">Select brand</option>
+        <option value="apple">Apple</option>
+        <option value="samsung">Samsung</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin: 0;">
+      <label>Product Status <span class="required">*</span></label>
+      <select class="form-control" style="max-width: 150px;" required>
+        <option value="active">Active</option>
+        <option value="draft">Draft</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+
+
+                            <div class="form-card">
+                                <h2 class="card-title">Base Product Media</h2>
+                                <div class="media-hint">Base Images <span style="opacity: 0.6;">(Fallback images, no
+                                        specific color)</span></div>
+
+                                <div class="upload-container">
+                                    <div class="upload-box">
+                                        <span class="material-symbols-outlined">upload</span>
+                                        <p>Upload Image</p>
+                                        <p style="font-size: 10px; margin-top: 4px;">Max 2MB</p>
+                                    </div>
+
+                                    <div class="image-preview">
+                                        <span class="material-symbols-outlined">image</span>
+                                        <div class="remove-img">✕</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-card">
+                                <h2 class="card-title">Description</h2>
+
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label>Short Description</label>
+                                    <input type="text" class="form-control" placeholder="Brief product description">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Full Description</label>
+                                    <textarea class="form-control" rows="4"
+                                        placeholder="Detailed product description"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-card">
+                                <h2 class="card-title">Product Specifications</h2>
+                                <p class="page-subtitle" style="margin-bottom: 16px;">Add technical details that will be
+                                    shown on the product page</p>
+
+                                <div class="spec-input-row">
+                                    <div class="form-group">
+                                        <label>Specification Name</label>
+                                        <input type="text" class="form-control"
+                                            placeholder="e.g., Display, Battery, Processor">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Specification Value</label>
+                                        <input type="text" class="form-control"
+                                            placeholder="e.g., 6.7-inch OLED, 5000mAh">
+                                    </div>
+                                    <button type="button" class="btn btn-primary" style="height: 38px;">Add</button>
+                                </div>
+
+                                <table class="spec-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Specification Name</th>
+                                            <th>Specification Value</th>
+                                            <th style="text-align: right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="3" style="height: 40px;"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="form-card">
+                                <div class="card-title-flex">
+                                    <h2 class="card-title" style="margin: 0;">Product Variants</h2>
+                                    <button type="button" class="btn btn-light-blue" id="addVariantBtn">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Add
+                                        Variant
+                                    </button>
+                                </div>
+
+                                <div style="margin-top: 20px;">
+
+                                    <div class="variant-tabs" id="variantTabsContainer">
+                                        <div class="variant-tab">
+                                            <div class="variant-tab-text">
+                                                <span class="variant-tab-title">------------</span>
+                                                <span class="variant-tab-price">+$0.00</span>
+                                            </div>
+                                            <div class="variant-tab-close">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 14px;">close</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="variant-content-box" id="variantContentArea">
+                                        <div class="grid-3">
+                                            <div class="form-group">
+                                                <label>Color <span class="required">*</span></label>
+                                                <select class="form-control">
+                                                    <option>Black</option>
+                                                    <option>White</option>
+                                                    <option>Blue</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>SKU <span class="required">*</span></label>
+                                                <input type="text" class="form-control" placeholder="Enter SKU">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <div
+                                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                                    <label style="margin: 0;">Status</label>
+                                                    <span class="default-tag">Default Variant</span>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <div class="switch">
+                                                        <input type="checkbox" checked>
+                                                        <span class="slider"></span>
+                                                    </div>
+                                                    <span class="toggle-label">Active</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid-3">
+                                            <div class="form-group">
+                                                <label>Price <span class="required">*</span></label>
+                                                <input type="number" class="form-control" placeholder="0.00">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Discount Price</label>
+                                                <input type="number" class="form-control" placeholder="0.00">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Stock Quantity <span class="required">*</span></label>
+                                                <input type="number" class="form-control" placeholder="0">
+                                            </div>
+                                        </div>
+
+                                        <div class="variant-images" style="margin-top: 8px;">
+                                            <label>Variant Images</label>
+                                            <div class="variant-img-upload">
+                                                <div class="variant-img-icon">
+                                                    <span class="material-symbols-outlined">add</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary"
+                                    style="padding: 10px 24px;">Cancel</button>
+                                <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">Save
+                                    Changes</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </main>
+        </div>
+</body>
+<script>
+    console.log(window.Cropper);
+</script>
+</html>

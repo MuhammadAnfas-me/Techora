@@ -2,10 +2,15 @@ import express from 'express'
 const router = express.Router()
 import * as userController from '../../controllers/user/authController.js'
 import * as profileController from '../../controllers/user/profileController.js'
+
+import * as productController from "../../controllers/user/productController.js"
+
 import * as middlewares from '../../middlewares/user/auth.js'
 import upload from '../../middlewares/user/upload.js'
 
 router.route('/Techora').get(userController.landing)
+
+/*---------------------------------------Auth section-----------------------------------------*/
 
 router
   .route('/login')
@@ -14,7 +19,7 @@ router
 
 router
   .route('/signup')
-  .get(middlewares.isLogged, middlewares.isBlocked, userController.signupLoad)
+  .get(middlewares.isLogged, userController.signupLoad)
   .post(userController.signUp)
 
 router
@@ -39,6 +44,8 @@ router
   .patch(userController.resetPassword)
 
 router.route('/success').get(userController.resetConfirmation)
+
+/*-----------------------------------Profile section----------------------------------*/
 
 router
   .route('/profile')
@@ -92,6 +99,10 @@ router
 router.route('/profile/edit/email').post(profileController.emailChange)
 
 router.route('/profile/edit/email-verify').post(profileController.emailVerify)
+
+/*---------------------------------Product section---------------------------------------- */
+
+router.route("/products").get(productController.productsList)
 
 router.route('/logout').get(userController.logout)
 

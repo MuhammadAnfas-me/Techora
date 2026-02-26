@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Category - Techora</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/styles/admin/category/addPage.css" />
+    <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+    <link rel="stylesheet" href="/styles/user/popup.css" />
+    <script src="/js/popup.js" defer></script>
+    <script src="/js/partitials/Admin/sidebar.js"defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+
+  <body>
+    
+    <div class="main-wrapper">
+      <%- include("../../partitials/admin/sidebar.ejs",{ currentPage }) %>
+      <%- include("../../partitials/admin/header.ejs",{currentPage}) %>
+
+      <main class="main-content">
+        <div class="content-container">
+          <div class="page-header">
+            <h1 class="page-title">Add Category</h1>
+            <p class="page-subtitle">
+              Create a new product category and set its visibility
+            </p>
+          </div>
+
+          <form class="category-form" id="Form">
+            <div class="add-category-grid">
+              <div class="add-category-left">
+                <div class="card form-card">
+                  <h3 class="card-title">Category Information</h3>
+                  <p class="card-subtitle">
+                    Enter the basic information for this category
+                  </p>
+
+                  <div class="form-group">
+                    <label class="form-label">Category Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="categoryName"
+                      placeholder="e.g. Smartphones"
+                    />
+                    <div class="error-message" id="nameError"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Category Type</label>
+                    <select class="form-control" id="categoryType">
+                      <option value="">Select type</option>
+                      <option value="Smartphones">Smartphones</option>
+                      <option value="Accessories">Accessories</option>
+                      <option value="Laptops">Laptops</option>
+                    </select>
+                    <div class="error-message" id="typeError"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Category Description</label>
+                    <textarea
+                      class="form-control"
+                      id="categoryDescription"
+                      rows="4"
+                      placeholder="Enter description here..."
+                    ></textarea>
+                    <div class="error-message" id="descriptionError"></div>
+                  </div>
+
+                  <div class="form-info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Total Products</span>
+                      <span class="info-value">0</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Created Date</span>
+                      <span class="info-value">—</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Last Updated</span>
+                      <span class="info-value">—</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="add-category-right">
+                <div class="card status-card">
+                  <h3 class="card-title">Status & Visibility</h3>
+
+                  <div class="status-toggle-group">
+                    <div class="status-text">
+                      <span class="status-label">Status</span>
+                      <span class="status-desc"
+                        >Category visibility on store</span
+                      >
+                    </div>
+
+                    <label class="category-switch">
+                      <input type="checkbox" id="statusToggle" checked />
+                      <span class="category-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="status-badge active" id="statusBadge">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Active</span>
+                  </div>
+
+                  <p class="status-help-text">
+                    Inactive categories will be hidden from the storefront menu
+                    and search results.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="page-actions">
+              <button type="button" class="btn-cancel-simple" onclick="window.history.back()">Cancel</button>
+              <button type="submit" class="btn-primary-dark">
+                Create Category
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </body>
+  <script>
+    
+    const statusToggle = document.getElementById('statusToggle');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+
+    statusToggle.addEventListener('change', function () {
+        if (this.checked) {
+            // Switch to Active State
+            statusBadge.classList.add('active');
+            statusBadge.classList.remove('inactive');
+            statusText.textContent = 'Active';
+        } else {
+            // Switch to Inactive State
+            statusBadge.classList.remove('active');
+            statusBadge.classList.add('inactive');
+            statusText.textContent = 'Inactive';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.category-form');
+
+        // Inputs
+        const nameInput = document.getElementById('categoryName');
+        const typeInput = document.getElementById('categoryType');
+        const descInput = document.getElementById('categoryDescription');
+
+        // Error Elements
+        const nameError = document.getElementById('nameError');
+        const typeError = document.getElementById('typeError');
+        const descError = document.getElementById('descriptionError');
+
+        // 1. Form Submit Listener
+        form.addEventListener('submit',async function(e) {
+            e.preventDefault();
+
+            let isValid = true;
+
+            // Reset previous errors
+            clearErrors();
+
+            // Validate Name
+            if (nameInput.value.trim() === "") {
+                showError(nameInput, nameError, "Category name is required");
+                isValid = false;
+            } else if (!/^[a-zA-Z\s]+$/.test(nameInput.value.trim())) {
+                showError(nameInput, nameError, "Category name should only contain letters");
+                isValid = false;
+            }
+
+            // Validate Type
+            if (typeInput.value === "") {
+                showError(typeInput, typeError, "Please select a category type");
+                isValid = false;
+            }
+
+            // Validate Description
+            if (descInput.value.trim() === "") {
+                showError(descInput, descError, "Description cannot be empty");
+                isValid = false;
+            }
+
+            // If invalid, prevent submission
+            if (!isValid) return 
+                const categoryData = {
+                    name : nameInput.value.trim(),
+                    description : descInput.value.trim(),
+                    type : typeInput.value.trim(),
+                    isActive : statusToggle.checked
+                }
+
+                /*-----------------------FETCHING DATA-------------------------------*/
+
+                try{
+                    const res = await axios.post("/admin/category/add",categoryData)
+                    showToast(res.data?.message || "Category added successfully")
+                    setTimeout(()=>{
+                        window.location.href = "/admin/category"
+                    },900)
+                }catch(er){
+                    showToast(er.response?.data?.message || "Something went wrong","error")
+                    console.error(er)
+                }
+         
+        });
+
+        // 2. Real-time Error Clearing (User Experience)
+        // Removes error as soon as user types
+        nameInput.addEventListener('input', () => clearSingleError(nameInput, nameError));
+        typeInput.addEventListener('change', () => clearSingleError(typeInput, typeError));
+        descInput.addEventListener('input', () => clearSingleError(descInput, descError));
+
+        // Helper Functions
+        function showError(input, errorElement, message) {
+            input.classList.add('error');
+            input.classList.add('shake'); // Optional animation
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
+
+            // Remove shake animation after it plays
+            setTimeout(() => input.classList.remove('shake'), 300);
+        }
+
+        function clearErrors() {
+            const inputs = [nameInput, typeInput, descInput];
+            const errors = [nameError, typeError, descError];
+
+            inputs.forEach(input => input.classList.remove('error'));
+            errors.forEach(error => error.style.display = "none");
+        }
+
+        function clearSingleError(input, errorElement) {
+            input.classList.remove('error');
+            errorElement.style.display = "none";
+        }
+
+    });
+  </script>
+</html>
