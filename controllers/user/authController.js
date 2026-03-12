@@ -67,7 +67,7 @@ const login = async (req, res) => {
         email
       })
     }
-    req.session.user = {email : user.email , name : user.fullName , userId : user.userId}
+    req.session.user = {email : user.email , name : user.fullName , userId : user.userId , id : user._id}
     res.status(200).json({
       success: true,
       message: 'Logined Succesfully'

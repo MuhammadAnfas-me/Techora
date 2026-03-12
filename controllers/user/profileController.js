@@ -285,19 +285,15 @@ const updateProfileImage = async (req, res) => {
         .json({ success: false, message: 'No file uploaded' })
 
     const imageUrl = req.file?.path
-    const publicId = req.file?.filename
 
     if (!userId)
       return res.status(400).json({ success: false, message: 'Unauthorized' })
-    const user = await User.findOne({ userId })
-    if (user.profileImage?.publicId) {
-      await cloudinary.uploader.destroy(user.profileImage.publicId)
-    }
-    user.profileImage = {
-      url: imageUrl,
-      publicId
-    }
 
+    const user = await User.findOne({ userId })
+    if (user?.profileImage) {
+      await cloudinary.uploader.destroy(user.profileImage)
+    }
+    user.profileImage = imageUrl
     await user.save()
 
     if (req.session.user) {

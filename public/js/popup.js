@@ -6,5 +6,5 @@ function showToast (message, type = 'success') {
 
   setTimeout(() => {
     toast.className = 'toast'
-  }, 3000)
+  }, 1500)
 }

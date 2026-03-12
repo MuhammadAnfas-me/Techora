@@ -1071,15 +1071,19 @@ body.preload .sidebar {
         background-color: #f3f4f6;
         font-weight: 600;
       }
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+      .back-link span { font-size: 16px; margin-right: 4px; }
+      .back-link:hover { color: var(--primary-blue); }
 
-      .product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-  display: block;
-}
-  .product-pagination {
+      .variant-pagination {
   margin-top: 20px;
   padding: 16px 20px;
   display: flex;
@@ -1089,19 +1093,19 @@ body.preload .sidebar {
   border-top: 1px solid #e5e7eb;
 }
 
-.product-page-info {
+.variant-page-info {
   font-size: 14px;
   color: #6b7280;
   margin: 0;
 }
 
-.product-pagination-controls {
+.variant-pagination-controls {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.product-page-btn {
+.variant-page-btn {
   width: 40px;
   height: 40px;
   border: 1px solid #d1d5db;
@@ -1115,76 +1119,16 @@ body.preload .sidebar {
   transition: all 0.2s ease;
 }
 
-.product-page-btn:hover:not(:disabled) {
+.variant-page-btn:hover:not(:disabled) {
   background: #f3f4f6;
   border-color: #9ca3af;
 }
 
-.product-page-btn:disabled {
+.variant-page-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.product-page-btn .material-symbols-outlined {
+.variant-page-btn .material-symbols-outlined {
   font-size: 20px;
-}
-.product-name-blocked {
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
-  opacity: 0.55;
-  color: #9ca3af;
-}
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 24px 0;
-}
-
-.page-link {
-  min-width: 42px;
-  height: 42px;
-  padding: 0 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1px solid #dbe3ea;
-  border-radius: 12px;
-  background: #ffffff;
-  color: #1f3f5b;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.page-link:hover {
-  background: #f3f7fb;
-  border-color: #1f4b6e;
-  color: #1f4b6e;
-}
-
-.page-link.active {
-  background: #173b57;
-  color: #ffffff;
-  border-color: #173b57;
-}
-
-.page-link-nav {
-  padding: 0 16px;
-}
-
-.page-link svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2;
-}
-
-.h-4.w-4 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }

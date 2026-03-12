@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techora - iPhone 15 Pro Max</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/styles/user/products/productDetails.css">
+</head>
+<body>
+
+    <%- include("../../partitials/user/header.ejs",{tittle : "Techora || Product"}) %>
+
+    <div class="container breadcrumbs" style="padding-bottom: 3px;padding-top: 2px;">
+        <a href="/">Home</a> <i class="fas fa-chevron-right"></i>
+        <a href="/products">Products</a> <i class="fas fa-chevron-right"></i>
+        <span><%= product.name %></span>
+    </div>
+
+    <main class="container">
+        <section class="product-overview">
+            <div class="product-gallery">
+               <div class="product-image-area" id="productImageArea">
+                      <img
+                        src="<%= product.variants[0].image[0] %>"
+                        alt="Product"
+                        id="mainImage"
+                        class="main-image"
+                      />
+                      <div class="zoom-lens" id="zoomLens"></div>
+                    </div>
+                    
+                    <div class="zoom-preview-modal" id="zoomPreview"></div>
+                
+                    <div class="thumbnail-list">
+                        <% product.variants[0].image.forEach(img=>{ %>
+                        <div class="thumbnail <%= product.variants[0].image.indexOf(img) === 0 ? "active" : "" %>" onclick="changeImage(this)"><img src="<%= img %>" alt="Thumb 1"></div>
+                        <% }) %>
+                    </div>
+            </div>
+
+            <div class="product-details">
+                <span class="brand"><% product.brand %></span>
+                <h1 class="product-title"><%= product.name %></h1>
+                
+                <div class="reviews">
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <span class="review-count">4.3 (2,847 reviews)</span>
+                </div>
+
+                <div class="pricing">
+                    <span class="current-price">$<span  id="currentPrice"><%= product.variants[0].price %></span></span>
+                    <span class="old-price">$1,299</span>
+                    <span class="discount-badge">Save 15%</span>
+                </div>
+
+                <div class="promo-banner">
+                    <i class="fas fa-tag"></i> Limited time offer: Free shipping 
+                </div>
+
+                <% const stock = product.variants[0]?.stock || 0; %>
+                <div class="stock-status 
+    <% if(stock <= 5 && stock > 1){ %> low-stock <% } %> 
+    <% if(stock === 0){ %> out-of-stock <% } %>" id="stockStatus">
+
+
+    <% if(stock === 0){ %>
+        <span class="dot out"></span> Out of Stock
+
+    <% } else if(stock <= 5){ %>
+        <span class="dot low"></span> Only <%= stock %> left
+
+    <% } else if(stock < 15){ %>
+        <span class="dot"></span> In Stock - Only <%= stock %> left
+
+    <% } else { %>
+        <span class="dot"></span> In Stock
+    <% } %>
+
+</div>
+
+                <div class="color-selection">
+                    <p >Color: <strong id="selectedColor"><%= product.variants[0].color ? product.variants[0].color : "" %></strong></p>
+                    <div class="color-swatches">
+                        <%
+                          const colorMap = {
+                            White: "#e5e7eb",
+                            Black: "#1f2937",
+                            Blue: "#3b82f6",
+                            Gray: "#6b7280",
+                            Silver: "#cbd5e1",
+                            Red: "#ef4444",
+                            Green: "#22c55e",
+                            Purple: "#8b5cf6",
+                            Gold: "#d4af37"
+                          };
+                        %>
+                        <% product.variants.forEach((variant,index)=>{ %>
+                             <div
+                              class="swatch <%= index === 0 ? 'active' : '' %>"
+                              data-variant-id="<%= variant.varientId %>"
+                              onclick="selectVariant('<%= variant.varientId %>')"
+                              title="<%= variant.color %>"
+                              style="background-color: <%= variant.colorCode || '#cccccc' %>;"
+                            ></div>
+                        <% }) %>
+                        <input type="hidden" id="selectedVariantId" value="<%= product.variants[0]?.varientId %>">
+                    </div>
+                </div>
+                <!-- 
+                    <div class="swatch" style="background-color: #2e3641;"></div>
+                    <div class="swatch" style="background-color: #4b6a95;"></div>
+                    <div class="swatch" style="background-color: #3b3b3c;"></div> -->
+                
+                <div class="quantity-selection">
+                    <p>Quantity</p>
+                    <div class="qty-controls">
+                        <button id="qtyLessBtn" ><i class="fas fa-minus"></i></button>
+                        <input type="text" id="qty-input" value="1" readonly>
+                        <button id="qtyAddBtn" ><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="compatibility">
+                    <p>Compatibility</p>
+                    <div class="tags">
+                        <span class="tag"><i class="fab fa-apple"></i> iOS 17+</span>
+                        <span class="tag"><i class="fas fa-android"></i> Android</span>
+                        
+                    </div>
+                </div>
+
+                <div class="action-buttons" id="cartAdd">
+                    <button class="btn-primary" >
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    <button class="btn-icon-outline"><i class="far fa-heart"></i></button>
+                </div>
+
+                
+            </div>
+        </section>
+
+<div class="features-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <h4>Secure Payments</h4>
+                            <p>SSL Encrypted</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-sync-alt"></i>
+                        <div>
+                            <h4>Easy Returns</h4>
+                            <p>7-Day Policy</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <h4>Fast Delivery</h4>
+                            <p>2-3 Business Days</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-certificate"></i>
+                        <div>
+                            <h4>Brand Warranty</h4>
+                            <p>1 Year Coverage</p>
+                        </div>
+                    </div>
+                </div>
+
+        <div class="tabs-container">
+            <button class="tab active" onclick="switchTab('specs')">Specifications</button>
+            <button class="tab" onclick="switchTab('desc')">Description</button>
+            <button class="tab" onclick="switchTab('reviews')">Reviews (2,847)</button>
+        </div>
+
+        <section class="tab-content active" id="specs">
+            <h3 class="section-title">Technical Specifications</h3>
+            <div class="specs-table">
+                <% product.specifications.forEach(item=>{ %>
+                <div class="spec-row">
+                    <div class="spec-name"><%= item.label %></div>
+                    <div class="spec-value"><%= item.value %></div>
+                </div>
+                <% }) %>
+            </div>
+        </section>
+        
+        <section class="tab-content" id="desc"><small><%= product.fullDescription %></small></section>
+        <section class="tab-content" id="reviews"><p>Customer reviews go here.</p></section>
+
+        <section class="related-products">
+            <div class="section-header">
+                <h2>Related Products</h2>
+                <a href="/products" class="view-all">View All <i class="fas fa-caret-right"></i></a>
+            </div>
+            
+            <div class="products-grid">
+                <% relatedItems.forEach(items=>{ %>
+                <div class="product-card" onclick="openProductPage('<%= items.name %>')">
+                    <div class="card-badges">
+                        <button class="wishlist-btn"><i class="fas fa-heart"></i></button>
+                        <% 
+                            const now = new Date()
+                            const createdAt = new Date(items.createdAt)
+                            const diffDays = (now-createdAt) / (1000*60*60*24)
+                             %>
+                            <% if(diffDays <= 7){ %>
+                            <span class="badge-new">New</span>
+                            <% } %>
+                    </div>
+                    <div class="card-img">
+                        <img src="<%= items.variants[0].image[0] %>" alt="iPhone 15">
+                    </div>
+                    <div class="card-info">
+                        <div class="card-stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> <span>(234)</span>
+                        </div>
+                        <h3><%= items.name %></h3>
+                        <div class="card-price">$<%= items.variants[0].price %></div>
+                        <button class="btn-add-cart" id="i" onclick="addToCart(event,'<%= items._id %>', '<%= items.variants[0].varientId %>',<%= user ? 'true' : 'false' %>)">
+                            <i class="fas fa-shopping-cart"></i>Add to Cart
+                        </button>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+        </section>
+    </main>
+
+    <%- include("../../partitials/user/footer.ejs") %>
+
+    <script >
+        const variants = <%- JSON.stringify(product.variants) %>;
+        let selectedVariant = variants[0];
+        let productId = <%- JSON.stringify(product._id) %>;
+        const currentUser = <%- JSON.stringify(user || null) %>;
+        const cart = <%- JSON.stringify(cart || null) %>;
+
+    const selectedColor = document.getElementById("selectedColor");
+    const selectedVariantId = document.getElementById("selectedVariantId");
+    const currentPrice = document.getElementById("currentPrice");
+    const stockStatus = document.getElementById("stockStatus");
+    const mainImage = document.getElementById("mainImage");
+    const thumbnailList = document.querySelector(".thumbnail-list");
+    const zoomPreview = document.getElementById("zoomPreview");
+
+    const imageArea = document.getElementById("productImageArea");
+    const zoomLens = document.getElementById("zoomLens");
+
+    const cartAdd = document.getElementById("cartAdd")
+    const qtyAddBtn = document.getElementById("qtyAddBtn")
+    const qtyLessBtn = document.getElementById("qtyLessBtn")
+
+
+        // Image Gallery Logic
+function changeImage(element) {
+    // Update main image source
+    const newSrc = element.querySelector('img')?.src;
+    if (newSrc) {
+        document.getElementById('mainImage').src = newSrc;
+    }
+    
+    // Update active state on thumbnails
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    thumbnails.forEach(thumb => thumb.classList.remove('active'));
+    element.classList.add('active');
+}
+
+// Quantity Counter Logic
+
+const existingItem = cart?.items?.find(item=>
+    item.productId.toString() === productId && item.variantId === selectedVariant.varientId
+)
+const alreadyInCartQty = existingItem ? existingItem.quantity : 0
+function updateQty(change,price) {
+    const qtyInput = document.getElementById('qty-input');
+    const currentPrice = document.getElementById("currentPrice")
+    const stock = selectedVariant.stock - alreadyInCartQty
+    
+    let currentQty = parseInt(qtyInput.value) || 1;
+    let newQty = currentQty + change;
+
+    if(newQty > stock){
+        showToast(`Only ${currentQty} stocks are left`,"error")
+        return
+    }
+
+    // Prevent going below 1
+    if (newQty < 1) return
+
+        qtyInput.value = newQty;
+        currentPrice.textContent = (newQty * price).toFixed(2);
+    
+}
+
+// Tab Switching Logic
+function switchTab(tabId) {
+    // Hide all contents
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Show selected content and activate corresponding tab
+    document.getElementById(tabId).classList.add('active');
+    // Find the button that was clicked to add active state
+    event.currentTarget.classList.add('active');
+}
+
+
+
+if (imageArea && mainImage && zoomLens && zoomPreview) {
+  imageArea.addEventListener("mouseenter", () => {
+  if (window.innerWidth <= 1200) return;
+
+  zoomLens.style.display = "block";
+  zoomPreview.style.display = "block";
+  zoomPreview.style.backgroundImage = `url('${mainImage.src}')`;
+});
+
+imageArea.addEventListener("mouseleave", () => {
+  zoomLens.style.display = "none";
+  zoomPreview.style.display = "none";
+});
+
+  imageArea.addEventListener("mousemove", moveLens);
+}
+
+function moveLens(e) {
+  const rect = imageArea.getBoundingClientRect();
+
+  let x = e.clientX - rect.left;
+  let y = e.clientY - rect.top;
+
+  const lensWidth = zoomLens.offsetWidth;
+  const lensHeight = zoomLens.offsetHeight;
+
+  let lensX = x - lensWidth / 2;
+  let lensY = y - lensHeight / 2;
+
+  if (lensX < 0) lensX = 0;
+  if (lensY < 0) lensY = 0;
+  if (lensX > rect.width - lensWidth) lensX = rect.width - lensWidth;
+  if (lensY > rect.height - lensHeight) lensY = rect.height - lensHeight;
+
+  zoomLens.style.left = `${lensX}px`;
+  zoomLens.style.top = `${lensY}px`;
+
+  const cx = zoomPreview.offsetWidth / lensWidth;
+  const cy = zoomPreview.offsetHeight / lensHeight;
+
+  zoomPreview.style.backgroundSize = `${rect.width * cx}px ${rect.height * cy}px`;
+  zoomPreview.style.backgroundPosition = `-${lensX * cx}px -${lensY * cy}px`;
+}
+
+  function highlightLoginButton() {
+    const loginBtn = document.getElementById("loginBtn");
+    if (!loginBtn) return;
+
+    loginBtn.focus();
+    loginBtn.classList.remove("shake-highlight");
+    void loginBtn.offsetWidth;
+    loginBtn.classList.add("shake-highlight");
+  }
+
+  async function addToCart(e,productId, variantId,isLogged,qty=1) {
+        e.stopPropagation()
+        if(!isLogged){
+            highlightLoginButton();
+            return;
+
+        }else{
+        try {
+          const res = await axios.post('/cart/add', {
+            productId,
+            variantId,
+            quantity: qty
+          });
+          const cartCountEl = document.getElementById("cartCount");
+        if (cartCountEl && res.data.cartCount !== undefined) {
+            cartCountEl.textContent = res.data.cartCount;
+        }
+        cartCountEl.classList.add("cart-bounce");
+    
+        setTimeout(()=>{
+          cartCountEl.classList.remove("cart-bounce");
+        },300);
+          showToast(res.data.message || "Added to cart");
+        } catch (error) {
+          showToast(error.response?.data?.message || "Failed to add to cart","error");
+        }
+    }
+}   
+    function openProductPage(name){
+        window.location.href = `/products/${name}`
+    }
+
+// Color variant selecting 
+
+ function selectVariant(variantId) {
+    const variant = variants.find(v => v.varientId === variantId);
+    if (!variant) return;
+
+    selectedVariant = variant;
+    updateVariantUI(variant);
+    updateActiveSwatch(variantId);
+  }
+
+  function updateVariantUI(variant) {
+    const qtyInput = document.getElementById('qty-input');
+    qtyInput.value = 1
+
+    if (selectedColor) {
+      selectedColor.textContent = variant.color || "";
+    }
+
+    if (selectedVariantId) {
+      selectedVariantId.value = variant.varientId;
+    }
+
+    if (currentPrice) {
+      currentPrice.textContent = variant.price;
+    }
+
+    if (mainImage && variant.image?.length) {
+      mainImage.src = variant.image[0];
+    }
+
+    if (thumbnailList) {
+      thumbnailList.innerHTML = variant.image.map((img, index) => `
+        <div class="thumbnail ${index === 0 ? "active" : ""}" onclick="changeImage(this)">
+          <img src="${img}" alt="Thumb">
+        </div>
+      `).join("");
+    }
+
+    if (stockStatus) {
+        if(selectedVariant.stock === alreadyInCartQty){
+            stockStatus.className = "stock-status out-of-stock";
+            stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
+            qtyAddBtn.disabled = true
+        return
+    }
+    }else {
+      if (variant.stock === 0) {
+        stockStatus.className = "stock-status out-of-stock";
+        stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
+      } else if (variant.stock <= 5) {
+        stockStatus.className = "stock-status low-stock";
+        stockStatus.innerHTML = `<span class="dot low"></span> Only ${variant.stock} left`;
+      } else if (variant.stock < 15) {
+        stockStatus.className = "stock-status";
+        stockStatus.innerHTML = `<span class="dot"></span> In Stock - Only ${variant.stock} left`;
+      } else {
+        stockStatus.className = "stock-status";
+        stockStatus.innerHTML = `<span class="dot"></span> In Stock`;
+      }
+    }
+
+    if (zoomPreview && variant.image?.length) {
+      zoomPreview.style.backgroundImage = `url('${variant.image[0]}')`;
+    }
+  }
+
+  function updateActiveSwatch(variantId) {
+    document.querySelectorAll(".swatch").forEach((swatch) => {
+      swatch.classList.remove("active");
+
+      if (swatch.dataset.variantId === variantId) {
+        swatch.classList.add("active");
+      }
+    });
+  }
+
+
+  cartAdd.addEventListener("click",()=>{
+    let qty = document.getElementById("qty-input").value
+    qty = parseInt(qty)
+    addToCart(event,productId,selectedVariant.varientId,currentUser ? true : false,qty)
+  })
+
+  qtyAddBtn.addEventListener("click",()=>{
+    updateQty(1,selectedVariant.price)
+  })
+
+  qtyLessBtn.addEventListener("click",()=>{
+    updateQty(-1,selectedVariant.price)
+  })
+
+
+    </script>
+</body>
+</html>

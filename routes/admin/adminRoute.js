@@ -5,6 +5,7 @@ import * as categoryController from '../../controllers/admin/categoryController.
 import * as productController from "../../controllers/admin/productController.js"
 
 import * as middleWares from '../../middlewares/admin/adminAuth.js'
+import uploadProductImage from '../../middlewares/cloudinary/uploadProductImages.js'
 
 const router = express.Router()
 
@@ -25,30 +26,53 @@ router.route('/users/block/:id').patch(userController.blockUser)
 
 // -------------- Category lisiting and Management --------------//
 
-router.route('/category').get(categoryController.categoryListPage)
-router.route('/category/api').get(categoryController.categoryListApi)
+router.route('/category').get(middleWares.checkAdminAuth,categoryController.categoryListPage)
+router.route('/category/api').get(middleWares.checkAdminAuth,categoryController.categoryListApi)
 
 router
   .route('/category/add')
-  .get(categoryController.addCategoryLoad)
-  .post(categoryController.addCategory)
+  .get(middleWares.checkAdminAuth,categoryController.addCategoryLoad)
+  .post(middleWares.checkAdminAuth,categoryController.addCategory)
 
 router
   .route('/category/:id')
-  .get(categoryController.editPageLoad)
-  .patch(categoryController.editCategory)
-  .delete(categoryController.deleteCategory)
+  .get(middleWares.checkAdminAuth,categoryController.editPageLoad)
+  .patch(middleWares.checkAdminAuth,categoryController.editCategory)
+  .delete(middleWares.checkAdminAuth,categoryController.deleteCategory)
+
+  
+
 
 // --------------- Product Listing and Management ---------------//
 
 router
   .route("/products")
-  .get(productController.loadProducts)
+  .get(middleWares.checkAdminAuth,productController.loadProducts)
 
 router
   .route("/products/add")
-  .get(productController.loadAddPage)
-  .post(productController.addProduct)
+  .get(middleWares.checkAdminAuth,productController.loadAddPage)
+  .post(middleWares.checkAdminAuth,uploadProductImage.fields([
+    {name : "variantImages" , maxCount : 20}
+  ]),productController.addProduct)
+
+
+router
+  .route("/products/variants/:id")
+  .get(middleWares.checkAdminAuth,productController.variantLoad)
+  .delete(middleWares.checkAdminAuth,productController.deleteVariant)
+
+router
+  .route("/products/:id")
+  .get(middleWares.checkAdminAuth,productController.loadEdit)
+  .patch(middleWares.checkAdminAuth,uploadProductImage.any()
+  ,productController.editProduct)
+
+router
+  .route("/products/:id/block")
+  .patch(middleWares.checkAdminAuth,productController.blockCategory)
+
+
 
 router.route('/logout').get(authController.logout)
 export default router

@@ -41,59 +41,29 @@
             <div class="add-category-grid">
               <div class="add-category-left">
                 <div class="card form-card">
-                  <h3 class="card-title">Category Information</h3>
-                  <p class="card-subtitle">
-                    Enter the basic information for this category
-                  </p>
+  <h3 class="card-title">Category Information</h3>
+  <p class="card-subtitle">
+    Enter the basic information for this category
+  </p>
 
-                  <div class="form-group">
-                    <label class="form-label">Category Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="categoryName"
-                      placeholder="e.g. Smartphones"
-                    />
-                    <div class="error-message" id="nameError"></div>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="form-label">Category Type</label>
-                    <select class="form-control" id="categoryType">
-                      <option value="">Select type</option>
-                      <option value="Smartphones">Smartphones</option>
-                      <option value="Accessories">Accessories</option>
-                      <option value="Laptops">Laptops</option>
-                    </select>
-                    <div class="error-message" id="typeError"></div>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="form-label">Category Description</label>
-                    <textarea
-                      class="form-control"
-                      id="categoryDescription"
-                      rows="4"
-                      placeholder="Enter description here..."
-                    ></textarea>
-                    <div class="error-message" id="descriptionError"></div>
-                  </div>
-
-                  <div class="form-info-grid">
-                    <div class="info-item">
-                      <span class="info-label">Total Products</span>
-                      <span class="info-value">0</span>
-                    </div>
-                    <div class="info-item">
-                      <span class="info-label">Created Date</span>
-                      <span class="info-value">—</span>
-                    </div>
-                    <div class="info-item">
-                      <span class="info-label">Last Updated</span>
-                      <span class="info-value">—</span>
-                    </div>
-                  </div>
-                </div>
+  <div class="form-group">
+    <label class="form-label">Category Name</label>
+    <input
+      type="text"
+      class="form-control"
+      id="categoryName"
+      placeholder="e.g. Smartphones"
+    />
+    <small class="input-hint">
+  Use a clear and unique category name.
+</small>
+    <div class="error-message" id="nameError"></div>
+  </div>
+  <div class="form-note">
+  Categories can be edited later and products can be assigned after creation.
+</div>
+  
+</div>
               </div>
 
               <div class="add-category-right">
@@ -163,13 +133,9 @@
 
         // Inputs
         const nameInput = document.getElementById('categoryName');
-        const typeInput = document.getElementById('categoryType');
-        const descInput = document.getElementById('categoryDescription');
 
         // Error Elements
         const nameError = document.getElementById('nameError');
-        const typeError = document.getElementById('typeError');
-        const descError = document.getElementById('descriptionError');
 
         // 1. Form Submit Listener
         form.addEventListener('submit',async function(e) {
@@ -189,24 +155,12 @@
                 isValid = false;
             }
 
-            // Validate Type
-            if (typeInput.value === "") {
-                showError(typeInput, typeError, "Please select a category type");
-                isValid = false;
-            }
-
-            // Validate Description
-            if (descInput.value.trim() === "") {
-                showError(descInput, descError, "Description cannot be empty");
-                isValid = false;
-            }
+           
 
             // If invalid, prevent submission
             if (!isValid) return 
                 const categoryData = {
                     name : nameInput.value.trim(),
-                    description : descInput.value.trim(),
-                    type : typeInput.value.trim(),
                     isActive : statusToggle.checked
                 }
 
@@ -228,8 +182,6 @@
         // 2. Real-time Error Clearing (User Experience)
         // Removes error as soon as user types
         nameInput.addEventListener('input', () => clearSingleError(nameInput, nameError));
-        typeInput.addEventListener('change', () => clearSingleError(typeInput, typeError));
-        descInput.addEventListener('input', () => clearSingleError(descInput, descError));
 
         // Helper Functions
         function showError(input, errorElement, message) {
@@ -243,8 +195,8 @@
         }
 
         function clearErrors() {
-            const inputs = [nameInput, typeInput, descInput];
-            const errors = [nameError, typeError, descError];
+            const inputs = [nameInput];
+            const errors = [nameError];
 
             inputs.forEach(input => input.classList.remove('error'));
             errors.forEach(error => error.style.display = "none");

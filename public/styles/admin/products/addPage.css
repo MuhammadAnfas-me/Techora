@@ -1630,3 +1630,38 @@ body.preload .sidebar {
   background: var(--card-bg);
   margin-top: 0;
 }
+.remove-spec-btn {
+  padding: 6px 12px;
+  border: 1px solid #ef4444;
+  background: #fff5f5;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-spec-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+}
+
+.remove-spec-btn:active {
+  transform: scale(0.97);
+}
+
+.remove-spec-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+.color-picker {
+  width: 60px;
+  height: 44px;
+  padding: 2px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}

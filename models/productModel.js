@@ -11,15 +11,13 @@ const varientsSchema = new mongoose.Schema({
     varientId : {
         type : String,
         default : ()=> new mongoose.Types.ObjectId().toString(),
-    },
-    attributes : {
-        color : {type : String , trim : true, defaul,t :""},
-        storage : {type : String , trim : "" , default : ""}
     }, 
-    price : {type : String , required : true,min : 0},
-    stock : {type : String , required : true , min : 0, default : 0},
-    image : {type : [String] , default : []},
-    status : {type : String , enum : ["Active" , "Inactive"], default : "Active"}
+    sku : {type : String , required : true},
+    color : {type : String , required : true},
+    colorCode : {type : String , required : true},
+    price : {type : Number , required : true,min : 0},
+    stock : {type : Number , required : true , min : 0, default : 0},
+    image : {type : [String] , default : []}
 },
 {_id : false});
 
@@ -29,29 +27,31 @@ const productSchema = new mongoose.Schema({
         require : true
     },
     categoryId :{
-        type : Schema.Types.ObjectId,
+        type : mongoose.Schema.Types.ObjectId,
         ref : "Categories",
         required : true
     },
     brand : {
         type : String,
-        require : true
+        required : true
     },
     status : {
-        type : Boolean,
+        type : String,
         default : true
     },
     shortDescription : {
         type : String,
     },
     fullDescription : {
-        type : String,
-    },
-    productImage : {
         type : String
     },
-    specification : {type : [specificationSchema] , default : []}
-})
+    specifications : {type : [specificationSchema] , default : []},
+    variants : {
+        type : [varientsSchema] ,
+        default : []
+    }
+},{timestamps : true}
+)
 
 const Product = mongoose.model("Product",productSchema)
 export default Product

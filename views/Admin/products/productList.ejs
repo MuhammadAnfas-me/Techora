@@ -47,52 +47,43 @@
           </div>
 
           <div class="filters-card">
-  <select class="filter-select" id="categorySelect">
-    <option value="">Category</option>
-    <option value="Smartphones">Smartphones</option>
-    <option value="Audio">Audio</option>
-    <option value="Tablets">Tablets</option>
-  </select>
+          <select class="filter-select" id="categorySelect" name="category">
+            <option value="">Select Category</option>
+            <% categories.forEach((item)=>{ %>
+            <option value="<%= item._id %>" ><%= item.name %></option>
+            <% }) %>
+          </select>
+        
+          <select class="filter-select" id="brandSelect" name="brand">
+            <option value="">Brand</option>
+            <option value="apple">Apple</option>
+            <option value="samsung">Samsung</option>
+            <option value="google">Google</option>
+            <option value="sony">Sony</option>
+          </select>
+        
+          <select class="filter-select" id="stockStatusSelect" name="status">
+            <option value="">Stock Status</option>
+            <option value="In Stock">In Stock</option>
+            <option value="Low Stock">Low Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+          </select>
 
-  <select class="filter-select" id="brandSelect">
-    <option value="">Brand</option>
-    <option value="Apple">Apple</option>
-    <option value="Samsung">Samsung</option>
-    <option value="Google">Google</option>
-    <option value="Sony">Sony</option>
-  </select>
-
-  <select class="filter-select" id="stockStatusSelect">
-    <option value="">Stock Status</option>
-    <option value="In Stock">In Stock</option>
-    <option value="Low Stock">Low Stock</option>
-    <option value="Out of Stock">Out of Stock</option>
-  </select>
-
-  <!-- ✅ NEW: Sort dropdown -->
-  <select class="filter-select" id="sortSelect">
-    <option value="">Sort By</option>
-    <option value="newest">Newest</option>
-    <option value="oldest">Oldest</option>
-    <option value="name_asc">Name (A → Z)</option>
-    <option value="name_desc">Name (Z → A)</option>
-    <option value="stock_high">Stock (High → Low)</option>
-    <option value="stock_low">Stock (Low → High)</option>
-  </select>
-
-  <div class="search-wrapper">
-    <input type="text" id="search-input" placeholder="Search products" />
-    <span
-      class="material-symbols-outlined clear-icon"
-      id="clearBtn"
-      style="display: none;"
-      >close</span
-    >
-  </div>
-
+        
+        
+          <div class="search-wrapper">
+            <input type="text" id="search-input" placeholder="Search products" name="search" />
+            <span
+              class="material-symbols-outlined clear-icon"
+              id="clearBtn"
+              style="display: none;"
+              >close</span
+            >
+          </div>
+        
   <div class="filter-actions">
     <button class="btn-primary" id="searchBtn" style="background-color: #1B3C53;">Search</button>
-    <button class="btn-primary" id="applySortBtn" style="background-color: #1B3C53;">Apply Sort</button>
+    <button class="btn-primary" id="resetBtn" style="background-color: #1B3C53;">Reset</button>
   </div>
 </div>
 
@@ -112,165 +103,112 @@
                   </tr>
                 </thead>
                 <tbody id="productTbody">
+                  <% if(products.length>0) {%>
+                  <% products.forEach((product)=>{ %>
+                  <tr>
+                    <td>
+                      <div class="product-image">
+                        <% if(product?.variants[0]?.image[0]) {%>
+                            <img src="<%= product.variants[0].image[0] %>" alt="">
+                        <% }else{ %>
+                            <span class="material-symbols-outlined">image</span>
+                        <% } %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="product-details">
+                        <span class="product-name <%= product.status == 'inactive' ? 'product-name-blocked' : "" %>"><%= product.name %></span>
+                        <span class="product-variants"><%=product.variants.length %> variants available • <a href="/admin/products/variants/<%= product._id %>" class="view-variants" style="text-decoration: none;">View variants</a></span>
+                      </div>
+                    </td>
+                    <td><span class="category-pill cat-smartphones"><%= product.categoryId ? product.categoryId.name : "No category" %></span></td>
+                    <td><%= product.brand %></td>
+                    <% const prices = product.variants?.map((v)=> v.price ) %>
+                    <td>₹<%= Math.min(...prices)%> – ₹<%= Math.max(...prices) %></td>
+                    <% const stock = product.variants.reduce((acc,curr)=>{ 
+                      acc+=curr.stock
+                      return acc
+                     },0) %>
+                    <td><%= stock ? stock : "0" %></td>
+                    <td><span class="status-pill <%= stock === 0 ? "status-out-of-stock" : stock >= 15 ? "status-in-stock" : "status-low-stock" %>">
+                      
+                      <%= stock === 0 ? "out-of-stock" : stock >= 15 ? "In stock" : "Low stock" %>
+                      </span>
+                      </td>
+                    <td>
+                      <div class="action-icons">
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" onclick="window.location.href='/admin/products/<%= product._id %>'" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="<%= product.status == "inactive" ? 'Block' : 'Unblock' %>" onclick="toggleCategoryStatus('<%= product._id %>')">
+                          <span class="material-symbols-outlined" style="font-size:20px;">
+                            <%= product.status == "inactive" ? "block" : "check_circle" %>
+                          </span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                 <% }) %>
+                <% }else{ %>
+                  <tr>
+        <td colspan="8" class="category-muted" style="text-align:center; padding:16px;">
+          No categories found
+        </td>
+      </tr>
+                <% } %>
                   
-                  <tr>
-                    <td>
-                      <div class="product-image"><span class="material-symbols-outlined">image</span></div>
-                    </td>
-                    <td>
-                      <div class="product-details">
-                        <span class="product-name">iPhone 15 Pro Max</span>
-                        <span class="product-variants">4 variants available • <a href="#" class="view-variants">View variants</a></span>
-                      </div>
-                    </td>
-                    <td><span class="category-pill cat-smartphones">Smartphones</span></td>
-                    <td>Apple</td>
-                    <td>₹1,59,900 – ₹1,99,900</td>
-                    <td>45</td>
-                    <td><span class="status-pill status-in-stock">In Stock</span></td>
-                    <td>
-                      <div class="action-icons">
-                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
-                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="product-image" style="background-color: #1f2937;"><span class="material-symbols-outlined" style="color: #4b5563;">smartphone</span></div>
-                    </td>
-                    <td>
-                      <div class="product-details">
-                        <span class="product-name">Galaxy S24 Ultra</span>
-                        <span class="product-variants">3 variants available • <a href="#" class="view-variants">View variants</a></span>
-                      </div>
-                    </td>
-                    <td><span class="category-pill cat-smartphones">Smartphones</span></td>
-                    <td>Samsung</td>
-                    <td>₹1,29,999 – ₹1,59,999</td>
-                    <td>12</td>
-                    <td><span class="status-pill status-low-stock">Low Stock</span></td>
-                    <td>
-                      <div class="action-icons">
-                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
-                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="product-image" style="background-color: #f9fafb;"><span class="material-symbols-outlined" style="color: #9ca3af;">smartphone</span></div>
-                    </td>
-                    <td>
-                      <div class="product-details">
-                        <span class="product-name">Pixel 8 Pro</span>
-                        <span class="product-variants">2 variants available • <a href="#" class="view-variants">View variants</a></span>
-                      </div>
-                    </td>
-                    <td><span class="category-pill cat-smartphones">Smartphones</span></td>
-                    <td>Google</td>
-                    <td>₹1,06,999</td>
-                    <td>0</td>
-                    <td><span class="status-pill status-out-of-stock">Out of Stock</span></td>
-                    <td>
-                      <div class="action-icons">
-                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
-                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="product-image" style="background-color: #f3f4f6;"><span class="material-symbols-outlined" style="color: #4b5563;">headphones</span></div>
-                    </td>
-                    <td>
-                      <div class="product-details">
-                        <span class="product-name">WH-1000XM5</span>
-                        <span class="product-variants">2 variants available • <a href="#" class="view-variants">View variants</a></span>
-                      </div>
-                    </td>
-                    <td><span class="category-pill cat-audio">Audio</span></td>
-                    <td>Sony</td>
-                    <td>₹29,990</td>
-                    <td>85</td>
-                    <td><span class="status-pill status-in-stock">In Stock</span></td>
-                    <td>
-                      <div class="action-icons">
-                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
-                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="product-image"><span class="material-symbols-outlined">tablet_mac</span></div>
-                    </td>
-                    <td>
-                      <div class="product-details">
-                        <span class="product-name">iPad Pro 12.9"</span>
-                        <span class="product-variants">4 variants available • <a href="#" class="view-variants">View variants</a></span>
-                      </div>
-                    </td>
-                    <td><span class="category-pill cat-tablets">Tablets</span></td>
-                    <td>Apple</td>
-                    <td>₹1,12,900 – ₹2,00,000</td>
-                    <td>32</td>
-                    <td><span class="status-pill status-in-stock">In Stock</span></td>
-                    <td>
-                      <div class="action-icons">
-                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
-                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="product-image"><span class="material-symbols-outlined">tablet_mac</span></div>
-                    </td>
-                    <td>
-                      <div class="product-details">
-                        <span class="product-name">iPad Pro 12.9"</span>
-                        <span class="product-variants">4 variants available • <a href="#" class="view-variants">View variants</a></span>
-                      </div>
-                    </td>
-                    <td><span class="category-pill cat-tablets">Tablets</span></td>
-                    <td>Apple</td>
-                    <td>₹1,12,900 – ₹2,00,000</td>
-                    <td>32</td>
-                    <td><span class="status-pill status-in-stock">In Stock</span></td>
-                    <td>
-                      <div class="action-icons">
-                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button>
-                        <button class="action-btn" type="button" title="Delete"><span class="material-symbols-outlined" style="font-size: 20px;">delete</span></button>
-                      </div>
-                    </td>
-                  </tr>
 
                 </tbody>
               </table>
             </div>
             
-            <div class="pagination-bar">
-              <div class="page-info">Showing 1-8 of 1,248 products</div>
-              <div class="pagination-controls">
-                <button class="page-btn" type="button" disabled>
-                  <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span> Previous
-                </button>
-                <span class="page-number active">1</span>
-                <span class="page-number">2</span>
-                <span class="page-number">3</span>
-                <span class="page-number" style="cursor:default;">...</span>
-                <span class="page-number">156</span>
-                <button class="page-btn" type="button">
-                  Next <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
-                </button>
-              </div>
+        <%
+                  const queryParams = new URLSearchParams();
+
+
+                  if (selectedCategory) queryParams.set("category", selectedCategory);
+                  if (selectedBrand) queryParams.set("brand", selectedBrand);
+                  if (selectedStockStatus) queryParams.set("status", selectedStockStatus);
+                  if (search) queryParams.set("search", search);
+                  const makePageLink = (page) => {
+                    const params = new URLSearchParams(queryParams.toString());
+                    params.set("page", page);
+                    return `/admin/products?${params.toString()}`;
+                  };
+                %>
+        <% if (totalPages > 1) { %>
+<nav class="pagination">
+    <% if (page > 1) { %>
+        <a href="<%= makePageLink(page - 1) %>" class="page-link page-link-nav">
+            <div class="h-4 w-4">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
             </div>
+            Previous
+        </a>
+    <% } %>
+
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <a 
+          href="<%= makePageLink(i) %>" 
+          class="page-link <%= page === i ? 'active' : '' %>">
+          <%= i %>
+        </a>
+    <% } %>
+
+    <% if (page < totalPages) { %>
+        <a href="<%= makePageLink(page + 1) %>" class="page-link page-link-nav">
+            Next
+            <div class="h-4 w-4">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+            </div>
+        </a>
+    <% } %>
+</nav>
+<% } %>
+
+
           </div>
 
         </div>
@@ -279,9 +217,125 @@
   </body>
 
   <script>
-    // NOTE: The automatic fetch on page load has been removed to preserve the dummy HTML data above.
-    // If you want to reconnect this to your backend API later, uncomment your standard `loadProducts` functions!
-    // sidebarState.js (load on all admin pages)
+  const searchInput = document.getElementById("search-input");
+  const clearBtn = document.getElementById("clearBtn");
+  const searchBtn = document.getElementById("searchBtn");
+  const resetBtn = document.getElementById("resetBtn");
 
-  </script>
+  const categorySelect = document.getElementById("categorySelect");
+  const brandSelect = document.getElementById("brandSelect");
+  const stockStatusSelect = document.getElementById("stockStatusSelect");
+
+  const paginationEl = document.querySelector(".product-pagination");
+  const pageInfo = document.getElementById("pageInfo");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  function updateClearButton() {
+    clearBtn.style.display = searchInput.value.trim() ? "inline-block" : "none";
+  }
+
+  function applyFilters() {
+    const params = new URLSearchParams();
+
+    const search = searchInput.value.trim();
+    const category = categorySelect.value;
+    const brand = brandSelect.value;
+    const status = stockStatusSelect.value;
+
+    if (search) params.set("search", search);
+    if (category) params.set("category", category);
+    if (brand) params.set("brand", brand);
+    if (status) params.set("status", status);
+
+    window.location.href = `/admin/products?${params.toString()}`;
+  }
+
+  function loadCurrentFilters() {
+    const params = new URLSearchParams(window.location.search);
+
+    searchInput.value = params.get("search") || "";
+    categorySelect.value = params.get("category") || "";
+    brandSelect.value = params.get("brand") || "";
+    stockStatusSelect.value = params.get("status") || "";
+
+    updateClearButton();
+  }
+
+  searchInput.addEventListener("input", updateClearButton);
+
+  clearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    updateClearButton();
+    applyFilters();
+  });
+
+  searchBtn.addEventListener("click", applyFilters);
+
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyFilters();
+    }
+  });
+
+  resetBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    categorySelect.value = "";
+    brandSelect.value = "";
+    stockStatusSelect.value = "";
+    updateClearButton();
+    window.location.href = "/admin/products";
+  });
+
+  categorySelect.addEventListener("change", applyFilters);
+  brandSelect.addEventListener("change", applyFilters);
+  stockStatusSelect.addEventListener("change", applyFilters);
+
+  loadCurrentFilters();
+
+  if (paginationEl && pageInfo && prevBtn && nextBtn) {
+    const currentPage = Number(paginationEl.dataset.currentPage) || 1;
+    const totalPages = Number(paginationEl.dataset.totalPages) || 1;
+
+    function updatePaginationUI() {
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    function goToPage(page) {
+      const params = new URLSearchParams(window.location.search);
+      params.set("page", page);
+      window.location.href = `${window.location.pathname}?${params.toString()}`;
+    }
+
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        goToPage(currentPage - 1);
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < totalPages) {
+        goToPage(currentPage + 1);
+      }
+    });
+
+    updatePaginationUI();
+  }
+
+  
+    async function toggleCategoryStatus(id) {
+  try {
+    const res = await axios.patch(`/admin/products/${id}/block`);
+
+    showToast(res.data.message || "Status updated", "success");
+    setTimeout(() => location.reload(), 500);
+
+  } catch (error) {
+    showToast(error.response?.data?.message || "Failed to update status", "error");
+  }
+}
+</script>
 </html>

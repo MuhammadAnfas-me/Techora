@@ -111,7 +111,6 @@
                 <thead>
                   <tr>
                     <th>Category Name</th>
-                    <th>Category Type</th>
                     <th>Total Products</th>
                     <th>Status</th>
                     <th>Created Date</th>
@@ -120,21 +119,20 @@
                 </thead>
 
                 <tbody id="categoryTbody">
-                  <% categories.forEach((item)=> { %>
+                  <% categories.forEach((category)=> { %>
                   <tr>
-                    <td class="category-name"><%= item.name %></td>
-                    <td class="category-muted"><%= item.type %></td>
-                    <td class="category-muted"><%= item.totalProducts %></td>
+                    <td class="category-name"><%= category.name %></td>
+                    <td class="category-muted"><%= category.productCount ? category.productCount : 0 %></td>
 
                     <td>
                       <span
-                        class="category-status <%= item.isActive ? 'category-status-active' : 'category-status-inactive' %>"
+                        class="category-status <%= category.isActive ? 'category-status-active' : 'category-status-inactive' %>"
                       >
-                        <%= item.isActive ? "Active" : "Inactive" %>
+                        <%= category.isActive ? "Active" : "Inactive" %>
                       </span>
                     </td>
 
-                    <td class="category-muted"><%= item.createdAt.toISOString().split('T')[0] %></td>
+                    <td class="category-muted"><%= category.createdAt.toISOString().split('T')[0] %></td>
 
                     <td class="category-center">
                       <div class="category-actions">
@@ -151,7 +149,7 @@
                           class="category-switch"
                           title="Active / Inactive"
                         >
-                          <input type="checkbox" class="toggleBtn" <%=item.isActive ? 'checked' : ''
+                          <input type="checkbox" class="toggleBtn" <%=category.isActive ? 'checked' : ''
                           %>  data-id="<%= category._id %>" />
                           <span class="category-slider"></span>
                         </label>
@@ -248,8 +246,7 @@ function renderRows(categories) {
   tbody.innerHTML = categories.map((item) => `
     <tr data-id="${item._id}">
       <td class="category-name">${item.name ?? ""}</td>
-      <td class="category-muted">${item.type ?? ""}</td>
-      <td class="category-muted">${item.totalProducts ?? 0}</td>
+      <td class="category-muted">${item.productCount ?? 0}</td>
 
       <td>
         <span class="category-status ${item.isActive ? "category-status-active" : "category-status-inactive"}">

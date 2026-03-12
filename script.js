@@ -6,6 +6,7 @@ import connectDB from "./config/connect.js"
 import session from "express-session"
 import passport from "passport"
 import nocache from "nocache"
+import "./config/passport.js"
 import { setUser } from "./middlewares/user/auth.js"
 
 
@@ -19,7 +20,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended : true}))
 app.use(
     session({
-        secret : "my_secret_code",
+        secret : process.env.SESSION_SECRET,
         resave : false,
         saveUninitialized : true,
         cookie : {
@@ -33,7 +34,7 @@ app.use(passport.session())
 app.use(setUser)
 
 
-import "./config/passport.js"
+// import "./config/passport.js"
 app.use("/auth",authRoute)
 app.use("/",userRoute)
 app.use("/admin",adminRoute)

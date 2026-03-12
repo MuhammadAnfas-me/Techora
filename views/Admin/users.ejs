@@ -116,7 +116,7 @@
                                     <td class="user-id"><%= user.userId %></td>
                                     <td>
                                         <div class="user-info">
-                                             <img src="<%= user.profileImage?.url %>" alt="Alex Johnson">
+                                             <img src="<%= user.profileImage %>" alt="Alex Johnson">
                                             <span class="user-name"><%= user.fullName %></span>
                                         </div>
                                     </td>
@@ -241,7 +241,7 @@ let state = {
     }
 
     userTbody.innerHTML = users.map(user => {
-      const profileUrl = user.profileImage?.url || "/images/default-user.png";
+      const profileUrl = user.profileImage || "/images/default-user.png";
       const blocked = !!user.isBlocked;
 
       return `

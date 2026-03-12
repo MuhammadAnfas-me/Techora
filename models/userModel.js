@@ -24,8 +24,8 @@ const userSchema = new mongoose.Schema(
       }
     },
     profileImage: {
-      url : {type : String , default : "https://res.cloudinary.com/dfdv6skgg/image/upload/v1770472518/avathar_gzz3bh.jpg"},
-      publicId : {type : String, default : ""}
+      type : String ,
+      default : "https://res.cloudinary.com/dfdv6skgg/image/upload/v1770472518/avathar_gzz3bh.jpg"
     },
     isBlocked: {
       type: Boolean,

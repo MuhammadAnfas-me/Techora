@@ -5,8 +5,9 @@ import * as profileController from '../../controllers/user/profileController.js'
 
 import * as productController from "../../controllers/user/productController.js"
 
+import * as cartController from "../../controllers/user/cartController.js"
 import * as middlewares from '../../middlewares/user/auth.js'
-import upload from '../../middlewares/user/upload.js'
+import upload from "../../middlewares/cloudinary/upload.js"
 
 router.route('/Techora').get(userController.landing)
 
@@ -31,7 +32,7 @@ router.route('/resendOtp').post(userController.resendOtp)
 
 router
   .route('/')
-  .get(middlewares.checkAuth, middlewares.isBlocked, userController.homeLoad)
+  .get( middlewares.isBlocked, userController.homeLoad)
 
 router
   .route('/forgot-password')
@@ -103,6 +104,16 @@ router.route('/profile/edit/email-verify').post(profileController.emailVerify)
 /*---------------------------------Product section---------------------------------------- */
 
 router.route("/products").get(productController.productsList)
+router.route("/products/:productId").get(productController.productPage)
+
+
+// --------------------------------Cart section ------------------------------------------
+
+router.route('/cart').get(middlewares.isBlocked,middlewares.checkAuth,cartController.cartLoad)
+router.route('/cart/add').post(middlewares.isBlocked,middlewares.checkAuth,cartController.addToCart)
+router.route('/cart/delete').delete(middlewares.isBlocked,middlewares.checkAuth,cartController.deleteCartItem)
+router.route("/cart/update-quantity").patch( middlewares.isBlocked,middlewares.checkAuth,cartController.updateCartQuantity);
+
 
 router.route('/logout').get(userController.logout)
 

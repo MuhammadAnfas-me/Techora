@@ -1,0 +1,173 @@
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+/>
+    <link rel="stylesheet" href="/styles/user/cart/cart.css">
+
+
+
+    <%- include("../../partitials/user/header.ejs",{tittle : "Techora | Cart" }) %>
+    <div class="cart-page-wrapper">
+    <main class="cart-main-container">
+  <div class="cart-header">
+    <h1>Shopping Cart</h1>
+    <p><%= cartItems.length %> items in your cart</p>
+  </div>
+
+  <div class="cart-grid">
+    <div class="cart-items-list">
+      <% if (!cartItems || cartItems.length === 0) { %>
+    <div class="empty-cart">
+      <div class="empty-cart-icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+      <h2>Your cart is empty</h2>
+      <p>Add products to your cart to see them here.</p>
+      <a href="/products" class="continue-shopping-btn">Continue Shopping</a>
+    </div>
+  <% } else { %>
+      <% cartItems.forEach((item)=>{ %>
+      <div class="cart-item-card">
+        <button class="delete-btn" aria-label="Remove item" onclick="deleteItem('<%= item.productId %>','<%= item.variantId %>')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+        <div class="item-image">
+          <img src="<%= item.image %>" alt="iPhone 15 Pro Max">
+        </div>
+        <div class="item-details">
+          <span class="item-brand"><%= item.brand.toUpperCase() %></span>
+          <h3 class="item-title"><%= item.name %></h3>
+          <p class="item-spec">Color: <%= item.color %></p>
+          <% if(item.status == "inactive") {%>
+          <small style="color: red;">This product is Unavailable</small>
+          <% } %>
+          <div class="item-actions">
+            <div class="qty-selector">
+              <span class="qty-label">Qty:</span>
+              <div class="qty-controls  <%= item.status == "inactive" ? "qty-disabled" : "" %> ">
+                <button 
+    type="button" 
+    class="qty-btn"
+    onclick="updateCartQuantity('<%= item.productId %>', '<%= item.variantId %>', 'decrease')" <%= item.status == "inactive" ? "disabled" : "" %>>
+    -
+  </button>
+                <input type="number" value="<%= item.quantity || 1 %>" min="1" readonly <%= item.status == "inactive" ? "disabled" : "" %> >
+                <button 
+    type="button" 
+    class="qty-btn"
+    onclick="updateCartQuantity('<%= item.productId %>', '<%= item.variantId %>', 'increase')"<%= item.status == "inactive" ? "disabled" : "" %>>
+    +
+  </button>
+              </div>
+            </div>
+            <span class="item-price">$<%= item.total %></span>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+      <% } %>
+
+      
+
+      <a href="/products" class="continue-shopping">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Continue Shopping
+      </a>
+
+    </div>
+
+    <div class="order-summary">
+      <h2>Order Summary</h2>
+      
+      <div class="coupon-section">
+        <label for="coupon">Apply Coupon</label>
+        <div class="coupon-input-group">
+          <input type="text" id="coupon" placeholder="Enter coupon code">
+          <button class="apply-btn">Apply</button>
+        </div>
+        <div class="active-coupon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <span class="coupon-text">SAVE20 applied - 20% off</span>
+          <button class="remove-coupon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#d32f2f" stroke="none"><circle cx="12" cy="12" r="10"></circle></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="price-breakdown">
+        <div class="price-row">
+          <span>Subtotal (<%= cartItems.length %> items)</span>
+          <span class="amount-bold">$<%= grandTotal %></span>
+        </div>
+        <div class="price-row">
+          <span>Discount</span>
+          <span class="amount-discount">-$00.00</span>
+        </div>
+        <div class="price-row">
+          <span>Delivery Charges</span>
+          <span class="amount-bold">$0.00</span>
+        </div>
+      </div>
+
+      <div class="total-row">
+        <span>Total</span>
+        <span class="total-price">$<%= grandTotal %></span>
+      </div>
+
+      <button class="checkout-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Proceed to Checkout
+      </button>
+
+      <ul class="trust-badges">
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5998" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Secure checkout
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5998" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          Free returns within 30 days
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5998" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          2-year warranty included
+        </li>
+      </ul>
+    </div>
+  </div>
+</main>
+</div>
+    
+    <%- include("../../partitials/user/footer.ejs") %>
+<script>
+  async function deleteItem(productId , variantId){
+    try {
+      const res = await axios.delete(`/cart/delete`,{data :{productId,variantId}})
+
+      showToast(res.data?.message || "Removed successfully")
+      setTimeout(() => {
+        window.location.reload()
+      }, 800);
+    } catch (error) {
+      console.log("error from delete item",error)
+      showToast(error.response?.data?.message || "Failed to remove item","error")
+    }
+  }
+
+
+  async function updateCartQuantity(productId, variantId, action) {
+    try {
+      const res = await axios.patch("/cart/update-quantity", {
+        productId,
+        variantId,
+        action
+      });
+
+      window.location.reload();
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to update quantity","error");
+    }
+  }
+</script>

@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   // Handle file selection
-  fileInput.addEventListener('change', async e => {
+  fileInput.addEventListener('change', async (e) => {
     const file = fileInput.files[0]
 
     if (!file) return
@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await axios.patch('/profile/image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      userAvatar.src = res.data.imageUrl
-      showToast(res.data.message || 'Updated profile successfully')
+      
     } catch (error) {
       showToast(error.response?.data?.message || 'Image upload failed', 'error')
       console.error('Error from change profile :', error)

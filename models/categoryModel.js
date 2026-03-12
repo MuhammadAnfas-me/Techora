@@ -5,15 +5,7 @@ const categorySchema = new mongoose.Schema({
         type : String,
         require : true
     },
-    type : {
-        type : String,
-        require : true
-    },
     status : {
-        type : String,
-        require : true
-    },
-    description : {
         type : String,
         require : true
     },

@@ -55,40 +55,22 @@
                                             <div class="error-message" id="nameError"></div>
                                         </div>
 
-                                        <div class="form-group">
-                                            <label class="form-label">Category Type</label>
-                                            <div class="select-wrapper">
-                                                <select id="categoryType" class="form-control">
-                                                    <option value="Smartphones" <%=category.type==="Smartphones"
-                                                        ? "selected" : "" %> selected>
-                                                        Smartphones
-                                                    </option>
-                                                    <option value="Accessories" <%=category.type==="Accessories"
-                                                        ? "selected" : "" %> >Accessories</option>
-                                                </select>
-                                                <div class="error-message" id="typeError"></div>
-                                            </div>
-                                        </div>
+                                        
 
-                                        <div class="form-group">
-                                            <label class="form-label">Category Description</label>
-                                            <textarea id="categoryDescription" class="form-control" rows="4"
-                                                placeholder="Enter a brief description of the category..."><%= category.description ? category.description : "  " %></textarea>
-                                            <div class="error-message" id="descriptionError"></div>
-                                        </div>
+
 
                                         <div class="form-info-grid">
                                             <div class="info-item">
                                                 <span class="info-label">Total Products</span>
-                                                <span class="info-value">128 Products</span>
+                                                <span class="info-value"><%= productsCount %> Products</span>
                                             </div>
                                             <div class="info-item">
                                                 <span class="info-label">Created Date</span>
-                                                <span class="info-value">Oct 24, 2023</span>
+                                                <span class="info-value"><%= category.createdAt.toISOString().split('T')[0] %></span>
                                             </div>
                                             <div class="info-item">
                                                 <span class="info-label">Last Updated</span>
-                                                <span class="info-value">2 hours ago</span>
+                                                <span class="info-value"><%= category.lastUpdated %></span>
                                             </div>
                                         </div>
                                     </div>
@@ -178,13 +160,9 @@
 
         // Inputs
         const nameInput = document.getElementById('categoryName');
-        const typeInput = document.getElementById('categoryType');
-        const descInput = document.getElementById('categoryDescription');
 
         // Error Elements
         const nameError = document.getElementById('nameError');
-        const typeError = document.getElementById('typeError');
-        const descError = document.getElementById('descriptionError');
 
         // 1. Form Submit Listener
         form.addEventListener('submit', async function (e) {
@@ -204,24 +182,11 @@
                 isValid = false;
             }
 
-            // Validate Type
-            if (typeInput.value === "") {
-                showError(typeInput, typeError, "Please select a category type");
-                isValid = false;
-            }
-
-            // Validate Description
-            if (descInput.value.trim() === "") {
-                showError(descInput, descError, "Description cannot be empty");
-                isValid = false;
-            }
 
             // If invalid, prevent submission
             if (!isValid) return
             const categoryData = {
                 name: nameInput.value.trim(),
-                description: descInput.value.trim(),
-                type: typeInput.value.trim(),
                 isActive: statusToggle.checked
             }
 
@@ -243,9 +208,6 @@
         // 2. Real-time Error Clearing (User Experience)
         // Removes error as soon as user types
         nameInput.addEventListener('input', () => clearSingleError(nameInput, nameError));
-        typeInput.addEventListener('change', () => clearSingleError(typeInput, typeError));
-        descInput.addEventListener('input', () => clearSingleError(descInput, descError));
-
         // Helper Functions
         function showError(input, errorElement, message) {
             input.classList.add('error');
@@ -258,8 +220,8 @@
         }
 
         function clearErrors() {
-            const inputs = [nameInput, typeInput, descInput];
-            const errors = [nameError, typeError, descError];
+            const inputs = [nameInput];
+            const errors = [nameError];
 
             inputs.forEach(input => input.classList.remove('error'));
             errors.forEach(error => error.style.display = "none");

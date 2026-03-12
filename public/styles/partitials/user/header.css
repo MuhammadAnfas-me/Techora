@@ -59,16 +59,17 @@ button {
 }
 
 .nav-content {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     height: 80px;
 }
 
+/* LEFT — Logo */
 .nav-left {
     display: flex;
     align-items: center;
-    gap: 3rem;
+    justify-content: flex-start;
 }
 
 .logo {
@@ -96,6 +97,13 @@ button {
     font-size: 1.25rem;
     font-weight: 700;
     color: #111827;
+}
+
+/* CENTER — Nav Links */
+.nav-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav-links {
@@ -147,13 +155,12 @@ button {
 .categories-dropdown {
     left: 0;
     margin-top: 1rem;
-    min-width: 500px;
-    padding: 1.5rem;
+    min-width: 250px;
+    padding: 2rem;
 }
 
 .dropdown-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
 }
 
@@ -180,6 +187,48 @@ button {
 
 .dropdown-column ul li a:hover {
     color: #1F3A5F;
+}
+
+/* RIGHT — Icons */
+.nav-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #6b7280;
+    position: relative;
+}
+
+.icon-btn {
+    transition: color 0.3s;
+}
+
+.icon-btn:hover {
+    color: #1F3A5F;
+}
+
+.cart-btn {
+    position: relative;
+}
+
+.cart-btn .badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    background-color: #1F3A5F;
+    color: white;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 /* Profile Wrapper and Dropdown */
@@ -284,98 +333,23 @@ button {
     color: #6b7280;
 }
 
-.nav-right {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.search-box {
-    position: relative;
-}
-
-.search-box input {
-    width: 256px;
-    padding: 0.5rem 2.5rem 0.5rem 1rem;
-    border-radius: 9999px;
-    background-color: #f3f4f6;
-    border: none;
-    font-size: 0.875rem;
-    outline: none;
-    transition: box-shadow 0.3s;
-}
-
-.search-box input:focus {
-    box-shadow: 0 0 0 2px #1F3A5F;
-}
-
-.search-box .material-symbols-outlined {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-    font-size: 20px;
-}
-
-.nav-icons {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    color: #6b7280;
-    position: relative;
-}
-
-.icon-btn {
-    transition: color 0.3s;
-}
-
-.icon-btn:hover {
-    color: #1F3A5F;
-}
-
-.cart-btn {
-    position: relative;
-}
-
-.cart-btn .badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 16px;
-    height: 16px;
-    background-color: #1F3A5F;
-    color: white;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-}
 .user-email {
-  max-width: 180px;
-  word-break: break-all;   /* or break-word */
-  white-space: normal;
+    max-width: 180px;
+    word-break: break-all;
+    white-space: normal;
 }
 
 /* ===========================
    RESPONSIVE DESIGN
    =========================== */
 
-/* Medium devices (tablets, 768px and up) */
-@media (min-width: 768px) {
-    .nav-links {
-        display: flex;
-    }
-}
-
 /* Mobile-specific adjustments */
 @media (max-width: 767px) {
-    .nav-links {
-        display: none;
+    .nav-content {
+        grid-template-columns: 1fr auto;
     }
 
-    .search-box {
+    .nav-center {
         display: none;
     }
 
@@ -420,16 +394,51 @@ button {
     }
 }
 
-/* Large devices (desktops, 992px and up) */
-@media (min-width: 992px) {
-    .search-box {
-        display: block;
-    }
-}
-
-/* Extra large devices (large desktops, 1200px and up) */
+/* Extra large devices */
 @media (min-width: 1200px) {
     .container {
         padding: 0 2rem;
     }
+}
+
+.nav-actions {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.nav-auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  padding: 3px 1px;
+  background: #0f234f;
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: 0.3s ease;
+}
+
+.nav-auth-btn:hover {
+  background: #1b3268;
+}
+.nav-auth-btn:focus {
+  box-shadow: 0 0 0 4px rgba(15, 35, 79, 0.2);
+}
+
+.shake-highlight {
+  animation: shakeLogin 0.5s ease;
+  box-shadow: 0 0 0 4px rgba(15, 35, 79, 0.25);
+}
+
+@keyframes shakeLogin {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+  100% { transform: translateX(0); }
 }

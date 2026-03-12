@@ -24,17 +24,14 @@ passport.use(
                         fullName : profile.displayName,
                         email : profile.emails[0].value,
                         googleId : profile.id,
-                        profileImage : {
-                            url : process.env.DEFAULT_IMAGE,
-                            publicId : ""
-                        },
+                        profileImage : process.env.DEFAULT_IMAGE,
                         isVerified : true
                     })
                 }else{
                     if(!user.googleId) user.googleId = profile.id
                     if(!user.isVerified) user.isVerified = true
-                    if(!user.profileImage.url){
-                        user.profileImage = {url : process.env.DEFAULT_IMAGE,publicId : ""}
+                    if(!user.profileImage){
+                        user.profileImage = process.env.DEFAULT_IMAGE
                     } 
                     await user.save()
                 }

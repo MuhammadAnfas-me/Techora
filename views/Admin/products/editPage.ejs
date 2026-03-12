@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Add New Product - Techora</title>
-    
-    
-    
+    <title>Edit Product - Techora</title>
+
+
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js" defer></script>
-    <script src="/js/admin/products/addPage.js" defer></script>
+    <script src="/js/admin/products/editPage.js"></script>
     <script src="/js/popup.js" defer></script>
     <script src="/js/partitials/Admin/sidebar.js" defer></script>
 
@@ -44,69 +44,67 @@
                             <span class="material-symbols-outlined">chevron_left</span> Back to Products
                         </a>
 
-                        <h1 class="page-title">Add New Product</h1>
-                        <p class="page-subtitle">Enter product details for mobile phones and accessories</p>
+                        <h1 class="page-title">Edit Product</h1>
+                        <p class="page-subtitle">Update product details for mobile phones and accessories</p>
                         <div id="cropModal" class="crop-modal">
-  <div class="crop-box">
-    <div class="crop-header">
-      <h3>Crop Image</h3>
-      <button id="cropCloseBtn" type="button">✕</button>
-    </div>
+                            <div class="crop-box">
+                                <div class="crop-header">
+                                    <h3>Crop Image</h3>
+                                    <button id="cropCloseBtn" type="button">✕</button>
+                                </div>
 
-    <div class="crop-body">
-      <img id="cropImage"/>
-    </div>
+                                <div class="crop-body">
+                                    <img id="cropImage" />
+                                </div>
 
-    <div class="crop-actions">
-      <button id="cropCancelBtn" type="button">Cancel</button>
-      <button id="cropSaveBtn" type="button">Crop & Use</button>
-    </div>
-  </div>
-</div>
+                                <div class="crop-actions">
+                                    <button id="cropCancelBtn" type="button">Cancel</button>
+                                    <button id="cropSaveBtn" type="button">Crop & Use</button>
+                                </div>
+                            </div>
+                        </div>
 
-                        <form action="/admin/products/add" method="POST" id="addProductForm"  enctype="multipart/form-data" novalidate>
+                        <form action="/admin/products/add" method="POST" id="addProductForm"
+                            enctype="multipart/form-data" novalidate>
 
                             <div class="form-card">
-  <h2 class="card-title">Basic Information</h2>
-  
-  <div class="basic-info-grid">
-    <div class="form-group" style="margin: 0;">
-      <label>Product Name <span class="required">*</span></label>
-      <input id="name" type="text" class="form-control" placeholder="Enter product name" required>
-    </div>
-    <div class="form-group" style="margin: 0;">
-      <label>Category <span class="required">*</span></label>
-      <select class="form-control" id="category" required>
-        <option value="">Select category</option>
-        <% categories.forEach((cat)=>{ %>
-        <option value="<%=cat._id %>" ><%= cat.name %></option>
-        <% }) %>
-      </select>
-    </div>
-  </div>
+                                <h2 class="card-title">Basic Information</h2>
 
-  <div class="basic-info-grid">
-    <div class="form-group" style="margin: 0;">
-      <label>Brand <span class="required">*</span></label>
-      <select id="brand" class="form-control" style="max-width: 200px;" required>
-        <option value="">Select brand</option>
-        <option value="apple">Apple</option>
-        <option value="samsung">Samsung</option>
-        <option value="samsung">Redmi</option>
-        <option value="realme">Realme</option>
-        <option value="samsung">Sony</option>
-        <option value="boat">Boat</option>
-      </select>
-    </div>
-    <div class="form-group" style="margin: 0;">
-      <label>Product Status <span class="required">*</span></label>
-      <select class="form-control" id="status" style="max-width: 150px;" required>
-        <option value="active">Active</option>
-        <option value="inactive">In active</option>
-      </select>
-    </div>
-  </div>
-</div>
+                                <div class="basic-info-grid">
+                                    <div class="form-group" style="margin: 0;">
+                                        <label>Product Name <span class="required">*</span></label>
+                                        <input id="name" type="text" value="<%= product.name %>" class="form-control"
+                                            placeholder="Enter product name" required>
+                                    </div>
+                                    <div class="form-group" style="margin: 0;">
+                                        <label>Category <span class="required">*</span></label>
+                                        <select class="form-control" id="category" required>
+                                            <% categories.forEach((cat)=>{ %>
+                                                <option value="<%=cat._id %>" <%= String(cat._id) == String(product.categoryId)
+                                                    ? "selected" : "" %> ><%= cat.name %>
+                                                </option>
+                                                <% }) %>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="basic-info-grid">
+                                    <div class="form-group" style="margin: 0;">
+                                        <label>Brand <span class="required">*</span></label>
+                                        <select id="brand" class="form-control" style="max-width: 200px;" required>
+                                            <option value="apple" <%=product.brand=="apple" ? "selected" : "" %> >Apple</option>
+                                            <option value="samsung" <%=product.brand=="samsung" ? "selected" : "" %> >Samsung</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin: 0;">
+                                        <label>Product Status <span class="required">*</span></label>
+                                        <select class="form-control" id="status" style="max-width: 150px;" required>
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
 
 
                             <div class="form-card">
@@ -114,13 +112,14 @@
 
                                 <div class="form-group" style="margin-bottom: 20px;">
                                     <label>Short Description</label>
-                                    <input type="text" id="shortDescription" class="form-control" placeholder="Brief product description">
+                                    <input type="text" id="shortDescription" value="<%= product.shortDescription %>"
+                                        class="form-control" placeholder="Brief product description">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Full Description</label>
                                     <textarea id="fullDescription" class="form-control" rows="4"
-                                        placeholder="Detailed product description"></textarea>
+                                        placeholder="Detailed product description"><%= product.fullDescription %></textarea>
                                 </div>
                             </div>
 
@@ -140,7 +139,7 @@
                                         <input type="text" id="specificationValue" class="form-control"
                                             placeholder="e.g., 6.7-inch OLED, 5000mAh">
                                     </div>
-                                    <button type="button" class="btn btn-primary" style="height: 38px;">Add</button>
+                                    <button type="button" class="btn btn-primary"  id="addSpecBtn" style="height: 38px;">Add</button>
                                 </div>
 
                                 <table class="spec-table">
@@ -151,10 +150,21 @@
                                             <th style="text-align: right;">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="3" style="height: 40px;"></td>
-                                        </tr>
+                                    <tbody id="specTableBody">
+                                        <% product.specifications.forEach((item,index)=>{ %>
+                                            <tr>
+                                                <td>
+                                                    <%= item.label %>
+                                                </td>
+                                                <td>
+                                                    <%= item.value %>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <button type="button" class="remove-spec-btn"
+                                                        data-index="<%= index %>">Remove</button>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
                                     </tbody>
                                 </table>
                             </div>
@@ -169,26 +179,38 @@
                                 </div>
 
                                 <div style="margin-top: 20px;">
-                                    
+
                                     <div class="variant-tabs" id="variantTabsContainer">
-                                        <div class="variant-tab">
+                                        <% product.variants.forEach((item,index)=>{ %>
+
+                                        
+                                        <div class="variant-tab <%= index === 0 ? 'active' : '' %>"
+                                            data-index="<%= index %>">
                                             <div class="variant-tab-text">
-                                                <span class="variant-tab-title">------------</span>
-                                                <span class="variant-tab-price">+$0.00</span>
+                                                <span class="variant-tab-title">
+                                                    <%= item.color %> 
+                                                </span>
+                                                <span class="variant-tab-price">
+                                                    <%=  item.price || 0 %>
+                                                </span>
                                             </div>
-                                            <div class="variant-tab-close">
+                                            <% if(product.variants.length > 1){%>
+                                            <div class="variant-tab-close" >
                                                 <span class="material-symbols-outlined"
-                                                    style="font-size: 14px;">close</span>
+                                                    style="font-size:14px;">close</span>
                                             </div>
+                                             <% }else{ "" } %>
                                         </div>
+                                        <% }) %>
                                     </div>
 
+
                                     <div class="variant-content-box" id="variantContentArea">
-                                         <div
-                                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                                                    <label style="margin: 0;">   </label>
-                                                    <span class="default-tag">Default Variant</span>
-                                                </div>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                            <label style="margin: 0;"> </label>
+                                            <span class="default-tag">Default Variant</span>
+                                        </div>
                                         <div class="grid-3">
                                             <div class="form-group">
                                                 <label>Color <span class="required">*</span></label>
@@ -198,11 +220,11 @@
                                                     <option>Blue</option>
                                                 </select>
                                             </div>
-                                    
-                                        
+
                                             <div class="form-group">
                                                 <label>SKU <span class="required">*</span></label>
-                                                <input id="vSku" type="text" class="form-control" placeholder="Enter SKU">
+                                                <input id="vSku" type="text" class="form-control"
+                                                    placeholder="Enter SKU">
                                             </div>
                                             <div class="form-group">
                                                 <label>Color code <span class="required">*</span></label>
@@ -216,7 +238,7 @@
                                                 <input type="number" class="form-control" placeholder="0.00">
                                             </div>
 
-                                            
+
 
                                             <div class="form-group">
                                                 <label>Stock Quantity <span class="required">*</span></label>
@@ -238,9 +260,10 @@
                             </div>
 
                             <div class="form-actions">
-                                <button type="button" class="btn btn-secondary"
+                                <button type="button" class="btn btn-secondary" onclick="window.history.back()"
                                     style="padding: 10px 24px;">Cancel</button>
-                                <button type="submit" id="saveButton" class="btn btn-primary" style="padding: 10px 24px;">Save
+                                <button type="submit" id="saveButton" class="btn btn-primary"
+                                    style="padding: 10px 24px;">Save
                                     Changes</button>
                             </div>
 
@@ -250,5 +273,9 @@
         </div>
 </body>
 <script>
+   let productId = "<%- product._id %>";
+   let variants = <%- JSON.stringify(product.variants) %>;
+   let specifications = <%- JSON.stringify(product.specifications) %>;
 </script>
+
 </html>

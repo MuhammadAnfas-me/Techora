@@ -153,13 +153,12 @@ button {
 .categories-dropdown {
     left: 0;
     margin-top: 1rem;
-    min-width: 500px;
+    min-width: 250px;
     padding: 1.5rem;
 }
 
 .dropdown-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
 }
 
@@ -1342,9 +1341,7 @@ button {
         height: 70px;
     }
 
-    .logo-text {
-        font-size: 1.125rem;
-    }
+    
 
     .categories-dropdown {
         min-width: 280px;
