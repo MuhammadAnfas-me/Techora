@@ -5,6 +5,7 @@ import { verifyOtp } from '../../services/authService/emailVerify.js'
 import { sendOtp } from '../../utils/sendOtpMail.js'
 import generateUserId from '../../utils/generateUserId.js'
 import crypto from 'crypto'
+import Product from '../../models/productModel.js'
 const SALT_ROUND = 10
 
 const getErrorMessage = msg => {
@@ -239,7 +240,14 @@ const forgotPassword = async (req, res) => {
 }
 
 const homeLoad = async (req, res) => {
-  res.render('User/home')
+
+  try {
+    const products = await Product.find().sort({createdAt : -1}).limit(4)
+    res.render('User/home',{products})
+  } catch (error) {
+    console.log("Error from Home page :",error)
+    return res.status(500).json({success : false , message : "Server error"})
+  }
 }
 
 const logout = (req, res) => {

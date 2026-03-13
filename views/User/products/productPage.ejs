@@ -49,39 +49,39 @@
                       const defaultMax = 50000;
                     %>
                      <div class="filter-section">
-    <h3>Price Range</h3>
+                        <h3>Price Range</h3>
 
-    <div class="double-range-wrapper">
-        <div class="slider-track"></div>
-
-        <input
-            type="range"
-            id="minRange"
-            name="minPrice"
-            min="0"
-            max="50000"
-            step="100"
-            value="<%= minPrice !== '' && minPrice != null ? minPrice : defaultMin %>"
-            class="range-input range-min"
-        >
-
-        <input
-            type="range"
-            id="maxRange"
-            name="maxPrice"
-            min="0"
-            max="50000"
-            step="100"
-            value="<%= maxPrice !== '' && maxPrice != null ? maxPrice : defaultMax %>"
-            class="range-input range-max"
-        >
-    </div>
-
-    <div class="price-labels">
-        <span id="minPriceLabel">₹<%= minPrice !== '' && minPrice != null ? minPrice : defaultMin %></span>
-        <span id="maxPriceLabel">₹<%= maxPrice !== '' && maxPrice != null ? maxPrice : defaultMax %></span>
-    </div>
-</div>
+                        <div class="double-range-wrapper">
+                            <div class="slider-track"></div>
+                        
+                            <input
+                                type="range"
+                                id="minRange"
+                                name="minPrice"
+                                min="0"
+                                max="50000"
+                                step="100"
+                                value="<%= minPrice !== '' && minPrice != null ? minPrice : defaultMin %>"
+                                class="range-input range-min"
+                            >
+                        
+                            <input
+                                type="range"
+                                id="maxRange"
+                                name="maxPrice"
+                                min="0"
+                                max="50000"
+                                step="100"
+                                value="<%= maxPrice !== '' && maxPrice != null ? maxPrice : defaultMax %>"
+                                class="range-input range-max"
+                            >
+                        </div>
+                    
+                        <div class="price-labels">
+                            <span id="minPriceLabel">₹<%= minPrice !== '' && minPrice != null ? minPrice : defaultMin %></span>
+                            <span id="maxPriceLabel">₹<%= maxPrice !== '' && maxPrice != null ? maxPrice : defaultMax %></span>
+                        </div>
+                    </div>
 
                     <hr class="divider">
 
@@ -120,31 +120,31 @@
                     </div>
 
                    <div class="search-box">
-  <div class="search-input-wrapper">
-    <input 
-      type="text" 
-      name="search" 
-      form="filterForm"
-      class="search-input"
-      id="searchInput"
-      placeholder="Search products..."
-      value="<%= search || '' %>"
-    >
-
-    <button
-      type="button"
-      id="clearSearchBtn"
-      class="clear-search-btn"
-      aria-label="Clear search"
-    >
-      ×
-    </button>
-  </div>
-
-  <button type="submit" id="searchBtn" form="filterForm" class="search-btn">
-    Search
-  </button>
-</div>
+                      <div class="search-input-wrapper">
+                        <input 
+                          type="text" 
+                          name="search" 
+                          form="filterForm"
+                          class="search-input"
+                          id="searchInput"
+                          placeholder="Search products..."
+                          value="<%= search || '' %>"
+                        >
+                    
+                        <button
+                          type="button"
+                          id="clearSearchBtn"
+                          class="clear-search-btn"
+                          aria-label="Clear search"
+                        >
+                          ×
+                        </button>
+                      </div>
+                  
+                      <button type="submit" id="searchBtn" form="filterForm" class="search-btn">
+                        Search
+                      </button>
+                    </div>
                    </div>
                 </div>
 

@@ -468,6 +468,10 @@ addVariantBtn?.addEventListener("click", () => {
       });
     });
 
+    if(Object.keys(imageMap).length < 1){
+      showToast(`Add atleast one image`);
+      return
+    }
 formData.append("imageMap", JSON.stringify(imageMap));
 
 const originalText = saveButton.textContent
