@@ -16,6 +16,10 @@ passport.use(
                 let user = await User.findOne({
                     $or : [{googleId : profile.id},{email:profile.emails[0].value}]
                 })
+
+                if(user.role === "Admin"){
+                    return done(null,false,{message : "This email is already registered with admin."})
+                }
                
                 if(!user){
                     const userId = generateUserId()
@@ -25,6 +29,7 @@ passport.use(
                         email : profile.emails[0].value,
                         googleId : profile.id,
                         profileImage : process.env.DEFAULT_IMAGE,
+                        role : "Customer",
                         isVerified : true
                     })
                 }else{

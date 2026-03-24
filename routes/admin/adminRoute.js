@@ -70,7 +70,7 @@ router
 
 router
   .route("/products/:id/block")
-  .patch(middleWares.checkAdminAuth,productController.blockCategory)
+  .patch(middleWares.checkAdminAuth,productController.blockProduct)
 
 
 

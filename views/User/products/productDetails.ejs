@@ -62,24 +62,20 @@
                 </div>
 
                 <% const stock = product.variants[0]?.stock || 0; %>
-                <div class="stock-status 
-    <% if(stock <= 5 && stock > 1){ %> low-stock <% } %> 
-    <% if(stock === 0){ %> out-of-stock <% } %>" id="stockStatus">
 
-
-    <% if(stock === 0){ %>
-        <span class="dot out"></span> Out of Stock
-
-    <% } else if(stock <= 5){ %>
-        <span class="dot low"></span> Only <%= stock %> left
-
-    <% } else if(stock < 15){ %>
-        <span class="dot"></span> In Stock - Only <%= stock %> left
-
-    <% } else { %>
-        <span class="dot"></span> In Stock
-    <% } %>
-
+<div 
+  id="stockStatus"
+  class="stock-status <% if (stock <= 5 && stock > 0) { %>low-stock<% } %> <% if (stock === 0) { %>out-of-stock<% } %>"
+>
+  <% if (stock === 0) { %>
+    <span class="dot out"></span> Out of Stock
+  <% } else if (stock <= 5) { %>
+    <span class="dot low"></span> Only <%= stock %> left
+  <% } else if (stock < 15) { %>
+    <span class="dot"></span> In Stock - Only <%= stock %> left
+  <% } else { %>
+    <span class="dot"></span> In Stock
+  <% } %>
 </div>
 
                 <div class="color-selection">
@@ -128,16 +124,24 @@
                     <p>Compatibility</p>
                     <div class="tags">
                         <span class="tag"><i class="fab fa-apple"></i> iOS 17+</span>
-                        <span class="tag"><i class="fas fa-android"></i> Android</span>
-                        
+                        <span class="tag"><i class="fas fa-android"></i> Android</span> 
                     </div>
                 </div>
 
-                <div class="action-buttons" id="cartAdd">
-                    <button class="btn-primary" >
+                <div class="action-buttons" >
+                    <button class="btn-primary" id="cartAdd" >
                         <i class="fas fa-shopping-cart"></i> Add to Cart
                     </button>
-                    <button class="btn-icon-outline"><i class="far fa-heart"></i></button>
+                    <%
+                              const currentVariantId = product.variants?.[0]?.varientId || "";
+                              const isWishlisted = wishListIds?.some(item =>
+                                item.productId === product._id.toString() &&
+                                item.variantId === currentVariantId
+                              );
+                            %>
+                    <button class="btn-icon-outline wish-btn <%= isWishlisted ? "active" : "" %>" id="wishBtn" data-product-id="<%= product._id %>" data-variant-id="<%= currentVariantId %>">
+                        <i class=" far fa-heart"></i>
+                    </button>
                 </div>
 
                 
@@ -238,16 +242,24 @@
     <%- include("../../partitials/user/footer.ejs") %>
 
     <script >
-        const variants = <%- JSON.stringify(product.variants) %>;
-        let selectedVariant = variants[0];
-        let productId = <%- JSON.stringify(product._id) %>;
-        const currentUser = <%- JSON.stringify(user || null) %>;
-        const cart = <%- JSON.stringify(cart || null) %>;
 
+        document.addEventListener("DOMContentLoaded", () => {
+  if (selectedVariant) {
+    updateVariantUI(selectedVariant);
+  }
+});
+
+    const variants = <%- JSON.stringify(product.variants) %>;
+    let selectedVariant = variants[0];
+    let productId = <%- JSON.stringify(product._id) %>;
+    const currentUser = <%- JSON.stringify(user || null) %>;
+    const cart = <%- JSON.stringify(cart || null) %>;
+    const wishListIds = <%- JSON.stringify(wishListIds || []) %>;
+    
+    const stockStatus = document.getElementById("stockStatus");
     const selectedColor = document.getElementById("selectedColor");
     const selectedVariantId = document.getElementById("selectedVariantId");
     const currentPrice = document.getElementById("currentPrice");
-    const stockStatus = document.getElementById("stockStatus");
     const mainImage = document.getElementById("mainImage");
     const thumbnailList = document.querySelector(".thumbnail-list");
     const zoomPreview = document.getElementById("zoomPreview");
@@ -256,6 +268,7 @@
     const zoomLens = document.getElementById("zoomLens");
 
     const cartAdd = document.getElementById("cartAdd")
+    const wishBtn = document.getElementById("wishBtn")
     const qtyAddBtn = document.getElementById("qtyAddBtn")
     const qtyLessBtn = document.getElementById("qtyLessBtn")
 
@@ -435,7 +448,7 @@ function moveLens(e) {
     if (mainImage && variant.image?.length) {
       mainImage.src = variant.image[0];
     }
-
+     updateWishlistButton(variant);
     if (thumbnailList) {
       thumbnailList.innerHTML = variant.image.map((img, index) => `
         <div class="thumbnail ${index === 0 ? "active" : ""}" onclick="changeImage(this)">
@@ -444,28 +457,24 @@ function moveLens(e) {
       `).join("");
     }
 
-    if (stockStatus) {
-        if(selectedVariant.stock === alreadyInCartQty){
-            stockStatus.className = "stock-status out-of-stock";
-            stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
-            qtyAddBtn.disabled = true
-        return
+      if (stockStatus) {
+    qtyAddBtn.disabled = false;
+
+    if (variant.stock <= alreadyInCartQty || variant.stock === 0) {
+      stockStatus.className = "stock-status out-of-stock";
+      stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
+      qtyAddBtn.disabled = true;
+    } else if (variant.stock <= 5) {
+      stockStatus.className = "stock-status low-stock";
+      stockStatus.innerHTML = `<span class="dot low"></span> Only ${variant.stock - alreadyInCartQty} left`;
+    } else if (variant.stock < 15) {
+      stockStatus.className = "stock-status";
+      stockStatus.innerHTML = `<span class="dot"></span> In Stock - Only ${variant.stock - alreadyInCartQty} left`;
+    } else {
+      stockStatus.className = "stock-status";
+      stockStatus.innerHTML = `<span class="dot"></span> In Stock`;
     }
-    }else {
-      if (variant.stock === 0) {
-        stockStatus.className = "stock-status out-of-stock";
-        stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
-      } else if (variant.stock <= 5) {
-        stockStatus.className = "stock-status low-stock";
-        stockStatus.innerHTML = `<span class="dot low"></span> Only ${variant.stock} left`;
-      } else if (variant.stock < 15) {
-        stockStatus.className = "stock-status";
-        stockStatus.innerHTML = `<span class="dot"></span> In Stock - Only ${variant.stock} left`;
-      } else {
-        stockStatus.className = "stock-status";
-        stockStatus.innerHTML = `<span class="dot"></span> In Stock`;
-      }
-    }
+  }
 
     if (zoomPreview && variant.image?.length) {
       zoomPreview.style.backgroundImage = `url('${variant.image[0]}')`;
@@ -489,6 +498,10 @@ function moveLens(e) {
     addToCart(event,productId,selectedVariant.varientId,currentUser ? true : false,qty)
   })
 
+  wishBtn.addEventListener("click",()=>{
+    addToWishlist(event , productId , selectedVariant.varientId, currentUser ? 'true' : 'false',wishBtn)
+  })
+
   qtyAddBtn.addEventListener("click",()=>{
     updateQty(1,selectedVariant.price)
   })
@@ -497,7 +510,61 @@ function moveLens(e) {
     updateQty(-1,selectedVariant.price)
   })
 
+  document.addEventListener("DOMContentLoaded",()=>{
+    if(sessionStorage.getItem("variantId")){
+    const variantId = sessionStorage.getItem("variantId")
+    sessionStorage.removeItem("variantId")
+    selectVariant(variantId)
+    }
+  })
 
+  async function addToWishlist(e, productId, variantId, isLogged,btn) {
+  e.stopPropagation()
+  e.preventDefault()
+  try {
+    if (!isLogged) {
+      highlightLoginButton()
+      return
+    }
+    
+    const res = await axios.post("/wishlist/add",{
+      productId,
+      variantId
+    })
+
+    const favBtn = document.getElementById('favBtn')
+    if (favBtn) {
+      favBtn.classList.add('cart-bounce')
+      setTimeout(() => {
+        favBtn.classList.remove('cart-bounce')
+      }, 300)
+    }
+
+    if (res.data.success) {
+      btn.classList.toggle("active", res.data.inWishlist);
+    } else {
+      showToast(res.data.message || "Failed to update wishlist");
+    }
+  } catch (error) {
+    console.error(error)
+    showToast(error?.response?.message || "Something went wrong","error")
+  }
+}
+
+function updateWishlistButton(variant) {
+  if (!wishBtn || !variant) return;
+
+  const productId = wishBtn.dataset.productId;
+  const variantId = variant.varientId || "";
+
+  wishBtn.dataset.variantId = variantId;
+
+  const isWishlisted = wishListIds.some(item =>
+    item.productId === productId && item.variantId === variantId
+  );
+
+  wishBtn.classList.toggle("active", isWishlisted);
+}        
     </script>
 </body>
 </html>

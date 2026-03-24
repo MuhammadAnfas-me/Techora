@@ -3,13 +3,12 @@ const router = express.Router()
 import * as userController from '../../controllers/user/authController.js'
 import * as profileController from '../../controllers/user/profileController.js'
 
-import * as productController from "../../controllers/user/productController.js"
+import * as productController from '../../controllers/user/productController.js'
 
-import * as cartController from "../../controllers/user/cartController.js"
+import * as cartController from '../../controllers/user/cartController.js'
+import * as wishListController from '../../controllers/user/wishListController.js'
 import * as middlewares from '../../middlewares/user/auth.js'
-import upload from "../../middlewares/cloudinary/upload.js"
-
-router.route('/Techora').get(userController.landing)
+import upload from '../../middlewares/cloudinary/upload.js'
 
 /*---------------------------------------Auth section-----------------------------------------*/
 
@@ -30,9 +29,7 @@ router
 
 router.route('/resendOtp').post(userController.resendOtp)
 
-router
-  .route('/')
-  .get( middlewares.isBlocked, userController.homeLoad)
+router.route('/').get(middlewares.isBlocked, userController.homeLoad)
 
 router
   .route('/forgot-password')
@@ -103,17 +100,42 @@ router.route('/profile/edit/email-verify').post(profileController.emailVerify)
 
 /*---------------------------------Product section---------------------------------------- */
 
-router.route("/products").get(productController.productsList)
-router.route("/products/:productId").get(productController.productPage)
-
+router.route('/products').get(productController.productsList)
+router.route('/products/:productId').get(productController.productPage)
 
 // --------------------------------Cart section ------------------------------------------
 
-router.route('/cart').get(middlewares.isBlocked,middlewares.checkAuth,cartController.cartLoad)
-router.route('/cart/add').post(middlewares.isBlocked,middlewares.checkAuth,cartController.addToCart)
-router.route('/cart/delete').delete(middlewares.isBlocked,middlewares.checkAuth,cartController.deleteCartItem)
-router.route("/cart/update-quantity").patch( middlewares.isBlocked,middlewares.checkAuth,cartController.updateCartQuantity);
+router
+  .route('/cart')
+  .get(middlewares.isBlocked, middlewares.checkAuth, cartController.cartLoad)
+router
+  .route('/cart/add')
+  .post(middlewares.isBlocked, middlewares.checkAuth, cartController.addToCart)
+router
+  .route('/cart/delete')
+  .delete(
+    middlewares.isBlocked,
+    middlewares.checkAuth,
+    cartController.deleteCartItem
+  )
+router
+  .route('/cart/update-quantity')
+  .patch(
+    middlewares.isBlocked,
+    middlewares.checkAuth,
+    cartController.updateCartQuantity
+  )
 
+
+// ---------------------------------------- Wish List section -------------------------------
+
+router.route("/wishlist").get(wishListController.wishListLoad)
+router.post("/wishlist/add",wishListController.toggleItem)
+router.delete("/wishlist/remove",wishListController.removeProduct)
+
+
+//----------------------------------------- checkout page------------------------------------
+router.route("/checkout").get()
 
 router.route('/logout').get(userController.logout)
 

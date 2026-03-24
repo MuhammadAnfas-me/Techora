@@ -927,3 +927,7 @@ a {
     transform: scale(1);
   }
 }
+
+.wish-btn.active i{
+  color: #ef4444;
+}

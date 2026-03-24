@@ -4,6 +4,7 @@ import authRoute from "./routes/user/authRoute.js"
 import adminRoute from "./routes/admin/adminRoute.js"
 import connectDB from "./config/connect.js"
 import session from "express-session"
+import flash from "connect-flash"
 import passport from "passport"
 import nocache from "nocache"
 import "./config/passport.js"
@@ -33,8 +34,11 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(setUser)
 
-
-// import "./config/passport.js"
+app.use(flash())
+app.use((req, res, next) => {
+  res.locals.message = req.flash()
+  next()
+})
 app.use("/auth",authRoute)
 app.use("/",userRoute)
 app.use("/admin",adminRoute)

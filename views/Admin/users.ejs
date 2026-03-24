@@ -285,8 +285,6 @@ let state = {
       if (r) params.set("role",r)
       if (s) params.set("status",s)
 
-      console.log("Calling:", `/admin/users/api?${params.toString()}`); // ✅ debug
-
       const res = await axios.get(`/admin/users/api?${params.toString()}`);
 
       if (!res.data?.success) {

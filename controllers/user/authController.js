@@ -30,14 +30,11 @@ const getErrorMessage = msg => {
   }
 }
 
-//landing page
-const landing = (req, res) => {
-  res.render('User/landingPage')
-}
-
 //Login Section
 const loginLoad = (req, res) => {
-  res.render('User/login', { message: null ,blocked : req.query.blocked || false})
+  const errorMessage = req.session?.errorMessage;
+  delete req.session.errorMessage;
+  res.render('User/login', { message: errorMessage || null ,blocked : req.query.blocked || false})
 }
 
 const login = async (req, res) => {
@@ -304,7 +301,6 @@ const resetConfirmation = (req, res) => {
 }
 
 export {
-  landing,
   homeLoad,
   loginLoad,
   login,

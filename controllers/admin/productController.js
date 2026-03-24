@@ -1,6 +1,7 @@
 import Product from '../../models/productModel.js'
 import { Categories } from '../../models/categoryModel.js'
 import mongoose from 'mongoose'
+import { Wishlist } from '../../models/wishListModel.js'
 
 
 const escapeRegex = (text = '') => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -24,7 +25,6 @@ const loadProducts = async (req, res) => {
     if (brand) filter.brand = brand;
 
     const categories = await Categories.find();
-
     let products = await Product.find(filter)
       .populate("categoryId", "name")
       .sort({ createdAt: -1 });
@@ -63,12 +63,16 @@ const loadProducts = async (req, res) => {
       search : search
     });
   } catch (error) {
-
+    console.error("Error from loadProducts",error.message)
+    return res.status(500).json({
+      success : false,
+      message : "Failed to load products"
+    })
   }
 }
 
 const loadAddPage = async (req, res) => {
-  const categories = await Categories.find()
+  const categories = await Categories.find({isActive : true})
   res.render('Admin/products/addPage', { currentPage: 'products', categories })
 }
 
@@ -236,7 +240,7 @@ const loadEdit = async (req, res) => {
 
   const [product , categories] = await Promise.all([
     Product.findById(id),
-    Categories.find()
+    Categories.find({isActive : true})
   ])
   res.render('Admin/products/editPage.ejs', {
     currentPage: 'products',
@@ -354,6 +358,7 @@ const editProduct = async (req, res) => {
         colorCode : variant.colorCode || "#0000",
         price: Number(variant.price || 0),
         stock: Number(variant.stock || 0),
+        varientId : oldVariant.varientId,
         sku: String(variant.sku),
         // keep old string images sent from frontend + add new uploaded ones
         image: [
@@ -361,9 +366,7 @@ const editProduct = async (req, res) => {
             img => typeof img === 'string' && img.trim()
           ),
           ...newImages
-        ],
-
-        status: String(variant.status || oldVariant.status || 'Active').trim()
+        ]
       }
     })
 
@@ -386,7 +389,7 @@ const editProduct = async (req, res) => {
   }
 }
 
-const blockCategory = async (req,res)=>{
+const blockProduct = async (req,res)=>{
   try {
   const productId = req.params.id
   const product = await Product.findOne({_id : productId})
@@ -459,6 +462,6 @@ export {
   variantLoad,
   loadEdit,
   editProduct,
-  blockCategory,
+  blockProduct,
   deleteVariant
 }

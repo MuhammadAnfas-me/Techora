@@ -1,0 +1,172 @@
+<link rel="stylesheet" href="/styles/user/wishList.css">
+<%- include("../partitials/user/header.ejs",{tittle : "Techora | Wishlist"}) %>
+<main class="wishlist-main">
+  <div class="wishlist-container">
+    <header class="wishlist-header">
+      <h1>My Wishlist</h1>
+      <p class="item-count"><%= wishlistItems && wishlistItems.length > 0
+    ? `${wishlistItems.length} items saved for later`
+    : 'Your wishlist is empty' %></p>
+      
+   
+    </header>
+    <% if (wishlistItems && wishlistItems.length > 0) { %>
+    <div class="wishlist-grid">
+      <% wishlistItems.forEach(item => { %>
+        <% const cartedItems = cart.items.find(cartItem=>
+          item.productId.toString() === cartItem.productId.toString() && item.variantId === cartItem.variantId
+        )
+         %>
+      <article class="product-card">
+        <div class="card-image-wrapper" onclick="openProductPage('<%= item.name %>')">
+          <img src="<%= item.image %>" alt="">
+          <button class="delete-btn" aria-label="Remove from wishlist" onclick="removeItem('<%= item.productId %>','<%= item.variantId %>')">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12z"></path></svg>
+          </button>
+          <div class="image-placeholder">
+            
+            <!-- <svg fill="currentColor" viewBox="0 0 24 24" width="48" height="48"><path d="M4 4h16v16H4V4zm2 2v12l4-4 2 2 6-6v-4H6zm10 5a2 2 0 100-4 2 2 0 000 4z"></path></svg> -->
+          </div>
+        </div>
+        <div class="card-content">
+          <span class="brand-name"><%= item.brand %></span>
+          <h2 class="product-title"><%= item.name %></h2>
+          <h5><%= item.color %></h5>
+          <div class="price-status-row">
+            <span class="price">$<%= item.price %></span>
+            <span class="badge badge-instock">In Stock</span>
+          </div>
+          <% if(cartedItems){ %>
+            <button class="cart-btn-wish" onclick="addToCart(event,'<%= item.productId %>' , '<%= item.variantId %>',<%= user ? 'true' : 'false' %>)" disabled>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+             Added
+          </button>
+         <% }else {%>
+          <button class="cart-btn-wish" onclick="addToCart(event,'<%= item.productId %>' , '<%= item.variantId %>',<%= user ? 'true' : 'false' %>)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            Move to Cart
+          </button>
+          <% } %>
+        </div>
+      </article>
+      <% }); %>
+
+    </div>
+    <% } else { %>
+  <div class="wishlist-empty">
+    <div class="wishlist-empty-icon">
+      <i class="far fa-heart"></i>
+    </div>
+    <h2>Your wishlist is empty</h2>
+    <p>Save your favorite products here and review them later.</p>
+    <a href="/products" class="wishlist-shop-btn">Continue Shopping</a>
+  </div>
+<% } %>
+    <div class="wishlist-footer">
+      <div class="results-text">Showing <%= startItem %>-<%= endItem %> of <%= totalItems %> items</div>
+      
+<% if (totalPages > 1) { %>
+  <div class="pagination">
+    
+    <button 
+      class="page-nav" 
+      <%= currentPage === 1 ? 'disabled' : '' %>
+      onclick="changePage(<%= currentPage - 1 %>)"
+    >
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Previous
+    </button>
+
+    <% for(let i = 1; i <= totalPages; i++) { %>
+      <button 
+        class="page-num <%= currentPage === i ? 'active' : '' %>"
+        onclick="changePage(<%= i %>)"
+      >
+        <%= i %>
+      </button>
+    <% } %>
+
+    <button 
+      class="page-nav"
+      <%= currentPage === totalPages ? 'disabled' : '' %>
+      onclick="changePage(<%= currentPage + 1 %>)"
+    >
+      Next
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
+  </div>
+<% } %>
+    </div>
+  </div>
+</main>
+
+<%- include("../partitials/user/footer.ejs") %>
+
+<script>
+  async function removeItem(productId,variantId){
+    try {
+      const res = await axios.delete("/wishlist/remove",{
+        data :{
+          productId,
+          variantId
+        }})
+
+      showToast(res.data?.message || "removed item")
+      location.reload()
+    } catch (error) {
+      
+    }
+  }
+
+  async function addToCart (e, productId, variantId, isLogged) {
+  e.stopPropagation()
+
+  if (!isLogged) {
+    highlightLoginButton()
+    return
+  }
+
+  try {
+    const res = await axios.post('/cart/add', {
+      productId,
+      variantId,
+      quantity: 1
+    })
+    if(res.data.success){
+    const cartCountEl = document.getElementById('cartCount')
+    if (cartCountEl) {
+      if (res.data.cartCount !== undefined) {
+        cartCountEl.textContent = res.data.cartCount
+      }
+
+      cartCountEl.classList.add('cart-bounce')
+      setTimeout(() => {
+        cartCountEl.classList.remove('cart-bounce')
+      }, 300)
+    }
+
+    showToast(res.data.message || 'Added to cart')
+    setTimeout(()=>{
+      location.reload()
+    },800)
+  }
+  } catch (error) {
+    showToast(error.response?.data?.message || 'Failed to add to cart', 'error')
+  }
+}
+
+function openProductPage (productId) {
+  window.location.href = `/products/${productId}`
+}
+
+function changePage(page) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', page);
+    window.location.href = url.toString();
+  }
+</script>

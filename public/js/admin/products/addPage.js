@@ -1,63 +1,87 @@
-document.addEventListener("DOMContentLoaded", () => {
-  let cropper = null;
+document.addEventListener('DOMContentLoaded', () => {
+  let cropper = null
 
-  const form = document.getElementById("addProductForm");
-  const saveButton = document.getElementById("saveButton")
+  const form = document.getElementById('addProductForm')
+  const saveButton = document.getElementById('saveButton')
 
-  const nameInput = document.getElementById("name");
-  const categoryInput = document.getElementById("category");
-  const brandInput = document.getElementById("brand");
-  const statusInput = document.getElementById("status");
-  const shortDescriptionInput = document.getElementById("shortDescription");
-  const fullDescriptionInput = document.getElementById("fullDescription");
+  const nameInput = document.getElementById('name')
+  const categoryInput = document.getElementById('category')
+  const brandInput = document.getElementById('brand')
+  const statusInput = document.getElementById('status')
+  const shortDescriptionInput = document.getElementById('shortDescription')
+  const fullDescriptionInput = document.getElementById('fullDescription')
 
-  const addVariantBtn = document.getElementById("addVariantBtn");
-  const variantTabsContainer = document.getElementById("variantTabsContainer");
-  const variantContentArea = document.getElementById("variantContentArea");
+  const addVariantBtn = document.getElementById('addVariantBtn')
+  const variantTabsContainer = document.getElementById('variantTabsContainer')
+  const variantContentArea = document.getElementById('variantContentArea')
 
-  const specAddBtn = document.querySelector(".spec-input-row .btn");
-  const specInputs = document.querySelectorAll(".spec-input-row .form-control");
-  const specTableBody = document.querySelector(".spec-table tbody");
+  const specAddBtn = document.querySelector('.spec-input-row .btn')
+  const specInputs = document.querySelectorAll('.spec-input-row .form-control')
+  const specTableBody = document.querySelector('.spec-table tbody')
 
   // crop modal
-  const cropModal = document.getElementById("cropModal");
-  const cropImage = document.getElementById("cropImage");
-  const cropCloseBtn = document.getElementById("cropCloseBtn");
-  const cropCancelBtn = document.getElementById("cropCancelBtn");
-  const cropSaveBtn = document.getElementById("cropSaveBtn");
+  const cropModal = document.getElementById('cropModal')
+  const cropImage = document.getElementById('cropImage')
+  const cropCloseBtn = document.getElementById('cropCloseBtn')
+  const cropCancelBtn = document.getElementById('cropCancelBtn')
+  const cropSaveBtn = document.getElementById('cropSaveBtn')
 
-  let specifications = [];
-  let variants = [];
-  let activeVariantIndex = 0;
+  let specifications = []
+  let variants = []
+  let activeVariantIndex = 0
 
-  function showToast(message, type = "error") {
-    if (typeof window.showToast === "function") {
-      window.showToast(message, type);
+  function showToast (message, type = 'error') {
+    if (typeof window.showToast === 'function') {
+      window.showToast(message, type)
     } else {
-      alert(message);
+      alert(message)
     }
   }
 
-  function createVariant() {
-    return {
-      color: "Black",
-      colorCode : "",
-      storage: "",
-      sku: "",
-      price: "",
-      stock: "",
-      images: [] // File objects
-    };
+  function clearFieldError (el) {
+    if (!el) return
+    el.classList.remove('error')
+
+    const oldErr = el.parentElement?.querySelector('.error-message')
+    if (oldErr) oldErr.remove()
   }
 
-  function renderSpecifications() {
+  function setFieldError (el, message) {
+    if (!el) return
+    clearFieldError(el)
+
+    el.classList.add('error')
+
+    const err = document.createElement('small')
+    err.className = 'error-message'
+    err.style.color = 'red'
+    err.style.display = 'block'
+    err.style.marginTop = '6px'
+    err.textContent = message
+
+    el.parentElement?.appendChild(err)
+  }
+
+  function createVariant () {
+    return {
+      color: 'Black',
+      colorCode: '',
+      storage: '',
+      sku: '',
+      price: '',
+      stock: '',
+      images: [] // File objects
+    }
+  }
+
+  function renderSpecifications () {
     if (!specifications.length) {
       specTableBody.innerHTML = `
         <tr>
           <td colspan="3" style="text-align:center;">No specifications added</td>
         </tr>
-      `;
-      return;
+      `
+      return
     }
 
     specTableBody.innerHTML = specifications
@@ -72,41 +96,45 @@ document.addEventListener("DOMContentLoaded", () => {
           </tr>
         `
       )
-      .join("");
+      .join('')
   }
 
-  specAddBtn?.addEventListener("click", () => {
-    const label = (specInputs[0]?.value || "").trim();
-    const value = (specInputs[1]?.value || "").trim();
+  specAddBtn?.addEventListener('click', () => {
+    const label = (specInputs[0]?.value || '').trim()
+    const value = (specInputs[1]?.value || '').trim()
 
     if (!label || !value) {
-      showToast("Enter specification name and value");
-      return;
+      showToast('Enter specification name and value')
+      return
     }
 
-    specifications.push({ label, value });
-    specInputs[0].value = "";
-    specInputs[1].value = "";
-    renderSpecifications();
-  });
+    specifications.push({ label, value })
+    specInputs[0].value = ''
+    specInputs[1].value = ''
+    renderSpecifications()
+  })
 
-  specTableBody?.addEventListener("click", (e) => {
-    const btn = e.target.closest(".remove-spec-btn");
-    if (!btn) return;
+  specTableBody?.addEventListener('click', e => {
+    const btn = e.target.closest('.remove-spec-btn')
+    if (!btn) return
 
-    const index = Number(btn.dataset.index);
-    specifications.splice(index, 1);
-    renderSpecifications();
-  });
+    const index = Number(btn.dataset.index)
+    specifications.splice(index, 1)
+    renderSpecifications()
+  })
 
-  function renderVariantTabs() {
+  function renderVariantTabs () {
     variantTabsContainer.innerHTML = variants
       .map(
         (variant, index) => `
-          <div class="variant-tab ${index === activeVariantIndex ? "active" : ""}" data-index="${index}">
+          <div class="variant-tab ${
+            index === activeVariantIndex ? 'active' : ''
+          }" data-index="${index}">
             <div class="variant-tab-text">
               <span class="variant-tab-title">
-                ${variant.color || "Color"} ${variant.storage ? "/ " + variant.storage : ""}
+                ${variant.color || 'Color'} ${
+          variant.storage ? '/ ' + variant.storage : ''
+        }
               </span>
               <span class="variant-tab-price">
                 +$${Number(variant.price || 0).toFixed(2)}
@@ -119,21 +147,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="material-symbols-outlined" style="font-size:14px;">close</span>
                   </div>
                 `
-                : ""
+                : ''
             }
           </div>
         `
       )
-      .join("");
+      .join('')
   }
 
-  function renderVariantImages(variant) {
+  function renderVariantImages (variant) {
     return `
       <div id="variantImagePreview" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
         ${variant.images
           .map((img, imgIndex) => {
             const previewUrl =
-              img instanceof File ? URL.createObjectURL(img) : String(img);
+              img instanceof File ? URL.createObjectURL(img) : String(img)
 
             return `
               <div style="position:relative; width:80px; height:80px; border:1px solid #ddd; border-radius:8px; overflow:hidden;">
@@ -155,45 +183,55 @@ document.addEventListener("DOMContentLoaded", () => {
                   "
                 >✕</button>
               </div>
-            `;
+            `
           })
-          .join("")}
+          .join('')}
       </div>
-    `;
+    `
   }
 
-  function renderVariantContent() {
-    const variant = variants[activeVariantIndex];
-    if (!variant) return;
+  function renderVariantContent () {
+    const variant = variants[activeVariantIndex]
+    if (!variant) return
 
     variantContentArea.innerHTML = `
       <div class="grid-3">
         <div class="form-group">
           <label>Color <span class="required">*</span></label>
-          <input id="variantColor" type="text" class="form-control" placeholder="Enter color" value="${variant.color}">
+          <input id="variantColor" type="text" class="form-control" placeholder="Enter color" value="${
+            variant.color
+          }">
           
         </div>
     
 
         <div class="form-group">
           <label>SKU <span class="required">*</span></label>
-          <input id="variantSku" type="text" class="form-control" placeholder="Enter SKU" value="${variant.sku}">
+          <input id="variantSku" type="text" class="form-control variant-input" placeholder="Enter SKU" data-field="sku" value="${
+            variant.sku
+          }">
         </div>
         <div class="form-group">
           <label>Color code <span class="required">*</span></label>
-          <input type="color" id="variantColorCode" class="form-control color-picker" value="${variant.colorCode}" placeholder="Enter SKU">
+          <input type="color" id="variantColorCode" class="form-control color-picker" value="${
+            variant.colorCode
+          }" placeholder="Enter SKU">
         </div>
       </div>
 
       <div class="grid-3">
         <div class="form-group">
           <label>Price <span class="required">*</span></label>
-          <input id="variantPrice" type="number" class="form-control" placeholder="0.00" value="${variant.price}">
+          <input id="variantPrice" type="number" class="form-control" placeholder="0.00" value="${
+            variant.price
+          }">
         </div>
 
         <div class="form-group">
           <label>Stock Quantity <span class="required">*</span></label>
-          <input id="variantStock" type="number" class="form-control" placeholder="0" value="${variant.stock}">
+          <input id="variantStock" type="number" class="form-control" placeholder="0" value="${
+            variant.stock
+          }">
         </div>
       </div>
 
@@ -210,32 +248,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <input type="file" id="variantImageInput" accept="image/*" hidden>
       </div>
-    `;
+    `
 
-    bindVariantContentEvents();
+    bindVariantContentEvents()
   }
 
-  function renderVariants() {
-    renderVariantTabs();
-    renderVariantContent();
+  function renderVariants () {
+    renderVariantTabs()
+    renderVariantContent()
   }
 
-  function openCropModal(file) {
-    const reader = new FileReader();
+  function openCropModal (file) {
+    const reader = new FileReader()
 
     reader.onload = function (event) {
-      cropImage.src = event.target.result;
-      cropModal.style.display = "flex";
+      cropImage.src = event.target.result
+      cropModal.style.display = 'flex'
 
       if (cropper) {
-        cropper.destroy();
-        cropper = null;
+        cropper.destroy()
+        cropper = null
       }
 
       cropper = new Cropper(cropImage, {
         aspectRatio: NaN, // free crop
         viewMode: 1,
-        dragMode: "move",
+        dragMode: 'move',
         autoCropArea: 0.9,
         restore: false,
         guides: true,
@@ -244,259 +282,282 @@ document.addEventListener("DOMContentLoaded", () => {
         cropBoxMovable: true,
         cropBoxResizable: true,
         toggleDragModeOnDblclick: false
-      });
-    };
+      })
+    }
 
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(file)
   }
 
-  function closeCropModal() {
-    cropModal.style.display = "none";
-    cropImage.src = "";
+  function closeCropModal () {
+    cropModal.style.display = 'none'
+    cropImage.src = ''
 
     if (cropper) {
-      cropper.destroy();
-      cropper = null;
+      cropper.destroy()
+      cropper = null
     }
   }
 
-  function bindVariantContentEvents() {
-    const variant = variants[activeVariantIndex];
-    if (!variant) return;
+  function bindVariantContentEvents () {
+    const variant = variants[activeVariantIndex]
+    if (!variant) return
 
-    const colorInput = document.getElementById("variantColor");
-    const colorCode = document.getElementById("variantColorCode")
-    const skuInput = document.getElementById("variantSku");
-    const priceInput = document.getElementById("variantPrice");
-    const stockInput = document.getElementById("variantStock");
-    const uploadBox = document.getElementById("variantUploadBox");
-    const imageInput = document.getElementById("variantImageInput");
+    const colorInput = document.getElementById('variantColor')
+    const colorCode = document.getElementById('variantColorCode')
+    const skuInput = document.getElementById('variantSku')
+    const priceInput = document.getElementById('variantPrice')
+    const stockInput = document.getElementById('variantStock')
+    const uploadBox = document.getElementById('variantUploadBox')
+    const imageInput = document.getElementById('variantImageInput')
 
-    colorInput.addEventListener("change", () => {
-      variant.color = colorInput.value;
-      renderVariantTabs();
-    });
+    colorInput.addEventListener('change', () => {
+      variant.color = colorInput.value
+      renderVariantTabs()
+    })
 
-    skuInput.addEventListener("input", () => {
-      variant.sku = skuInput.value;
-    });
+    skuInput.addEventListener('input', () => {
+      variant.sku = skuInput.value
+    })
 
-    priceInput.addEventListener("input", () => {
-      variant.price = priceInput.value;
-      renderVariantTabs();
-    });
+    priceInput.addEventListener('input', () => {
+      variant.price = priceInput.value
+      renderVariantTabs()
+    })
 
-    stockInput.addEventListener("input", () => {
-      variant.stock = stockInput.value;
-    });
+    stockInput.addEventListener('input', () => {
+      variant.stock = stockInput.value
+    })
 
-    uploadBox.addEventListener("click", () => {
-      imageInput.click();
-    });
+    uploadBox.addEventListener('click', () => {
+      imageInput.click()
+    })
 
-    colorCode.addEventListener("input", ()=>{
+    colorCode.addEventListener('input', () => {
       variant.colorCode = colorCode.value
     })
 
-    imageInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    imageInput.addEventListener('change', e => {
+      const file = e.target.files[0]
+      if (!file) return
 
-      const   MAX_SIZE = 2 * 1024 * 1024
-      if (!file.type.startsWith("image/")) {
-        showToast("Please select an image");
-        imageInput.value = "";
-        return;
+      const MAX_SIZE = 2 * 1024 * 1024
+      if (!file.type.startsWith('image/')) {
+        showToast('Please select an image')
+        imageInput.value = ''
+        return
       }
 
-      if(file.size > MAX_SIZE){
-        showToast("Image size must be less than 2MB")
-        imageInput.value = ""
-        return 
+      if (file.size > MAX_SIZE) {
+        showToast('Image size must be less than 2MB')
+        imageInput.value = ''
+        return
       }
 
-      openCropModal(file);
-      imageInput.value = "";
-    });
+      openCropModal(file)
+      imageInput.value = ''
+    })
 
-    variantContentArea.querySelectorAll(".remove-variant-image").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const imgIndex = Number(btn.dataset.imgIndex);
-        variant.images.splice(imgIndex, 1);
-        renderVariantContent();
-      });
-    });
+    variantContentArea
+      .querySelectorAll('.remove-variant-image')
+      .forEach(btn => {
+        btn.addEventListener('click', () => {
+          const imgIndex = Number(btn.dataset.imgIndex)
+          variant.images.splice(imgIndex, 1)
+          renderVariantContent()
+        })
+      })
   }
 
   // modal listeners (only once)
-  cropCloseBtn?.addEventListener("click", closeCropModal);
-  cropCancelBtn?.addEventListener("click", closeCropModal);
+  cropCloseBtn?.addEventListener('click', closeCropModal)
+  cropCancelBtn?.addEventListener('click', closeCropModal)
 
-  cropSaveBtn?.addEventListener("click", () => {
-    if (!cropper) return;
+  cropSaveBtn?.addEventListener('click', () => {
+    if (!cropper) return
 
     const canvas = cropper.getCroppedCanvas({
       width: 800,
       height: 800
-    });
+    })
 
     canvas.toBlob(
-      (blob) => {
-        if (!blob) return;
+      blob => {
+        if (!blob) return
 
         const croppedFile = new File([blob], `variant-${Date.now()}.jpg`, {
-          type: "image/jpeg"
-        });
+          type: 'image/jpeg'
+        })
 
-        variants[activeVariantIndex].images.push(croppedFile);
-        closeCropModal();
-        renderVariantContent();
+        variants[activeVariantIndex].images.push(croppedFile)
+        closeCropModal()
+        renderVariantContent()
       },
-      "image/jpeg",
+      'image/jpeg',
       0.9
-    );
-  });
+    )
+  })
 
-addVariantBtn?.addEventListener("click", () => {
-  const currentVariant = variants[activeVariantIndex];
+  addVariantBtn?.addEventListener('click', () => {
+    const currentVariant = variants[activeVariantIndex]
 
-  if (currentVariant) {
-    if (!currentVariant.sku.trim()) {
-      showToast(`Variant ${activeVariantIndex + 1}: SKU is required`);
-      return;
+    if (currentVariant) {
+      if (!currentVariant.sku.trim()) {
+        showToast(`Variant ${activeVariantIndex + 1}: SKU is required`)
+        return
+      }
+
+      if (currentVariant.price === '' || Number(currentVariant.price) < 0) {
+        showToast(`Variant ${activeVariantIndex + 1}: Enter valid price`)
+        return
+      }
     }
 
-    if (currentVariant.price === "" || Number(currentVariant.price) < 0) {
-      showToast(`Variant ${activeVariantIndex + 1}: Enter valid price`);
-      return;
-    }
-  }
+    variants.push(createVariant())
+    activeVariantIndex = variants.length - 1
+    renderVariants()
+  })
 
-  variants.push(createVariant());
-  activeVariantIndex = variants.length - 1;
-  renderVariants();
-});
-
-  variantTabsContainer?.addEventListener("click", (e) => {
-    const closeBtn = e.target.closest(".variant-tab-close");
+  variantTabsContainer?.addEventListener('click', e => {
+    const closeBtn = e.target.closest('.variant-tab-close')
     if (closeBtn) {
-      const removeIndex = Number(closeBtn.dataset.remove);
-      variants.splice(removeIndex, 1);
+      const removeIndex = Number(closeBtn.dataset.remove)
+      variants.splice(removeIndex, 1)
 
       if (activeVariantIndex >= variants.length) {
-        activeVariantIndex = variants.length - 1;
+        activeVariantIndex = variants.length - 1
       }
       if (activeVariantIndex < 0) {
-        activeVariantIndex = 0;
+        activeVariantIndex = 0
       }
 
-      renderVariants();
-      return;
+      renderVariants()
+      return
     }
 
-    const tab = e.target.closest(".variant-tab");
-    if (!tab) return;
+    const tab = e.target.closest('.variant-tab')
+    if (!tab) return
 
-    activeVariantIndex = Number(tab.dataset.index);
-    renderVariants();
-  });
+    activeVariantIndex = Number(tab.dataset.index)
+    renderVariants()
+  })
 
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  function isValidSku(value) {
+    return /^[A-Za-z0-9_-]{3,30}$/.test(String(value || "").trim());
+  }
+
+  form?.addEventListener('submit', async e => {
+    e.preventDefault()
 
     if (!nameInput.value.trim()) {
-      showToast("Product name is required");
-      return;
+      showToast('Product name is required')
+      return
     }
 
     if (!categoryInput.value) {
-      showToast("Category is required");
-      return;
+      showToast('Category is required')
+      return
     }
 
     if (!brandInput.value) {
-      showToast("Brand is required");
-      return;
+      showToast('Brand is required')
+      return
     }
 
     for (let i = 0; i < variants.length; i++) {
-      const v = variants[i];
+      const v = variants[i]
 
       if (!v.sku.trim()) {
-        showToast(`Variant ${i + 1}: SKU is required`);
-        return;
+        showToast(`Variant ${i + 1}: SKU is required`)
+        return
       }
 
-      if (v.price === "" || Number(v.price) < 0) {
-        showToast(`Variant ${i + 1}: Enter valid price`);
-        return;
+      if(!isValidSku(v.sku)){
+         setTimeout(() => {
+          const el = variantContentArea.querySelector('.variant-input[data-field="sku"]');
+          setFieldError(el, "SKU must be 3-30 chars and only letters, numbers, _ or -");
+          el?.focus();
+         }, 0)
+         return
       }
 
-      if (v.stock === "" || Number(v.stock) < 0) {
-        showToast(`Variant ${i + 1}: Enter valid stock`);
-        return;
+      if (v.price === '' || Number(v.price) < 0) {
+        showToast(`Variant ${i + 1}: Enter valid price`)
+        return
+      }
+
+      if (v.stock === '' || Number(v.stock) < 0) {
+        showToast(`Variant ${i + 1}: Enter valid stock`)
+        return
+      }
+      if (v.images.length < 3) {
+        showToast(`Variant ${i + 1}: Upload atleast 3 images`)
+        return
+      }
+      if (!v.colorCode.trim()) {
+        showToast(`Variant ${i + 1}: Please select the color`)
+        return
       }
     }
 
-    const formData = new FormData();
+    const formData = new FormData()
 
-    formData.append("name", nameInput.value.trim());
-    formData.append("categoryId", categoryInput.value);
-    formData.append("brand", brandInput.value);
-    formData.append("status", statusInput.value);
-    formData.append("shortDescription", shortDescriptionInput.value.trim());
-    formData.append("fullDescription", fullDescriptionInput.value.trim());
-    formData.append("specifications", JSON.stringify(specifications));
-    
-    const finalVariants = variants.map((v) => ({
+    formData.append('name', nameInput.value.trim())
+    formData.append('categoryId', categoryInput.value)
+    formData.append('brand', brandInput.value)
+    formData.append('status', statusInput.value)
+    formData.append('shortDescription', shortDescriptionInput.value.trim())
+    formData.append('fullDescription', fullDescriptionInput.value.trim())
+    formData.append('specifications', JSON.stringify(specifications))
+
+    const finalVariants = variants.map(v => ({
       color: v.color,
-      colorCode : v.colorCode,
+      colorCode: v.colorCode,
       sku: v.sku.trim(),
       price: Number(v.price),
       stock: Number(v.stock),
-      status: "Active"
-    }));
+      status: 'Active'
+    }))
 
-    formData.append("variants", JSON.stringify(finalVariants));
+    formData.append('variants', JSON.stringify(finalVariants))
 
-    const imageMap = [];
+    const imageMap = []
 
     variants.forEach((variant, variantIndex) => {
-      variant.images.forEach((file) => {
-        formData.append("variantImages", file); // same field name for all files
-        imageMap.push(variantIndex);            // remember which variant owns this file
-      });
-    });
+      variant.images.forEach(file => {
+        formData.append('variantImages', file) // same field name for all files
+        imageMap.push(variantIndex) // remember which variant owns this file
+      })
+    })
 
-    if(Object.keys(imageMap).length < 1){
-      showToast(`Add atleast one image`);
+    if (Object.keys(imageMap).length < 1) {
+      showToast(`Add atleast one image`)
       return
     }
-formData.append("imageMap", JSON.stringify(imageMap));
+    formData.append('imageMap', JSON.stringify(imageMap))
 
-const originalText = saveButton.textContent
+    const originalText = saveButton.textContent
     try {
       saveButton.disabled = true
-      saveButton.textContent = "Saving..."
-      const res = await axios.post("/admin/products/add", formData, {
+      saveButton.textContent = 'Saving...'
+      const res = await axios.post('/admin/products/add', formData, {
         headers: {
-          "Content-Type": "multipart/form-data"
+          'Content-Type': 'multipart/form-data'
         }
-      });
+      })
 
-      showToast(res.data?.message || "Product added successfully", "success");
+      showToast(res.data?.message || 'Product added successfully', 'success')
       setTimeout(() => {
-        window.location.href = "/admin/products";
-      }, 800);
+        window.location.href = '/admin/products'
+      }, 800)
     } catch (error) {
-      showToast(error.response?.data?.message || "Failed to add product");
-    }finally{
+      showToast(error.response?.data?.message || 'Failed to add product')
+    } finally {
       saveButton.disabled = false
       saveButton.textContent = originalText
     }
-  });
+  })
 
-  variants.push(createVariant());
-  renderSpecifications();
-  renderVariants();
-});
+  variants.push(createVariant())
+  renderSpecifications()
+  renderVariants()
+})

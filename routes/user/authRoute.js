@@ -7,15 +7,31 @@ router.get(
   passport.authenticate('google', { scope: ['profile', 'email'] })
 )
 
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res)=>{
-    req.session.user = {
-      userId : req.user.userId
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', (err, user, info) => {
+    if (err) {
+      req.session.errorMessage = "Something went wrong";
+      return res.redirect('/login');
     }
-    res.redirect("/")
-  }
-)
+
+    if (!user) {
+      req.session.errorMessage = info?.message || "Google authentication failed";
+      return res.redirect('/login');
+    }
+
+    req.logIn(user, (err) => {
+      if (err) {
+        req.session.errorMessage = "Login failed";
+        return res.redirect('/login');
+      }
+
+      req.session.user = {
+        userId: user.userId
+      };
+
+      return res.redirect('/');
+    });
+  })(req, res, next);
+});
 
 export default router

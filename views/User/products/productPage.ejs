@@ -6,8 +6,9 @@
     <title>Techora - Mobile Accessories</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/user/products/productPage.css">
+    <script defer src="/js/user/productPage.js"></script>
 </head>
-<body>
+<body data-logged-in="<%= user ? 'true' : 'false' %>">
 
     <%- include("../../partitials/user/header.ejs",{tittle : "Techora | Products"  }) %>
 
@@ -18,7 +19,7 @@
                 <div class="filter-card">
                     <div class="filter-header">
                         <h2 class="filter-title">Filters</h2>
-                        <button type="button" class="clear-btn" onclick="window.location.href='/products'">Clear All</button>
+                        <button type="button" class="clear-btn" id="clearFiltersBtn" onclick="window.location.href='/products'">Clear All</button>
                     </div>
                     
                     <div class="filter-section">
@@ -85,16 +86,11 @@
 
                     <hr class="divider">
 
-                    <div class="filter-section">
-                        <h3>Compatibility</h3>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input" name="compatibility"> Android</label>
-                            <label class="checkbox-label"><input type="checkbox" class="checkbox-input" name="compatibility"> iPhone</label>
-                        </div>
-                    </div>
+                    
                     <div class="filter-actions">
                 <button type="submit" class="apply-filter-btn">Apply Filter</button>
             </div>
+            
             <input type="hidden" name="page" value="1">
              </form>
                 </div>
@@ -103,7 +99,7 @@
                 <div class="page-header">
                     <div>
                         <h1 class="page-title">Mobile Accessories</h1>
-                        <p class="page-subtitle">Showing <%= products.length %> products</p>
+                        <p class="page-subtitle">Showing <span id="productCount"><%= products.length %></span> products</p>
                     </div>
                     <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
         
@@ -158,8 +154,8 @@
                         Sort
                     </button>
                 </div>
-
-                <div class="product-grid">
+                <div id="productsSection">
+                <div class="product-grid" id="productsContainer">
                     
                     <% products.forEach((product)=>{ %>
                     <article class="product-card" id="productCard" onclick="openProductPage('<%= product.name %>')">
@@ -173,7 +169,14 @@
                             <% if(diffDays <= 7){ %>
                             <span class="badge-new">New</span>
                             <% } %>
-                            <button class="fav-btn">
+                            <%
+                              const currentVariantId = product.variants?.[0]?.varientId || "";
+                              const isWishlisted = wishListIds?.some(item =>
+                                item.productId === product._id.toString() &&
+                                item.variantId === currentVariantId
+                              );
+                            %>
+                            <button class="fav-btn <%= isWishlisted ? "active" : "" %>" onclick="addToWishlist(event,'<%= product._id %>' , '<%= product.variants[0].varientId %>', <%= user ? 'true' : 'false' %>,this)">
                                 <div class="h-4 w-4"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></div>
                             </button>
                         </div>
@@ -203,46 +206,33 @@
                     
 
                 </div>
-                <%
-                  const queryParams = new URLSearchParams();
-
-                  selectedCategory?.forEach(cat => queryParams.append("category", cat));
-                  selectedBrands?.forEach(brand => queryParams.append("brand", brand));
-
-                  if (selectedSort) queryParams.set("sort", selectedSort);
-                  if (minPrice) queryParams.set("minPrice", minPrice);
-                  if (maxPrice) queryParams.set("maxPrice", maxPrice);
-                  if (search) queryParams.set("search", search);
-
-                  const makePageLink = (page) => {
-                    const params = new URLSearchParams(queryParams.toString());
-                    params.set("page", page);
-                    return `/products?${params.toString()}`;
-                  };
-                %>
-                <% if (totalPages > 1) { %>
+                </div>
+                <div id="paginationContainer">
+                        <% if (totalPages > 1) { %>
 <nav class="pagination">
     <% if (currentPage > 1) { %>
-        <a href="<%= makePageLink(currentPage - 1) %>" class="page-link page-link-nav">
+        <button type="button" class="page-link page-link-nav" data-page="<%= currentPage - 1 %>">
             <div class="h-4 w-4">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                 </svg>
             </div>
             Previous
-        </a>
+        </button>
     <% } %>
 
     <% for (let i = 1; i <= totalPages; i++) { %>
-        <a 
-          href="<%= makePageLink(i) %>" 
-          class="page-link <%= currentPage === i ? 'active' : '' %>">
+        <button
+          type="button"
+          class="page-link <%= currentPage === i ? 'active' : '' %>"
+          data-page="<%= i %>"
+        >
           <%= i %>
-        </a>
+    </button>
     <% } %>
 
     <% if (currentPage < totalPages) { %>
-        <a href="<%= makePageLink(currentPage + 1) %>" class="page-link page-link-nav">
+        <button type="button" class="page-link page-link-nav" data-page="<%= currentPage + 1 %>">
             Next
             <div class="h-4 w-4">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,6 +243,7 @@
     <% } %>
 </nav>
 <% } %>
+</div>
                 </section>
             </div>
     </main>
@@ -326,7 +317,7 @@
                 </div>
             </div>
             <div class="drawer-footer">
-                <button class="btn-full" onclick="toggleDrawer('mobile-filter-drawer', false)">Apply Filters</button>
+                <button class="btn-full" type="submit" form="filterForm" onclick="toggleDrawer('mobile-filter-drawer', false)">Apply Filters</button>
             </div>
         </div>
     </div>
@@ -341,13 +332,16 @@
                 </button>
             </div>
             <div class="drawer-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                <button class="sort-option active" onclick="toggleDrawer('mobile-sort-drawer', false)">
-                    Relevance
+                <button class="sort-option <%= !selectedSort ? '' : '' %>" type="button" onclick="applySort('')">
+                    Default
                     <div class="h-5 w-5" style="color: var(--slate-800);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
                 </button>
-                <button class="sort-option" onclick="toggleDrawer('mobile-sort-drawer', false)">Newest</button>
-                <button class="sort-option" onclick="toggleDrawer('mobile-sort-drawer', false)">Price: Low to High</button>
-                <button class="sort-option" onclick="toggleDrawer('mobile-sort-drawer', false)">Price: High to Low</button>
+                <button class="sort-option <%= selectedSort === 'newest' ? 'active' : '' %>" type="button"  onclick="applySort('newest')">Newest</button>
+                <button class="sort-option <%= selectedSort === 'priceLowToHigh' ? 'active' : '' %>" type="button" onclick="applySort('priceLowToHigh')" >Price: Low to High</button>
+                <button class="sort-option <%= selectedSort === 'priceHighToLow' ? 'active' : '' %>" type="button" onclick="applySort('priceHighToLow')">Price: High to Low</button>
+                <button class="sort-option <%= selectedSort === 'nameAZ' ? 'active' : '' %>" type="button" onclick="applySort('nameAZ')">
+                     Name: A to Z
+                </button>
             </div>
             <div class="drawer-footer" style="padding-bottom: 2.5rem;">
                 <button class="btn-full-light" onclick="toggleDrawer('mobile-sort-drawer', false)">Cancel</button>
@@ -355,123 +349,6 @@
         </div>
     </div>
 
-    <script>
-        function toggleDrawer(drawerId, isOpen) {
-            const drawer = document.getElementById(drawerId);
-            if (isOpen) {
-                drawer.classList.add('is-open');
-            } else {
-                drawer.classList.remove('is-open');
-            }
-        }
-
-         const sortSelect = document.getElementById("sort-select");
-  if (sortSelect) {
-    sortSelect.addEventListener("change", () => {
-      document.getElementById("filterForm").submit();
-    });
-  }
-
-  const minRange = document.getElementById("minRange");
-  const maxRange = document.getElementById("maxRange");
-  const minPriceLabel = document.getElementById("minPriceLabel");
-  const maxPriceLabel = document.getElementById("maxPriceLabel");
-
-
-  const gap = 500;
-
-  function updateRangeSlider(e) {
-    let minVal = parseInt(minRange.value);
-    let maxVal = parseInt(maxRange.value);
-
-    if (maxVal - minVal < gap) {
-      if (e && e.target === minRange) {
-        minRange.value = maxVal - gap;
-      } else if (e && e.target === maxRange) {
-        maxRange.value = minVal + gap;
-      }
-    }
-
-    minVal = parseInt(minRange.value);
-    maxVal = parseInt(maxRange.value);
-
-    minPriceLabel.textContent = `₹${minVal}`;
-    maxPriceLabel.textContent = `₹${maxVal}`;
-  }
-
-  if (minRange && maxRange) {
-    minRange.addEventListener("input", updateRangeSlider);
-    maxRange.addEventListener("input", updateRangeSlider);
-    updateRangeSlider();
-  }
-
-  function highlightLoginButton() {
-    const loginBtn = document.getElementById("loginBtn");
-    if (!loginBtn) return;
-
-    loginBtn.focus();
-    loginBtn.classList.remove("shake-highlight");
-    void loginBtn.offsetWidth;
-    loginBtn.classList.add("shake-highlight");
-  }
-
-  async function addToCart(e,productId, variantId,isLogged) {
-    e.stopPropagation()
-
-    if(!isLogged){
-        highlightLoginButton();
-        return;
-
-    }else{
-    try {
-      const res = await axios.post('/cart/add', {
-        productId,
-        variantId,
-        quantity: 1
-      });
-
-    const cartCountEl = document.getElementById("cartCount");
-    if (cartCountEl && res.data.cartCount !== undefined) {
-        cartCountEl.textContent = res.data.cartCount;
-    }
-    cartCountEl.classList.add("cart-bounce");
-
-    setTimeout(()=>{
-      cartCountEl.classList.remove("cart-bounce");
-    },300);
-      showToast(res.data.message || "Added to cart");
-    } catch (error) {
-      showToast(error.response?.data?.message || "Failed to add to cart","error");
-    }
-  }
-}
-
-    function openProductPage(name){
-        window.location.href = `/products/${name}`
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("searchInput");
-  const clearSearchBtn = document.getElementById("clearSearchBtn");
-
-  function toggleClearBtn() {
-    clearSearchBtn.style.display = searchInput.value.trim() ? "block" : "none";
-  }
-
-  searchInput.addEventListener("input", toggleClearBtn);
-
-  clearSearchBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    searchInput.focus();
-    toggleClearBtn();
-  });
-
-  toggleClearBtn();
-  clearSearchBtn.addEventListener("click", () => {
-  searchInput.value = "";
-  document.getElementById("filterForm").submit();
-});
-});
-    </script>
+    
 </body>
 </html>

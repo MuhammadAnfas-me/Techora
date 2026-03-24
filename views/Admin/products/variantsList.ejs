@@ -301,6 +301,17 @@
         </div>
       </main>
     </div>
+
+    <div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3 id="confirmTitle">Confirm Action</h3>
+    <p id="confirmMessage">Are you sure?</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" id="confirmCancel">Cancel</button>
+      <button class="btn-confirm" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
   </body>
 
   <script>
@@ -346,15 +357,21 @@
     }
 
     async function deleteVariant(id){
-        try {
-            const res = await axios.delete(`/admin/products/variants/${id}`)
-            showToast(res?.data?.message || "Deleted successfully")
-            setTimeout(()=>{
+        showConfirm("Are you sure you want to delete this variant?",async ()=>{
+
+            try {
+             const res = await axios.delete(`/admin/products/variants/${id}`)              
+              showToast(res.data.message || "Deleted successfully" )
+              setTimeout(()=>{
                 window.location.reload()
             },500)
-        } catch (er) {
-            showToast(er.response?.data?.message || "Failed to delete variant", "error");
-        }
+            } catch (error) {
+                console.error(error)
+              showToast(er.response?.data?.message || "Something went wrong","error");
+            }
+        })
     }
+
+  
   </script>
 </html>
