@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orders Management - Techora</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      (function() {
+        const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+      })();
+    </script>
+    
+    <link rel="stylesheet" href="/styles/admin/products/productsList.css" />
+    <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+    <link rel="stylesheet" href="/styles/user/popup.css" />
+
+    <style>
+      /* Added styles specific to the orders layout to match the design */
+      .page-header-actions {
+        display: flex;
+        gap: 12px;
+      }
+      .btn-secondary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn-secondary:hover {
+        background-color: #e5e7eb;
+      }
+      .filters-card {
+        display: flex;
+        gap: 16px;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        align-items: center;
+      }
+      .filter-select, .search-input {
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        background-color: #fafafa;
+        font-size: 14px;
+        color: #374151;
+        outline: none;
+      }
+      .search-wrapper {
+        flex-grow: 1;
+      }
+      .search-wrapper input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        background-color: #fafafa;
+        font-size: 14px;
+        outline: none;
+      }
+      .status-pill {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+      }
+      .status-delivered {
+        background-color: #d1fae5;
+        color: #059669;
+      }
+      .status-pending {
+        background-color: #ffedd5;
+        color: #d97706;
+      }
+      .status-cancelled {
+        background-color: #ffe4e6;
+        color: #e11d48;
+      }
+      .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: #fff;
+        border-top: 1px solid #f3f4f6;
+      }
+      .pagination-info {
+        color: #6b7280;
+        font-size: 14px;
+      }
+      .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .page-link {
+        color: #374151;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 6px 12px;
+        border-radius: 6px;
+      }
+      .page-link.active {
+        background-color: #f3f4f6;
+        font-weight: 600;
+        color : #374151
+      }
+      .page-link:hover:not(.dots) {
+        background-color: #e5e7eb;
+      }
+      .action-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #374151;
+      }
+      .action-btn:hover {
+        color: #000;
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/popup.js" defer></script>
+    <script src="/js/partitials/Admin/sidebar.js" defer></script>
+  </head>
+
+  <body>
+    <div id="toast" class="toast"></div>
+    <%- include("../../partitials/admin/sidebar.ejs",{ currentPage: 'orders' }) %>
+
+    <div class="main-wrapper">
+      <%- include("../../partitials/admin/header.ejs",{ currentPage: 'orders' }) %>
+
+      <main class="main-content">
+        <div class="content-container">
+          
+          <div class="page-header-wrapper">
+            <div class="page-header-left">
+              <h1 class="page-title">Orders Management</h1>
+              <p class="page-subtitle">View and manage all customer orders</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn-secondary" type="button" onclick="window.location.href='/admin/orders/export-pdf?search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>'">
+                <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                Export Orders
+              </button>
+            </div>
+          </div>
+
+          <form method="GET" class="filters-card">
+
+    <!-- 📦 Status Filter -->
+    <select class="filter-select" name="status">
+        <option value="">All</option>
+        <option value="Delivered" <%= status==='Delivered' ? 'selected' : '' %>>Delivered</option>
+        <option value="Pending" <%= status==='Pending' ? 'selected' : '' %>>Pending</option>
+        <option value="Cancelled" <%= status==='Cancelled' ? 'selected' : '' %>>Cancelled</option>
+    </select>
+
+    <!-- 📅 Date Sort -->
+    <select class="filter-select" name="dateSort">
+        <option value="">Sort by Date</option>
+        <option value="newest" <%= dateSort==='newest' ? 'selected' : '' %>>Newest</option>
+        <option value="oldest" <%= dateSort==='oldest' ? 'selected' : '' %>>Oldest</option>
+    </select>
+
+    <!-- 🔍 Search -->
+    <div class="search-wrapper">
+        <input 
+            type="text" 
+            placeholder="Customer / Order ID" 
+            name="search"
+            value="<%= search || '' %>"
+        />
+    </div>
+    <button type="button" class="btn-primary" onclick="window.location.href='/admin/orders'" style="background-color: #1B3C53; padding: 10px 20px;">
+        Clear Filters
+    </button>
+
+    <!-- 🔘 Button -->
+    <button type="submit" class="btn-primary" style="background-color: #1B3C53; padding: 10px 20px;">
+        Apply
+    </button>
+
+</form>
+
+          <div class="table-card">
+            <div style="overflow-x: auto;">
+              <table class="product-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Order Date</th>
+                    <th>Payment Method</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="orderTbody">
+                  <% orders.forEach(item=>{ %>
+                  <tr>
+                    <td style="font-weight: 500; color: #111827;"><%= item.orderId %></td>
+                    <td><%= item.user?.fullName ? item.user.fullName : "N/A"  %></td>
+                    <td><%= new Date(item.createdAt).toISOString().split('T')[0] %></td>
+                    <td><%= item.paymentMethod %></td>
+                    <% if(item.orderStatus === "Delivered"){ %>
+                    <td><span class="status-pill status-delivered"><%= item.orderStatus %></span></td>
+                    <% }else if(item.orderStatus === "Cancelled"){ %>
+                        <td><span class="status-pill status-cancelled"><%= item.orderStatus %></span></td>
+                        <% }else if(["Placed","Confirmed"].includes(item.orderStatus)){ %>
+                        <td><span class="status-pill status-pending"><%= "Pending" %></span></td>
+                    <% } %>
+                    <td style="font-weight: 500;"><%= formatINR(item.totalAmount) %></td>
+                    <td>
+                      <button class="action-btn" type="button" title="Edit" onclick="window.location.href='/admin/orders/<%= item.orderId %>'">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
+                      </button>
+                    </td>
+                  </tr>
+                  <% }) %>
+
+                </tbody>
+              </table>
+            </div>
+            
+           <div class="pagination-wrapper">
+
+  <!-- 📊 Info -->
+  <span class="pagination-info">
+    Showing <%= (currentPage - 1) * limit + 1 %> -
+    <%= Math.min(currentPage * limit, totalOrders) %>
+    of <%= totalOrders %> orders
+  </span>
+
+  <div class="pagination-controls">
+
+    <!-- ⬅ Previous -->
+    <% if(currentPage > 1){ %>
+      <a href="?page=<%= currentPage - 1 %>&search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>" class="page-link">
+        &lt; Previous
+      </a>
+    <% } %>
+
+    <!-- 🔢 Pages -->
+    <% for(let i = 1; i <= totalPages; i++){ %>
+      <a href="?page=<%= i %>&search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>"
+         class="page-link <%= currentPage === i ? 'active' : '' %>">
+         <%= i %>
+      </a>
+    <% } %>
+
+    <!-- ➡ Next -->
+    <% if(currentPage < totalPages){ %>
+      <a href="?page=<%= currentPage + 1 %>&search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>" class="page-link">
+        Next &gt;
+      </a>
+    <% } %>
+
+  </div>
+</div>
+
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </body>
+
+  <script>
+    const searchInput = document.getElementById("search-input");
+    const searchBtn = document.getElementById("searchBtn");
+    const orderStatusSelect = document.getElementById("orderStatusSelect");
+
+    function applyFilters() {
+      const search = searchInput.value.trim();
+      const status = orderStatusSelect.value;
+      
+      console.log('Filters Applied:', { search, status });
+      // Logic for backend API fetching goes here
+    }
+
+    searchBtn.addEventListener("click", applyFilters);
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyFilters();
+      }
+    });
+
+    orderStatusSelect.addEventListener("change", applyFilters);
+  </script>
+</html>

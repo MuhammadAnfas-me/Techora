@@ -7,6 +7,10 @@ import * as productController from '../../controllers/user/productController.js'
 
 import * as cartController from '../../controllers/user/cartController.js'
 import * as wishListController from '../../controllers/user/wishListController.js'
+import * as checkOutController from '../../controllers/user/checkOutController.js'
+import * as paymentController from '../../controllers/user/paymentController.js'
+import * as orderController from '../../controllers/user/orderController.js'
+
 import * as middlewares from '../../middlewares/user/auth.js'
 import upload from '../../middlewares/cloudinary/upload.js'
 
@@ -135,7 +139,30 @@ router.delete("/wishlist/remove",wishListController.removeProduct)
 
 
 //----------------------------------------- checkout page------------------------------------
-router.route("/checkout").get()
+router.get('/checkout',checkOutController.checkOutLoad)
+router.route("/checkout").post(checkOutController.validateCart)
+
+// --------------------------- Payment section ----------------------------------------------
+
+router.get("/checkout/payment",paymentController.paymentPageLoad)
+router.get("/checkout/success",paymentController.orderSuccess)
+
+router.post("/place-order",paymentController.placeOrder)
+router.get("/order-details",paymentController.fetchOrderDetails)
+
+// -------------------------------Order section---------------------------------------------
+router.get("/profile-orders",orderController.OrderLoad)
+router.get("/orders",orderController.orderListPage)
+router.get("/orders/:orderId",orderController.orderDetailsLoad)
+
+router.get("/orders/:id/invoice",orderController.generateInvoicePDF)
+
+router
+.route("/orders/:id/cancel")
+.get(orderController.orderCancelLoad)
+.patch(orderController.orderCancel)
+
+router.post("/orders/cancel-item",orderController.cancelItem)
 
 router.route('/logout').get(userController.logout)
 

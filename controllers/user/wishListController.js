@@ -5,7 +5,6 @@ import { createReadStream } from "fs"
 
 const wishListLoad = async (req,res)=>{
     const sessionUser = req.session.user
-    console.log(sessionUser)
     try{
     if(!sessionUser){
         res.redirect("/")
@@ -46,7 +45,7 @@ const wishListLoad = async (req,res)=>{
     const endItem = Math.min(skip + wishlistItems.length, totalItems)
 
     const cart = await Cart.findOne({userId : sessionUser.id})
- 
+
     res.render("User/wishList.ejs",{
         wishlistItems,
         cart,

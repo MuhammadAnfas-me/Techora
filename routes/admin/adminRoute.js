@@ -3,6 +3,7 @@ import * as userController from '../../controllers/admin/userController.js'
 import * as authController from '../../controllers/admin/authController.js'
 import * as categoryController from '../../controllers/admin/categoryController.js'
 import * as productController from "../../controllers/admin/productController.js"
+import * as orderController from "../../controllers/admin/orderController.js"
 
 import * as middleWares from '../../middlewares/admin/adminAuth.js'
 import uploadProductImage from '../../middlewares/cloudinary/uploadProductImages.js'
@@ -73,6 +74,14 @@ router
   .patch(middleWares.checkAdminAuth,productController.blockProduct)
 
 
+router
+  .route("/orders")
+  .get(middleWares.checkAdminAuth,orderController.orderListLoad)
+
+router
+  .route('/orders/:orderId')
+  .get(orderController.orderDetailsPage)
+router.get("/orders/export-pdf",orderController.exportOrdersPDF)
 
 router.route('/logout').get(authController.logout)
 export default router

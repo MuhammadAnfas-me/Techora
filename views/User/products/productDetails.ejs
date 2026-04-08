@@ -6,12 +6,12 @@
     <title>Techora - iPhone 15 Pro Max</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/styles/user/products/productDetails.css">
-</head>
-<body>
-
+  </head>
+  <body>
+    
     <%- include("../../partitials/user/header.ejs",{tittle : "Techora || Product"}) %>
-
+    <link rel="stylesheet" href="/styles/user/products/productDetails.css">
+    
     <div class="container breadcrumbs" style="padding-bottom: 3px;padding-top: 2px;">
         <a href="/">Home</a> <i class="fas fa-chevron-right"></i>
         <a href="/products">Products</a> <i class="fas fa-chevron-right"></i>
@@ -52,9 +52,9 @@
                 </div>
 
                 <div class="pricing">
-                    <span class="current-price">$<span  id="currentPrice"><%= product.variants[0].price %></span></span>
-                    <span class="old-price">$1,299</span>
-                    <span class="discount-badge">Save 15%</span>
+                    <span class="current-price">₹<span  id="currentPrice"><%= product.variants[0].price %></span></span>
+                    <span class="old-price" id="oldPrice">₹<%=  product.variants[0].price*2  %></span>
+                    <span class="discount-badge">Save 50%</span>
                 </div>
 
                 <div class="promo-banner">
@@ -228,7 +228,7 @@
                             <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> <span>(234)</span>
                         </div>
                         <h3><%= items.name %></h3>
-                        <div class="card-price">$<%= items.variants[0].price %></div>
+                        <div class="card-price">₹<%= items.variants[0].price %></div>
                         <button class="btn-add-cart" id="i" onclick="addToCart(event,'<%= items._id %>', '<%= items.variants[0].varientId %>',<%= user ? 'true' : 'false' %>)">
                             <i class="fas fa-shopping-cart"></i>Add to Cart
                         </button>
@@ -260,6 +260,7 @@
     const selectedColor = document.getElementById("selectedColor");
     const selectedVariantId = document.getElementById("selectedVariantId");
     const currentPrice = document.getElementById("currentPrice");
+    const oldPrice = document.getElementById("oldPrice")
     const mainImage = document.getElementById("mainImage");
     const thumbnailList = document.querySelector(".thumbnail-list");
     const zoomPreview = document.getElementById("zoomPreview");
@@ -443,6 +444,10 @@ function moveLens(e) {
 
     if (currentPrice) {
       currentPrice.textContent = variant.price;
+    }
+
+    if(oldPrice){
+      oldPrice.textContent = variant.price*2
     }
 
     if (mainImage && variant.image?.length) {

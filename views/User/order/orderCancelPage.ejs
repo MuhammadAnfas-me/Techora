@@ -1,0 +1,119 @@
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | My Order"}) %>
+<link rel="stylesheet" href="/styles/user/orders/orderCancelPage.css">
+
+<main class="cr-page-wrapper">
+  <div class="cr-container">
+    
+    <nav class="cr-breadcrumb">
+      <a href="/orders">My Orders</a>
+      <span class="cr-separator">&gt;</span>
+      <a href="/orders/<%= order.orderId %>">Order <%= order.orderId %></a>
+      <span class="cr-separator">&gt;</span>
+      <span class="cr-current">Cancel Order</span>
+    </nav>
+
+    <div class="cr-card">
+      
+      <div class="cr-card-header">
+        <div class="cr-title-wrapper">
+          <div class="cr-warning-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 9V13M12 17.01L12.01 16.999M12 3L2 21H22L12 3Z" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="cr-title">Cancel Request</h1>
+        </div>
+        <p class="cr-subtitle">Your request will be reviewed by our team. Refund will be processed after approval.</p>
+      </div>
+
+      <div class="cr-items-section">
+        <h3 class="cr-section-heading">Items in this order</h3>
+        
+        <div class="cr-item-list">
+            <% order.items.forEach(item=>{ %>
+
+           
+          <div class="cr-item">
+            <div class="cr-item-details">
+              <div class="cr-item-image">
+                <img src="<%= item.image %>" alt="Sorry">
+              </div>
+              <div class="cr-item-meta">
+                <h4 class="cr-item-name"><%= item.name %></h4>
+                <span class="cr-item-qty">Qty: <%= item.quantity %></span>
+              </div>
+            </div>
+            <div class="cr-item-price"><%= formatINR(item.price) %></div>
+          </div>
+           <% }) %>
+        </div>
+
+        <hr class="cr-divider">
+
+        <div class="cr-refund-wrapper">
+          <div class="cr-refund-info">
+            <span class="cr-refund-label">Estimated Refund Amount</span>
+            <span class="cr-refund-note">Final refund will be confirmed after review</span>
+          </div>
+          <div class="cr-refund-amount"><%= order.totalAmount %></div>
+        </div>
+      </div>
+
+      <form class="cr-form">
+        <div class="cr-form-group">
+          <label for="cancel-reason" class="cr-label">Reason for cancellation</label>
+          <select id="cancel-reason" class="cr-input" required >
+            <option value="" disabled selected>Select a reason...</option>
+            <option value="changed_mind">Changed my mind</option>
+            <option value="found_cheaper">Found a better price elsewhere</option>
+            <option value="ordered_mistake">Ordered by mistake</option>
+            <option value="delivery_delay">Delivery is taking too long</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="cr-form-group">
+          <label for="cancel-comments" class="cr-label">Additional Comments <span class="cr-optional">(Optional)</span></label>
+          <textarea id="cancel-comments" class="cr-input cr-textarea" placeholder="Provide any additional details..."></textarea>
+        </div>
+
+        <div class="cr-actions">
+          <button type="button" class="cr-btn cr-btn-outline" onclick="window.location.href='/orders/<%= order.orderId %>'">Go Back</button>
+          <button type="button" class="cr-btn cr-btn-primary" onclick="sendRequest('<%= order.orderId %>')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Submit Request
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</main>
+
+<%- include('../../partitials/user/footer.ejs') %>
+
+<script>
+    async function sendRequest(id){
+        const reason = document.getElementById("cancel-reason").value
+        const comment = document.getElementById("cancel-comments").textContent || ""
+        try {
+            const res = await axios.patch(`/orders/${id}/cancel`,{
+                reason,
+                comment
+            })
+
+            if(res.data.success){
+                showToast(res.data.message || "Request sended successfully")
+                setTimeout(()=>{
+                  window.location.href=`/orders/${id}`
+                },800)
+            }
+        } catch (error) {
+            console.log(error)
+            showToast(error.response.data.message || "Something went wrong","error")
+        }
+    }
+</script>

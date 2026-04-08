@@ -1,0 +1,80 @@
+
+<link rel="stylesheet" href="/styles/user/orderSuccessPage.css">
+<%- include("../partitials/user/header.ejs",{tittle : "Techora | Success"}) %>
+<main class="page-body">
+        <div class="content-container">
+            <div class="success-icon-wrap">
+                <div class="check-circle"><i class="fas fa-check"></i></div>
+                <div class="status-dot"></div>
+            </div>
+
+            <h1 class="success-title">Order Placed Successfully!</h1>
+            <p class="success-subtitle">Thank you for your purchase. Your order has been confirmed.</p>
+
+            <section class="order-card">
+                <h2 class="card-heading">Order Details</h2>
+                
+                <div class="card-row">
+                    <span class="row-label">Order ID</span>
+                    <span class="row-value" id="order-id">#ORD-2026-458923 <i class="far fa-copy copy-btn"></i></span>
+                </div>
+                
+                <div class="card-row">
+                    <span class="row-label">Order Date</span>
+                    <span class="row-value" id="orderDate">8 Jan, 2026</span>
+                </div>
+                
+                <div class="card-row no-border">
+                    <span class="row-label">Estimated Delivery</span>
+                    <div class="delivery-address">
+                        <span class="delivery-date">12–14 Jan, 2026</span>
+                        <p id="orderAddress">123 Main Street, Apt 4B<br>New York, NY 10001</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="action-buttons">
+                <button class="btn-navy" onclick="window.location.href='/orders'">View Orders</button>
+                <a href="/products" class="btn-text">Continue Shopping</a>
+            </div>
+
+            <section class="features-bar">
+                <div class="feature-item">
+                    <div class="feature-icon"><div class="dot-inner"></div></div>
+                    <span>Order Confirmed</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <span>Secure Payment</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-sync-alt"></i></div>
+                    <span>Easy Returns</span>
+                </div>
+            </section>
+        </div>
+    </main>
+
+   <%- include("../partitials/user/footer.ejs") %>
+
+   <script>
+       document.addEventListener("DOMContentLoaded",async ()=>{
+        const orderId = new URLSearchParams(window.location.search).get("orderId")
+        const order_id = document.getElementById("order-id")
+        const orderDate = document.getElementById("orderDate")
+        const orderAddress = document.getElementById("orderAddress")
+
+        try {
+            const res = await axios(`/order-details?orderId=${orderId}`)
+            if(res.data.success){
+                order_id.textContent = res.data.orderId
+                orderAddress.textContent = res.data.address1
+                orderAddress.textContent += res.data.address2
+                orderDate.textContent = new Date(res.data.orderDate).toLocaleDateString("en-US", { month: "long" ,
+                                            day: "numeric" , year: "numeric" })
+            }
+        } catch (error) {
+            
+        }
+    })
+   </script>

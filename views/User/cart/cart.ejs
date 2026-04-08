@@ -44,6 +44,7 @@
   <div class="item-details">
     <span class="item-brand"><%= item.brand?.toUpperCase() %></span>
     <h3 class="item-title"><%= item.name %></h3>
+   
     <p class="item-spec">Color: <%= item.color %></p>
     
     <% if (item.variantDeleted) { %>
@@ -81,7 +82,7 @@
         <% } %>
       </div>
 
-      <span class="item-price" id="itemTotal">$<%= item.total %></span>
+      <span class="item-price" id="itemTotal"><%= formatINR(item.subtotal) %></span>
     </div>
 
   </div>
@@ -119,24 +120,24 @@
       <div class="price-breakdown">
         <div class="price-row">
           <span id="summaryItemCount">Subtotal (<%= cartItems.length %> items)</span>
-          <span class="amount-bold" id="cartSubtotal">$<%= grandTotal %></span>
+          <span class="amount-bold" id="cartSubtotal"><%= formatINR(grandTotal) %></span>
         </div>
         <div class="price-row">
           <span>Discount</span>
-          <span class="amount-discount" id="cartDiscount" >-$00.00</span>
+          <span class="amount-discount" id="cartDiscount" >-₹00.00</span>
         </div>
         <div class="price-row">
           <span>Delivery Charges</span>
-          <span class="amount-bold" id="deliveryCharge">$0.00</span>
+          <span class="amount-bold" id="deliveryCharge">₹0.00</span>
         </div>
       </div>
 
       <div class="total-row">
         <span>Total</span>
-        <span class="total-price" id="cartTotal">$<%= grandTotal %></span>
+        <span class="total-price" id="cartTotal"><%= formatINR(grandTotal) %></span>
       </div>
 
-      <button class="checkout-btn">
+      <button class="checkout-btn" id="checkoutBtn" onclick="validateCart()" >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
         Proceed to Checkout
       </button>
@@ -220,7 +221,7 @@
         const itemTotal = cartItem.querySelector(".item-price")
 
         if(qtyInput) qtyInput.value = res.data.quantity
-        if(itemTotal) itemTotal.textContent = `$${Number(res.data.itemTotal || 0).toFixed()}`
+        if(itemTotal) itemTotal.textContent = `₹${Number(res.data.itemTotal || 0).toFixed()}`
       }
       updateCartSummary(res.data);     
       showToast?.(res.data.message || "Quantity updated", "success");      
@@ -245,7 +246,7 @@
     }
   
     if (cartSubtotal) {
-      cartSubtotal.textContent = `$${Number(summary.cartTotal || 0).toFixed()}`;
+      cartSubtotal.textContent = `₹${Number(summary.cartTotal || 0).toFixed()}`;
     }
   
     // if (cartDiscount) {
@@ -257,7 +258,26 @@
     // }
   
     if (cartTotal) {
-      cartTotal.textContent =  `$${Number(summary.cartTotal || 0).toFixed()}`;
+      cartTotal.textContent =  `₹${Number(summary.cartTotal || 0).toFixed()}`;
     }
-}
+  }
+
+  // const checkoutBtn =  document.getElementById("checkoutBtn")
+  // checkoutBtn.addEventListener('click',async()=>{
+  //   window.location.href="/checkout"
+  // })
+
+  async function validateCart(){
+    try {
+      const res = await axios.post("/checkout")
+
+      const data = res.data
+
+      window.location.href =data.redirect
+      
+    } catch (error) {
+      console.log(error)
+      showToast( error.response.data.message ||"Something went wrong","error")
+    }
+  }
 </script>

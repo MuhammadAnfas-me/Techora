@@ -1,0 +1,130 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techora - Mobile Payment Page</title>
+</head>
+<body> -->
+    
+    <link rel="stylesheet" href="/styles/user/paymentPage.css">
+    <%- include("../partitials/user/header.ejs",{tittle : "Techora | Payment"}) %>
+    <div class="stepper-bg">
+    <div class="stepper-container">
+        <div class="step">
+            <div class="step-num step-done">1</div>
+            <span class="step-label text-gray-600">CART</span>
+        </div>
+        <div class="line"></div>
+        <div class="step">
+            <div class="step-num step-done">2</div>
+            <span class="step-label text-gray-600">ADDRESS</span>
+        </div>
+        <div class="line"></div>
+        <div class="step">
+            <div class="step-num step-active">3</div>
+            <span class="step-label text-tech-dark">PAYMENT</span>
+        </div>
+        <div class="line"></div>
+        <div class="step">
+            <div class="step-num step-inactive">4</div>
+            <span class="step-label text-gray-400">CONFIRM</span>
+        </div>
+    </div>
+</div>
+
+<main class="payment-main">
+    <section>
+        <h2 class="section-title">Select Payment Method</h2>
+        
+        <label class="payment-card">
+            <div class="payment-info">
+                <h3>Razorpay</h3>
+                <p>All major payment methods supported</p>
+            </div>
+            <input type="radio" name="payment_method" value="ONLINE"  class="radio-input" disabled readonly>
+        </label>
+
+        <label class="payment-card">
+            <div class="payment-info">
+                <h3>Cash on Delivery</h3>
+                <p>Pay when you receive your order.</p>
+            </div>
+            <input type="radio" value="COD" name="payment_method" checked class="radio-input">
+        </label>
+    </section>
+
+    <aside>
+        <div class="summary-box">
+            <h2 class="summary-title">Order Summary</h2>
+            <% cartItems.forEach(item => { %>
+            <div class="item-row">
+                <div class="item-img">
+                    <img src="<%= item.image %>" alt="iPhone">
+                </div>
+                <div class="item-details">
+                    <p class="item-name"><%= item.name %></p>
+                    <p class="item-price"><%=formatINR(item.subtotal) %></p>
+                </div>
+            </div>
+            <% }) %>
+
+            <div class="price-calc">
+                <div class="calc-row"><span>Subtotal</span><span class="font-semibold"><%= formatINR(grandTotal) %></span></div>
+                <div class="calc-row text-success"><span>Discount</span><span class="font-semibold">-₹5,000</span></div>
+                <div class="calc-row"><span>GST (18%)</span><span class="font-semibold"><%= formatINR(grandTotal*18/100) %> </span></div>
+            </div>
+
+            <div class="total-row">
+                <span class="total-label">Total Amount</span>
+                <span class="total-amount"><%= formatINR(grandTotal+grandTotal*18/100) %></span>
+            </div>
+
+            <button class="pay-btn payment" >Place Order</button>
+            
+            <p class="secure-badge">
+                <span class="success-icon">✔</span> 100% Secure Payments
+            </p>
+        </div>
+    </aside>
+</main>
+
+<%- include("../partitials/user/footer.ejs") %>
+
+    <!-- <footer class="main-footer">
+        </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> -->
+
+<script>
+    document.querySelector('.payment').addEventListener('click',async function(e) {
+    // Basic interaction for the "Place Order" button
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    this.disabled = true;
+
+    // // Simulate backend call
+    // setTimeout(() => {
+    //     window.location.href = '/checkout/success'; // Target for Step 4
+    // }, 1500);
+
+    try {
+        const addressId = new URLSearchParams(window.location.search).get("addressId")
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value
+        const res = await axios.post("/place-order",{
+            addressId,
+            paymentMethod
+        })
+        if(res.data.success){
+            showToast(res.data.message)
+            setTimeout(() => {
+                window.location.href=`/checkout/success?orderId=${res.data.orderId}`
+            }, 1500);
+        }
+    } catch (error) {
+        console.log(error)
+        showToast(error.response.message || "Failed to payment","error")
+    }
+});
+</script>

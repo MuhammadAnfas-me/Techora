@@ -593,12 +593,12 @@ function validateVariants() {
       return false;
     }
 
-    if (images.length < 1) {
-      showToast?.(`Variant ${i + 1}: add at least one image`, "error");
+    if (images.length < 3) {
+      showToast?.(`Variant ${i + 1}: add at least 3 image`, "error");
       openVariant(i);
       setTimeout(() => {
         const uploadBox = variantContentArea.querySelector(".variant-img-upload");
-        setFieldError(uploadBox, "At least one image is required");
+        setFieldError(uploadBox, "At least three image is required");
       }, 0);
       return false;
     }

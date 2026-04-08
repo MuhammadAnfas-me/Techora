@@ -39,6 +39,9 @@ app.use((req, res, next) => {
   res.locals.message = req.flash()
   next()
 })
+app.locals.formatINR = function(amount) {
+  return "₹" + Number(amount).toLocaleString('en-IN')
+}
 app.use("/auth",authRoute)
 app.use("/",userRoute)
 app.use("/admin",adminRoute)

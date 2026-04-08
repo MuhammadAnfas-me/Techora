@@ -100,10 +100,7 @@ const signUp = async (req, res) => {
         fullName: name,
         email,
         password: hashedPassword,
-        profileImage : {
-          url : process.env.DEFAULT_IMAGE,
-          publicId : ""
-        },
+        profileImage : process.env.DEFAULT_IMAGE,
         isVerified: false,
         role : "Customer"
       })

@@ -20,7 +20,7 @@
       <article class="product-card">
         <div class="card-image-wrapper" onclick="openProductPage('<%= item.name %>')">
           <img src="<%= item.image %>" alt="">
-          <button class="delete-btn" aria-label="Remove from wishlist" onclick="removeItem('<%= item.productId %>','<%= item.variantId %>')">
+          <button class="delete-btn" aria-label="Remove from wishlist" onclick="removeItem(event,'<%= item.productId %>','<%= item.variantId %>')">
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12z"></path></svg>
           </button>
           <div class="image-placeholder">
@@ -108,7 +108,9 @@
 <%- include("../partitials/user/footer.ejs") %>
 
 <script>
-  async function removeItem(productId,variantId){
+  async function removeItem(e,productId,variantId){
+    e.preventDefault()
+    e.stopPropagation()
     try {
       const res = await axios.delete("/wishlist/remove",{
         data :{
@@ -117,7 +119,9 @@
         }})
 
       showToast(res.data?.message || "removed item")
-      location.reload()
+      setTimeout(()=>{
+        location.reload()
+      },800)
     } catch (error) {
       
     }
@@ -149,11 +153,8 @@
         cartCountEl.classList.remove('cart-bounce')
       }, 300)
     }
-
-    showToast(res.data.message || 'Added to cart')
-    setTimeout(()=>{
       location.reload()
-    },800)
+    
   }
   } catch (error) {
     showToast(error.response?.data?.message || 'Failed to add to cart', 'error')

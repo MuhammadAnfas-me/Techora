@@ -1,0 +1,268 @@
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Order"}) %>
+<link rel="stylesheet" href="/styles/user/orders/orderDetails.css">
+
+<div class="order-container">
+    
+    <div class="order-top-bar">
+        <div class="order-title">
+            <h2>Order #492301</h2>
+            <div class="order-date"><i class="far fa-calendar"></i> Placed on 
+                <%= new Date(order.createdAt).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                }) %>
+            </div>
+        </div>
+        <div class="top-btns">
+            <button class="btn-help" onclick="window.location.href='/orders/<%= order.orderId %>/invoice'"><i class="fas fa-file-invoice"></i> Invoice</button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="column-left">
+            
+            <div class="card">
+                <div class="status-header">
+                    <div style="font-weight: 700; font-size: 14px;"><i class="fas fa-truck"></i> Order Status</div>
+                    <span class="status-badge <%= order.orderStatus.toLowerCase() %>">
+                      <%= statusText %>
+                    </span>
+                </div>
+                <div class="delivery-text">Estimated Delivery: <strong>Oct 28, 2023</strong></div>
+                
+                <div class="timeline">
+                    <div class="step active">
+                        <div class="step-icon"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="step-label">Order Placed</div>
+                        <div class="step-time">
+                            <%= formatDate(order.createdAt) %>
+                         </div>
+                    </div>
+                    <div class="step <%= order.timeline.confirmedAt ? 'active' : 'pending' %>">
+                        <div class="step-icon"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="step-label">Confirmed</div>
+                        <div class="step-time"><%= order.timeline.confirmedAt 
+                            ? formatDate(order.timeline.confirmedAt) 
+                            : '--' %>
+                        </div>
+                    </div>
+                    <div class="step <%= order.timeline.shippedAt ? 'active' : 'pending' %>">
+                        <div class="step-icon"><i class="fas fa-box"></i></div>
+                        <div class="step-label">Shipped</div>
+                        <div class="step-time">
+                            <%= order.timeline.shippedAt 
+                                ? formatDate(order.timeline.shippedAt) 
+                                : '--' 
+                            %>
+                        </div>
+                    </div>
+                    <div class="step <%= order.timeline.deliveredAt ? 'active' : 'pending' %>">
+                        <div class="step-icon"><i class="fas fa-house"></i></div>
+                        <div class="step-label" style="color: #94a3b8;">Delivered</div>
+                        <div class="step-time">
+                            <%= order.timeline.deliveredAt 
+                                ? formatDate(order.timeline.deliveredAt) 
+                                : 'Expected soon' 
+                            %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="items-title">Items in Your Order</div>
+                <% order.items.forEach(item=>{ %>
+                <div class="product-row">
+                    <img src="<%= item.image %>" class="product-img">
+                    <div class="product-info">
+                        <div class="prod-header">
+
+                            <div class="prod-name"><%= item.name %></div>
+
+                            <div class="prod-right">
+                            <% if(item.status === "Delivered"){ %>
+                            <span class="item-status delivered">Delivered</span>
+                            <% }else if(item.status === "Cancelled"){ %>
+                                <span class="item-status cancelled">Cancelled</span>
+                            <% }else{ %>
+                                <span class="item-status placed">Placed</span>
+                            <% } %>
+                            <div class="prod-price">
+                                <span class="curr-price"><%= formatINR(item.total) %></span>
+                                <span class="old-price">$399.00</span>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="prod-meta">
+                            <span class="meta-tag">Color:  <%= item.color %></span>
+                            <span class="meta-tag">Qty: <%= item.quantity %></span>
+                        </div>
+                        <div class="prod-actions">
+                            <button class="btn-sm">Write Review</button>
+                            <button class="btn-sm" onclick="openProductPage('<%= item.name %>')">Buy Again</button>
+                            <% if(item.status === "Delivered"){ %>
+                            <button class="btn-sm return-btn">Return Item</button>
+                            <% }else{ %>
+                            <button class="btn-sm cancel-btn" <%= order.orderStatus === "Cancelled" ? "hidden" : "" %> onclick="cancelItem('<%= order._id %>' , '<%= item._id %>')">Cancel Item</button>
+                            <% } %>
+                             
+
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+
+            <div class="card">
+                <div class="items-title">Payment Summary</div>
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Subtotal (<%= order.items.length %> items)</span>
+                    <span><%= formatINR(order.totalAmount) %></span>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Shipping Fee</span>
+                    <span style="color: var(--success);">Free</span>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Discount (WELCOME10)</span>
+                    <span style="color: var(--success);">-$00.00</span>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Tax (Estimated)</span>
+                    <span><%= formatINR(order.totalAmount*18/100) %></span>
+                </div>
+                <div class="summary-row total-row">
+                    <span>Order Total</span>
+                    <span><%= formatINR(order.totalAmount + order.totalAmount*18/100) %></span>
+                </div>
+                <div class="payment-status">
+                    <div class="visa-info">
+                        <i class="fab fa-cc-visa" style="color: #1a1f71; font-size: 20px;"></i>
+                        Paid via Visa ending in <strong>4242</strong>
+                    </div>
+                    <span class="paid-badge">Paid</span>
+                </div>
+            </div>
+
+            <a href="#" class="back-to-orders"><i class="fas fa-arrow-left"></i> Back to Orders</a>
+        </div>
+
+        <div class="column-right">
+            
+            <div class="card">
+                <span class="side-title">Order Information</span>
+                <div class="side-item">
+                    <i class="fas fa-hashtag side-icon"></i>
+                    <div class="side-content">
+                        <label>Order ID</label>
+                        <strong><%= order.orderId %></strong>
+                    </div>
+                </div>
+                <div class="side-item">
+                    <i class="far fa-calendar side-icon"></i>
+                    <div class="side-content">
+                        <label>Order Date</label>
+                        <strong>
+                            <%= new Date(order.createdAt).toLocaleString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric"
+                            }) %>
+                        </strong>
+                    </div>
+                </div>
+                <div class="side-item">
+                    <i class="far fa-envelope side-icon"></i>
+                    <div class="side-content">
+                        <label>Confirmation Sent To</label>
+                        <strong><%= user.email ? user.email : "" %></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <span class="side-title">Shipping Details</span>
+                    <i class="far fa-edit" style="font-size: 12px; color: var(--text-muted); cursor: pointer;"></i>
+                </div>
+                <div class="side-item">
+                    <i class="far fa-user side-icon"></i>
+                    <div class="side-content">
+                        <strong><%= order.address.name %></strong>
+                        <div class="address-text">
+                            <%= order.address.addressLine1 %><br>
+                            <%= order.address.addreesLine2 %><br>
+                            <%= order.address.state %>
+                        </div>
+                    </div>
+                </div>
+                <div class="side-item">
+                    <i class="fas fa-phone side-icon"></i>
+                    <div class="side-content">
+                        <strong>+91 <%= order.address.phone %></strong>
+                    </div>
+                </div>
+                <div class="sms-box">
+                    <i class="fas fa-circle-info"></i>
+                    Updates sent via Email
+                </div>
+            </div>
+
+            <div class="card" style="background: #f8fafc;">
+                <% if(["Shipped", "Placed", "Confirmed"].includes(order.orderStatus) ){ %>
+                    <span class="side-title">Actions</span>
+                <% } %>
+
+                    <% if(order.paymentStatus == "Paid"){ %>
+                        <button class="action-btn"><i class="fas fa-print"></i> Print Receipt</button>
+                    <% } %>
+                    
+                    <% if(["Shipped", "Placed", "Confirmed"].includes(order.orderStatus) ){ %>
+                        <button class="action-btn btn-cancel" onclick="window.location.href=`/orders/<%=order.orderId%>/cancel`" <%= allCancelled ? "Disabled" : ""  %>><i class="fas fa-circle-xmark"></i><%= allCancelled ? "Requested" : "Cancel Order" %></button>
+                    <% }else if(order.orderStatus === "Delivered"){%>
+                            <button class="action-btn"><i class="fas fa-rotate-left"></i> Return Items</button>
+                    <% } %>
+                <div class="support-link">
+                    Have a question about your order?<br>
+                    <a href="#">Contact Customer Support</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+<%- include("../../partitials/user/footer.ejs") %>
+<script>
+    async function cancelItem(orderId,itemId){
+        try {
+            const res = await axios.post("/orders/cancel-item",{
+                orderId,
+                itemId
+            })
+            if(res.data.success){
+                showToast(res.data.message || "Cancelled the product")
+                setTimeout(()=>{
+                    window.location.reload()
+                },1000)
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    function openProductPage(productId) {
+  window.location.href = `/products/${productId}`
+}
+
+</script>

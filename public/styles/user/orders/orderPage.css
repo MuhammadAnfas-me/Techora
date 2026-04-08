@@ -122,7 +122,7 @@ ul { list-style: none; }
 .tab-content { padding: 30px; }
 
 /* Info Grid */
-.info-grid {
+/* .info-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 30px;
@@ -165,10 +165,10 @@ ul { list-style: none; }
 .info-row .value { color: var(--text-dark); font-weight: 500; text-align: right; }
 
 /* Address Card specific */
-.address-card { justify-content: space-between; }
+/* .address-card { justify-content: space-between; }
 .address-details h3 { color: var(--primary-blue); font-size: 14px; font-weight: 600; margin-bottom: 10px; }
 .address-details p { color: var(--text-gray); font-size: 14px; line-height: 1.6; }
-.address-card .btn { margin-top: 20px; }
+.address-card .btn { margin-top: 20px; }  */
 
 /* Footer
 .site-footer { background-color: var(--footer-bg); color: #fff; padding-top: 60px; margin-top: auto; }
@@ -297,5 +297,203 @@ ul { list-style: none; }
         flex-direction: column;
         text-align: center;
         align-items: center;
+    }
+}
+
+/* --- My Orders Tab Layout --- */
+.orders-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px; /* Gives the main list flexible space, fixes the summary width */
+    gap: 24px;
+    align-items: start;
+}
+
+.orders-list-container, 
+.order-summary-container {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 24px;
+    margin-top: 0;
+}
+
+/* --- Order List Items --- */
+.order-item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.order-item-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.order-item-card:first-child {
+    padding-top: 0;
+}
+
+/* Left Info Column */
+.order-info-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.order-id {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.order-date {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.order-products {
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin: 4px 0 0 0;
+}
+
+/* Right Actions Column */
+.order-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.price-status-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.order-price {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Badges */
+.order-badge {
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-delivered {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-transit {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-cancelled {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+/* View Details Button */
+.btn-view-details {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-view-details:hover {
+    background-color: #e5e7eb;
+    color: #111827;
+}
+
+/* --- Order Summary Card --- */
+.summary-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.summary-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.stat-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.btn-view-all {
+    width: 100%;
+    background-color: #1f2937; /* Techora dark slate */
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-view-all:hover {
+    background-color: #111827;
+}
+
+/* --- Responsive Design (Mobile-First) --- */
+@media (max-width: 992px) {
+    /* Stack the main grid on tablets and smaller */
+    .orders-layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Adjust internal order card layout for small mobile screens */
+    .order-item-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .order-actions-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .price-status-col {
+        align-items: flex-start;
     }
 }

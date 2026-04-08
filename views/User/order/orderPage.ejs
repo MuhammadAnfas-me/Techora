@@ -1,0 +1,173 @@
+<link rel="stylesheet" href="/styles/user/orders/orderPage.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Profile" ,email : user.email , name : user.fullName}) %>
+
+
+    <main class="main-content">
+        <div class="container">
+
+            <section class="profile-header-card">
+                <div class="profile-info">
+                    <div class="profile-avatar-large">
+                        <img src="<%= user.profileImage %>"
+                            alt="Michael Anderson">
+                    </div>
+                    <div class="profile-details">
+                        <h1>
+                            <%= user.fullName %>
+                        </h1>
+                        <div class="profile-meta">
+                            <span><i class="fas fa-envelope"></i>
+                                <%= user.email %>
+                            </span>
+                            <span><i class="fas fa-phone-alt"></i>
+                                <%= user.number ? user.number : "---" %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button onclick="editProfile()" class="btn btn-primary">Edit Profile</button>
+                    <% if(!user.googleId){ %>
+                    <button onclick="changePass()" class="btn btn-secondary">Change Password</button>
+                    <% } %>
+            </section>
+
+            <section class="details-container">
+    <div class="tabs-wrapper">
+        <div class="tabs">
+            <button class="tab-btn " data-tab="profile" onclick="window.location.href='/profile'">Profile</button>
+            <button class="tab-btn active" data-tab="orders">My Orders</button>
+            <button class="tab-btn" data-tab="wallet">Wallet</button>
+            <button class="tab-btn" data-tab="referrals">Referrals</button>
+        </div>
+    </div>
+
+    
+
+    <div class="tab-content" id="orders">
+    <div class="orders-layout-grid">
+        
+        <div class="orders-list-container">
+            <h2 class="section-title">My Orders</h2>
+            
+            <div class="order-items-wrapper">
+                <% orders.forEach((order) => { %>
+                    
+                    <div class="order-item-card">
+                        <div class="order-info-left">
+                            <h4 class="order-id"><%= order.orderId  %></h4>
+                           
+                            <span class="order-date"><%= new Date(order.createdAt).toLocaleDateString("en-US", { month: "long" ,
+                                            day: "numeric" , year: "numeric" }) %></span>
+                            <p class="order-products">
+                             <% const maxVisible = 2; %>
+
+                                <% if(order.items.length > maxVisible){ %>
+                                    
+                                    <% order.items.slice(0, maxVisible).forEach((item, index) => { %>
+                                        <%= item.name %><%= index !== maxVisible - 1 ? ', ' : '' %>
+                                    <% }) %>
+                                    
+                                    + <%= order.items.length - maxVisible %> more
+                                    
+                                <% } else { %>
+                                
+                                    <% order.items.forEach((item, index) => { %>
+                                        <%= item.name %><%= index !== order.items.length - 1 ? ', ' : '' %>
+                                    <% }) %>
+                                    
+                                <% } %>
+                            </p>
+                        </div>
+                        <div class="order-actions-right">
+                            <div class="price-status-col">
+                                <span class="order-price"><%= formatINR(order.totalAmount) %></span>
+                                <% if(order.orderStatus === "Delivered"){ %>
+                                    <span class="order-badge badge-delivered"><%= order.orderStatus %></span>
+                                <% }else if(order.orderStatus === "Cancelled"){ %>
+                                <span class="order-badge badge-cancelled"><%= order.orderStatus %></span>
+                                <% }else if(order.orderStatus === "Shipped" || "Confirmed"){ %>
+                                    <span class="order-badge badge-transit"><%= order.orderStatus %></span>
+                                <% } %>
+                            </div>
+                            <button class="btn-view-details" onclick="window.location.href='/orders/<%=order.orderId%>'">View Details</button>
+                        </div>
+                    </div>
+                    <% }); %>
+            </div>
+        </div>
+
+        <div class="order-summary-container">
+            <h2 class="section-title">Order Summary</h2>
+            
+            <div class="summary-stats-list">
+                <div class="summary-stat-row">
+                    <span class="stat-label">Total Orders</span>
+                    <span class="stat-value"><%= totalOrders %></span>
+                </div>
+                <div class="summary-stat-row">
+                    <span class="stat-label">Delivered Orders</span>
+                    <span class="stat-value"><%= delivered %></span>
+                </div>
+                <div class="summary-stat-row">
+                    <span class="stat-label">In Progress</span>
+                    <span class="stat-value"><%= shipped %></span>
+                </div>
+                <div class="summary-stat-row">
+                    <span class="stat-label">Cancelled Orders</span>
+                    <span class="stat-value"><%= cancelled %></span>
+                </div>
+            </div>
+
+            <button class="btn-view-all" onclick="window.location.href='/orders'">View All Orders</button>
+        </div>
+
+    </div>
+</div>
+
+</section>
+
+        </div>
+    </main>
+
+    <%- include("../../partitials/user/footer.ejs") %>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Tab Switching Logic
+                const tabBtns = document.querySelectorAll('.tab-btn');
+
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // Remove active class from all buttons
+                        tabBtns.forEach(b => b.classList.remove('active'));
+
+                        // Add active class to clicked button
+                        btn.classList.add('active');
+
+                        // For demo: Log the tab switch
+                        console.log(`Switched to tab: ${btn.dataset.tab}`);
+                    });
+                });
+
+                
+               
+            });
+
+            function editProfile(){
+                window.location.href = `/profile/edit`
+            }
+            function changePass(){
+                window.location.href = "/profile/password"
+            }
+            function manageAddress(){
+                window.location.href = "/profile/address"
+            }
+        </script>
+        </body>
+
+        </html>

@@ -78,7 +78,7 @@ const loadAddPage = async (req, res) => {
 
 const addProduct = async (req, res) => {
   try {
-    const {
+    let {
       name,
       categoryId,
       brand,
@@ -89,6 +89,7 @@ const addProduct = async (req, res) => {
       variants,
       imageMap
     } = req.body
+
 
     if (!name?.trim()) {
       return res.status(400).json({ message: 'Product name is required' })
@@ -101,7 +102,16 @@ const addProduct = async (req, res) => {
     if (!brand?.trim()) {
       return res.status(400).json({ message: 'Brand is required' })
     }
-
+    name = name?.trim()
+    const existingName = await Product.findOne({
+      name : { $regex: `^${name}$`, $options: 'i' }  
+    })
+    if(existingName){
+      return res.status(400).json({
+        success : false,
+        message : "Product name already exist"
+      })
+    }
     let parsedSpecifications = []
     let parsedVariants = []
     let parsedImageMap = []
@@ -261,13 +271,14 @@ const editProduct = async (req, res) => {
 
     const product = await Product.findById(id)
     if (!product) {
-      return res.status.json({
+      return res.status(400).json({
         success: false,
         message: 'Product not found'
       })
     }
 
-    const {
+    
+    let {
       name,
       categoryId,
       brand,
@@ -277,6 +288,18 @@ const editProduct = async (req, res) => {
       specifications,
       variants
     } = req.body
+    
+    name = name?.trim()
+    const existingName = await Product.findOne({
+      _id: { $ne: id },
+      name : { $regex: `^${name}$`, $options: 'i' }  
+    })
+    if(existingName){
+      return res.status(400).json({
+        success : false,
+        message : "Product name already exist"
+      })
+    }
 
     product.name = String(name || '').trim()
     product.categoryId = categoryId

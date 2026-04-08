@@ -1,0 +1,239 @@
+<link rel="stylesheet" href="/styles/user/orders/orderListPage.css">
+<%- include('../../partitials/user/header.ejs',{tittle : "Techora | My Orders"}) %>
+<main class="orders-main-content">
+  
+  <div class="orders-header">
+    <div class="orders-title">
+      <h1>My Orders</h1>
+      <p>View and manage your recent purchases</p>
+    </div>
+    <div class="orders-filters">
+      <input type="text" id="searchInput" name="search" oninput="loadOrders()"  value="<%= search %>" placeholder="Search by Order ID...">
+      <select name="status" id="statusFilter" onchange="loadOrders()">
+        <option value="all">All</option>
+        <option value="Placed" <%= status==="Placed"?"selected":"" %>>Processing</option>
+        <option value="Shipped" <%= status==="Shipped"?"selected":"" %>>Shipped</option>
+        <option value="Delivered" <%= status==="Delivered"?"selected":"" %>>Delivered</option>
+        <option value="Cancelled" <%= status==="Cancelled"?"selected":"" %>>Cancelled</option>
+      </select>
+    </div>
+  </div>
+  <div id="ordersContainer">
+  <% if (orders.length === 0) { %>
+        <p>No orders found</p>
+  <% }else{ %>
+  <% orders.forEach(order=>{ %>
+
+  
+  <div class="order-card">
+    <div class="order-card-top">
+      <div class="order-meta">
+        <div class="meta-group">
+          <span class="meta-label">Order ID</span>
+          <span class="meta-value"><%= order.orderId %></span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Date Placed</span>
+          <span class="meta-value"><%= new Date(order.createdAt).toLocaleDateString("en-US", { month: "long" ,
+                                            day: "numeric" , year: "numeric" }) %></span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Total Amount</span>
+          <span class="meta-value"><%= formatINR(order.totalAmount) %></span>
+        </div>
+      </div>
+      
+      <% if (["Placed","Confirmed"].includes(order.orderStatus)) { %>
+      <div class="status-badge status-<%= order.orderStatus.toLowerCase() %>">Processing</div>
+      <% } else if (order.orderStatus === "Shipped") { %>
+        <div class="status-badge status-shipped">In Transit</div>
+        <% } else { %>
+          <div class="status-badge status-cancelled">Cancelled</div>
+      <% } %>
+
+    </div>
+    
+    <div class="order-card-body">
+      <div class="order-items-list">
+        
+        <% order.items.forEach(item=>{ %>
+
+        <div class="product-item">
+          <img src="<%= item.image %>" alt="iPhone 15 Pro Max" class="product-img">
+          <div class="product-info">
+            <h4><%= item.name %></h4>
+            <p class="product-specs">• <%= item.color %></p>
+            <p class="product-price">Qty: <%= item.quantity %> <strong><%= formatINR(item.price) %></strong></p>
+          </div>
+        </div>
+        <% }) %>
+
+      </div>
+      
+      <div class="order-actions">
+        <% if(order.orderStatus === "Delivered"){ %>
+        <p class="delivery-title">Delivered On</p>
+        <p class="delivery-date">Sep 15, 2024</p>
+        <p class="delivery-method">Via FedEx Express</p>
+        <% }else{ %>
+          <div class="cancel-notice">
+          This order was cancelled on<br><%= new Date(order.updatedAt).toLocaleDateString("en-US", { month: "long" ,
+                                            day: "numeric" , year: "numeric" })  %> by user request.
+        </div>
+        <% } %>
+        <button class="btn-view-details" onclick="window.location.href='/orders/<%=order.orderId%>'">View Details</button>
+      </div>
+    </div>
+  </div>
+  
+  <% }) %>
+  <% } %>
+  </div>
+  
+
+  <div class="pagination" id="paginationContainer">
+    <!-- <% if(currentPage > 1){ %>
+    <a href="?page=<%= currentPage - 1 %>&search=<%= search %>&status=<%= status %>" class="page-prev">&lsaquo; Previous</a>
+    <% } %> -->
+    <!-- <% for (let i = 1; i <= totalPages; i++) { %>
+    <button class="page-num <%= currentPage === i ? 'active' : '' %>" onclick="loadOrders(<%= i %>)"><%= i %></button>
+      <% } %> -->
+    <!-- <a href="#" class="page-num">2</a> -->
+  </div>
+
+</main>
+
+<%- include("../../partitials/user/footer.ejs") %>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadOrders()
+})
+
+async function loadOrders(page = 1) {
+  const search = document.getElementById("searchInput")?.value || ""
+  const status = document.getElementById("statusFilter")?.value || "all"
+
+  const res = await fetch(`/orders?search=${search}&status=${status}&page=${page}`, {
+    headers: { "Accept": "application/json" }
+  })
+
+  const data = await res.json()
+  renderOrders(data.orders)
+  renderPagination(data.currentPage, data.totalPages)
+}
+
+function formatStatus(status) {
+  if (["Placed","Confirmed"].includes(status)) return "Processing"
+  if (status === "Shipped") return "In Transit"
+  return status
+}
+
+function renderOrders(orders) {
+  const container = document.getElementById("ordersContainer")
+  container.innerHTML = ""
+
+  if (orders.length === 0) {
+    container.innerHTML = `<p>No orders found</p>`
+    return
+  }
+
+  orders.forEach(order => {
+
+    let itemsHTML = ""
+
+    order.items.forEach(item => {
+      itemsHTML += `
+        <div class="product-item">
+          <img src="${item.image}" class="product-img">
+          <div class="product-info">
+            <h4>${item.name}</h4>
+            <p>• ${item.color || ""}</p>
+            <p>Qty: ${item.quantity} <strong>₹${item.price}</strong></p>
+          </div>
+        </div>
+      `
+    })
+
+    container.innerHTML += `
+      <div class="order-card">
+        <div class="order-card-top">
+          <div class="order-meta">
+            <div class="meta-group">
+              <span class="meta-label">Order ID</span>
+              <span class="meta-value">${order.orderId}</span>
+            </div>
+            <div class="meta-group">
+              <span class="meta-label">Date Placed</span>
+              <span class="meta-value">${new Date(order.createdAt).toDateString()}</span>
+            </div>
+            <div class="meta-group">
+              <span class="meta-label">Total</span>
+              <span class="meta-value">₹${order.totalAmount}</span>
+            </div>
+          </div>
+
+          <div class="status-badge status-${order.orderStatus.toLowerCase()}">
+            ${formatStatus(order.orderStatus)}
+          </div>
+        </div>
+
+        <div class="order-card-body">
+          <div class="order-items-list">
+            ${itemsHTML}
+          </div>
+
+          <div class="order-actions">
+             ${
+              order.orderStatus === " Delivered" 
+              ? `<p class="delivery-title">Delivered On</p>
+                <p class="delivery-date">Sep 15, 2024</p>
+                <p class="delivery-method">Via FedEx Express</p>`         
+              : `<div class="cancel-notice">
+                 This order was cancelled on<br>Aug 06, 2024 by user request.
+                 </div>`   
+             }
+            <button class="btn-view-details" onclick="window.location.href='/orders/${order.orderId}'">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+    `
+  })
+}
+
+function renderPagination(currentPage, totalPages) {
+  const container = document.getElementById("paginationContainer")
+  container.innerHTML = ""
+
+  // Previous button
+  if (currentPage > 1) {
+    container.innerHTML += `
+      <button class="page-prev" onclick="loadOrders(${currentPage - 1})">
+        &lsaquo; Previous
+      </button>
+    `
+  }
+
+  // Page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    container.innerHTML += `
+      <button 
+        class="page-num ${currentPage === i ? "active" : ""}"
+        onclick="loadOrders(${i})">
+        ${i}
+      </button>
+    `
+  }
+}
+let timeout
+function debounceLoad() {
+  clearTimeout(timeout)
+  timeout = setTimeout(() => loadOrders(), 400)
+}
+
+// scroller Smooth
+window.scrollTo({ top: 0, behavior: "smooth" })
+</script>

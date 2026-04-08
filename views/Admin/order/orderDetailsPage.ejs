@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details - Techora</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      (function() {
+        const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+      })();
+    </script>
+    
+    <link rel="stylesheet" href="/styles/admin/products/productsList.css" />
+    <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+    <link rel="stylesheet" href="/styles/user/popup.css" />
+
+    <style>
+      /* --- Base Layout --- */
+      body {
+        background-color: #f3f4f6;
+        color: #374151;
+        font-family: 'Inter', sans-serif;
+      }
+      .content-container {
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      /* --- Header --- */
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #4b5563;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 16px;
+      }
+      .back-link:hover { color: #111827; }
+      
+      .page-header-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+      }
+      .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 4px 0;
+      }
+      .page-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+      }
+      
+      /* Buttons */
+      .header-actions {
+        display: flex;
+        gap: 12px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+      }
+      .btn-light {
+        background-color: #fff;
+        border-color: #e5e7eb;
+        color: #374151;
+      }
+      .btn-light:hover { background-color: #f9fafb; }
+      .btn-danger-light {
+        background-color: #fef2f2;
+        color: #ef4444;
+        border-color: #fee2e2;
+      }
+      .btn-danger-light:hover { background-color: #fee2e2; }
+      .btn-primary {
+        background-color: #1f2937;
+        color: #fff;
+      }
+      .btn-primary:hover { background-color: #111827; }
+
+      /* --- Grid Layout --- */
+      .order-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+      }
+
+      /* --- Cards --- */
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        color: #111827;
+        margin-bottom: 20px;
+      }
+      .card-header .material-symbols-outlined {
+        color: #6b7280;
+        font-size: 20px;
+      }
+
+      /* Order Summary */
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      .summary-item label {
+        display: block;
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 6px;
+      }
+      .summary-item .value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .status-select {
+        padding: 6px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #374151;
+        background: #fff;
+      }
+
+      /* Customer & Shipping Split */
+      .split-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      
+      .customer-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .customer-profile img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .customer-info h4 { margin: 0 0 4px 0; font-size: 15px; color: #111827; }
+      .customer-info span { font-size: 12px; color: #3b82f6; }
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #4b5563;
+        margin-bottom: 12px;
+      }
+      .contact-item .material-symbols-outlined { font-size: 18px; color: #9ca3af; }
+
+      .address-tag {
+        display: inline-block;
+        background: #f3f4f6;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #4b5563;
+        margin-bottom: 16px;
+      }
+      .address-details {
+        font-size: 14px;
+        color: #4b5563;
+        line-height: 1.6;
+      }
+
+      /* Order Items Table */
+      .table-wrapper { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      th {
+        text-align: left;
+        padding: 12px;
+        font-size: 12px;
+        color: #6b7280;
+        font-weight: 500;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f9fafb;
+      }
+      td {
+        padding: 16px 12px;
+        font-size: 14px;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: middle;
+      }
+      .product-cell { display: flex; align-items: center; gap: 12px; }
+      .product-img { width: 40px; height: 40px; border-radius: 6px; background: #f3f4f6; }
+      .product-name { font-weight: 500; color: #111827; margin: 0 0 4px 0; }
+      .product-variant { font-size: 12px; color: #6b7280; }
+      
+      /* Order Total (Right Column) */
+      .totals-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        font-size: 14px;
+        color: #4b5563;
+      }
+      .totals-row.discount { color: #059669; }
+      .totals-divider { height: 1px; background: #e5e7eb; margin: 16px 0; }
+      .totals-grand {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 24px;
+      }
+      .btn-full { width: 100%; justify-content: center; }
+
+      /* Order History Timeline */
+      .timeline {
+        position: relative;
+        padding-left: 24px;
+      }
+      .timeline::before {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 6px;
+        bottom: 0;
+        width: 2px;
+        background: #e5e7eb;
+      }
+      .timeline-item {
+        position: relative;
+        margin-bottom: 24px;
+      }
+      .timeline-item:last-child { margin-bottom: 0; }
+      .timeline-dot {
+        position: absolute;
+        left: -24px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        border: 2px solid #fff;
+      }
+      .timeline-dot.active { background: #059669; }
+      .timeline-dot.current { background: #3b82f6; }
+      .timeline-content h5 { margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #111827; }
+      .timeline-content p { margin: 0 0 4px 0; font-size: 12px; color: #6b7280; }
+      .timeline-content .time { font-size: 11px; color: #9ca3af; }
+
+      .status-pill {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .status-success { background: #d1fae5; color: #059669; }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/popup.js" defer></script>
+    <script src="/js/partitials/Admin/sidebar.js" defer></script>
+  </head>
+
+  <body>
+    <div id="toast" class="toast"></div>
+    <%- include("../../partitials/admin/sidebar.ejs",{ currentPage: 'orders' }) %>
+
+    <div class="main-wrapper">
+      <%- include("../../partitials/admin/header.ejs",{ currentPage: 'orders' }) %>
+
+      <main class="main-content">
+        <div class="content-container">
+          
+          <a href="/admin/orders" class="back-link">
+            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+            Back to Orders
+          </a>
+
+          <div class="page-header-wrapper">
+            <div class="page-header-left">
+              <h1 class="page-title">Order <%= order.orderId %></h1>
+              <p class="page-subtitle">View complete order information and manage status</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-danger-light">
+                <span class="material-symbols-outlined" style="font-size: 18px;">cancel</span> Cancel Order
+              </button>
+              <button class="btn btn-primary">
+                Update Status
+              </button>
+            </div>
+          </div>
+
+          <div class="order-grid">
+            <div class="left-col">
+              
+              <div class="card">
+                <div class="card-header">
+                  <span class="material-symbols-outlined">inventory_2</span> Order Summary
+                </div>
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <label>Order Date</label>
+                    <div class="value">
+                      <span class="material-symbols-outlined" style="font-size: 16px; color:#6b7280;">calendar_today</span>
+                      <%= new Date(order.createdAt).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        }) %>
+                    </div>
+                  </div>
+                  <div class="summary-item">
+                    <label>Order Status</label>
+                    <select class="status-select">
+                        <option selected><%= order.orderStatus %></option>
+                    <% if(order.orderStatus === "Placed"){ %>
+                        <option value="Confirmed">Confirmed</option>
+                    <% }else if(order.orderStatus === "Confirmed"){ %>
+                        <option value="Shipped">Shipped</option>
+                    <% } else if(order.orderStatus === "Shipped"){ %>
+                        <option value="Delivered">Delivered</option>
+                    <% } %>
+                    </select>
+                  </div>
+                  <div class="summary-item">
+                    <label>Payment</label>
+                    <div class="value">
+                      <span class="material-symbols-outlined" style="font-size: 16px; color:#3b82f6;">credit_card</span>
+                      <%= order.paymentMethod %>
+                    </div>
+                  </div>
+                  <div class="summary-item">
+                    <label>Total Amount</label>
+                    <div class="value" style="font-size: 18px; font-weight: 700;">
+                      <%= formatINR(order.totalAmount) %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="split-cards">
+                <div class="card">
+                  <div class="card-header">
+                    <span class="material-symbols-outlined">account_circle</span> Customer Details
+                  </div>
+                  <div class="customer-profile">
+                    <img src="<%= order.userId?.profileImage %>" alt="Avatar">
+                    <div class="customer-info">
+                      <h4><%= order.userId?.fullName %></h4>
+                    </div>
+                  </div>
+                  <div class="contact-item">
+                    <span class="material-symbols-outlined">mail</span> <%= order.userId?.email %>
+                  </div>
+                  <div class="contact-item">
+                    <span class="material-symbols-outlined">call</span>  <%= order.userId?.number ? "+91"+order.userId?.number : "---"  %>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header">
+                    <span class="material-symbols-outlined">location_on</span> Shipping Address
+                  </div>
+                  <span class="address-tag"><%= order.address.type %> Address</span>
+                  <div class="contact-item" style="align-items: flex-start; margin-top: 8px;">
+                    <span class="material-symbols-outlined">local_shipping</span>
+                    <div class="address-details">
+                      <strong><%= order.address.name %></strong><br>
+                      <%= order.address.addressLine1 %><br>
+                      <%= order.address.addressLine2 %><br>
+                      <%= order.address.state %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header" style="justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined">shopping_bag</span> Order Items
+                  </div>
+                  <span style="font-size: 12px; background: #f3f4f6; padding: 4px 8px; border-radius: 4px;"><%= order.items.length %> Items</span>
+                </div>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    <% order.items.forEach(item => { %>
+
+                    
+                      <tr>
+                        <td>
+                          <div class="product-cell">
+                            <div class="product-img" style="background: url('<%= item.image %>') center/cover;"></div>
+                            <div>
+                              <p class="product-name"><%= item.profileImage %></p>
+                              <p class="product-variant">• <%= item.color %></p>
+                            </div>
+                          </div>
+                        </td>
+                        <td style="color:#6b7280; font-size:13px;">SW-700-SLV</td>
+                        <td>1</td>
+                        <td><%= formatINR(item.price)  %></td>
+                        <td style="font-weight: 500;"><%= formatINR(item.total) %></td>
+                      </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <% if(order.paymentMethod === "ONLINE"){ %>
+              <div class="card">
+                <div class="card-header">
+                  <span class="material-symbols-outlined">payments</span> Payment Information
+                </div>
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <label>Transaction ID</label>
+                    <div class="value" style="font-weight: 400;">TX_9872348123</div>
+                  </div>
+                  <div class="summary-item">
+                    <label>Method</label>
+                    <div class="value">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg" alt="MC" width="24">
+                      •••• 4242
+                    </div>
+                  </div>
+                  <div class="summary-item">
+                    <label>Date</label>
+                    <div class="value" style="font-weight: 400;">Oct 24, 2023</div>
+                  </div>
+                  <div class="summary-item">
+                    <label>Status</label>
+                    <div class="value">
+                      <span class="status-pill status-success">Paid Successfully</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <% } %>
+            </div>
+
+            <div class="right-col">
+              
+              <div class="card">
+                <div class="card-header">Order Total</div>
+                <div class="totals-row">
+                  <span>Subtotal</span>
+                  <span><%= formatINR(order.totalAmount) %></span>
+                </div>
+                <div class="totals-row discount">
+                  <span>Discount (AutumnSale)</span>
+                  <span>-<%= formatINR(50.00) %></span>
+                </div>
+                <div class="totals-row">
+                  <span>Shipping</span>
+                  <span><%= formatINR(15.00) %></span>
+                </div>
+                <div class="totals-row">
+                  <span>Tax (Estimated)</span>
+                  <span><%= formatINR(43.60) %></span>
+                </div>
+                <div class="totals-divider"></div>
+                <div class="totals-grand">
+                  <span>Total</span>
+                  <span><%= formatINR(order.totalAmount) %></span>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="window.location.href='/orders/<%= order.orderId %>/invoice'">
+                  Download Invoice
+                </button>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <span class="material-symbols-outlined">history</span> Order History
+                </div>
+                <% const status = ["Placed","Confirmed","Shipped","Delivered"] %>
+                <div class="timeline">
+                  
+                  <div class="timeline-item">
+                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'active' : '' %>"></div>
+                    <div class="timeline-content">
+                      <h5 style="color: #059669;">Delivered</h5>
+                      <p>Package delivered successfully.</p>
+                      <span class="time">Oct 28, 2:15 PM</span>
+                    </div>
+                  </div>
+
+                  <div class="timeline-item">
+                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'current' : '' %>"></div>
+                    <div class="timeline-content">
+                      <h5>Shipped</h5>
+                      <p>Order dispatched from warehouse.</p>
+                      <span class="time">Oct 25, 3:20 PM</span>
+                    </div>
+                  </div>
+
+                  <div class="timeline-item">
+                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'current' : '' %> "></div>
+                    <div class="timeline-content">
+                      <h5>Order Confirmed</h5>
+                      <p>Your order has been verified.</p>
+                      <span class="time">Oct 24, 10:42 AM</span>
+                    </div>
+                  </div>
+
+                  <div class="timeline-item">
+                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'current' : '' %> "></div>
+                    <div class="timeline-content">
+                      <h5>Order Placed</h5>
+                      <p>Order received and processing.</p>
+                      <span class="time">Oct 24, 10:40 AM</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

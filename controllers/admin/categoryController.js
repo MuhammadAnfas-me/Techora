@@ -154,6 +154,7 @@ const editCategory = async (req, res) => {
     const id = req.params.id
     const { name, isActive } = req.body
     const existing = await Categories.findOne({
+      _id: { $ne: id },
       name: { $regex: `^${name}$`, $options: 'i' }
     })
 
