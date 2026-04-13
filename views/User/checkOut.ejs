@@ -1,3 +1,4 @@
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 <link rel="stylesheet" href="/styles/user/checkOut.css">
 <%- include("../partitials/user/header.ejs",{tittle : "Techora | Checkout"}) %>
 
@@ -58,23 +59,53 @@
         <div class="left-column">
             
             <section class="card">
-                <h2 class="card-title">Delivery Address</h2>
+                <div class="addressHeader">
+                    <h2 class="card-title">Delivery Address</h2>
+                    <button class="address-btn" onclick="openDrawer()">Add</button>
+                </div>
+                
                 <div class="address-box">
+                    <% if(address.length > 0){ %>
                     <div class="radio-indicator">
                         <div class="radio-dot"></div>
                     </div>
+                    <% } %>
                     <div class="address-content">
-                        <div class="address-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                            </svg>
-                        </div>
+                        <% if(address.length > 0){ %>
+                   
+                            <div class="address-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                </svg>
+                            </div>
+                    <% } %>
+                        <% if(address.length === 0){ %>
+<div class="address-container empty">
+
+    <div class="empty-wrapper">
+
+        <div class="empty-icon">
+            <span class="material-symbols-outlined">location_on</span>
+        </div>
+
+        <h3>Add your delivery address</h3>
+        <p>This is required to continue checkout</p>
+
+        <button class="btn-add-address" onclick="openDrawer()">
+            + Add Address
+        </button>
+
+    </div>
+
+</div>
+                        <% }else{ %>
+                            
                         <% address.forEach(element => { %>
                         <% if(!element.default) return %>    
                         
                         <div class="address-details" id="selectedAddress">
-                            <p class="address-type"><%= element.type %></p>
                             <div class="address-text" >
+                                <p class="address-type"><%= element.type %></p>
                                 <p class="address-name"><%= element.fullName %></p>
                                 <p class="address-phone">+91 <%= element.phone %></p>
                                 <p class="address-line"><%= element.addressLine1 %> </p>
@@ -82,9 +113,12 @@
                             </div>
                         </div>
                         <% }); %>
+                        <% } %>
                     </div>
                 </div>
+                <% if(address.length>0) {%>
                 <button class="btn-primary mt-24" onclick="openAddressModal()">Change Address</button>
+                <% } %>
             </section>
             
             <section class="card p-0">
@@ -103,10 +137,10 @@
                                 <div>
                                     <h3 class="item-name"><%= item.name %></h3>
                                      <% if (!item.isValid) { %>
-      <p class="error-message" style="color:red;">
-        <%= item.message %>
-      </p>
-    <% } %>
+                                      <p class="error-message" style="color:red;">
+                                        <%= item.message %>
+                                      </p>
+                                    <% } %>
                                     <p class="item-desc"><%= item.brand.toUpperCase() %> • <%= item.color %></p>
                                 </div>
                                 <p class="item-price"><%= formatINR(item.subtotal) %></p>
@@ -133,14 +167,19 @@
           value="<%= addr._id %>"
           onclick="selectAddress('<%= addr._id %>')">
     <div class="address-details" id="selectedAddress">
-        <p><%= addr.fullName %></p>
-        <p><%= addr.phone %></p>
-        <p><%= addr.city %></p>
+        <div>
+            <p><%= addr.fullName %></p>
+            <p><%= addr.phone %></p>
+            <p><%= addr.city %></p>
+        </div>
+            <button type="button" class="btn-edit-inline editBtn" onclick="event.stopPropagation(); editAddress('<%= addr._id %>')">
+                <span class="material-symbols-outlined  ">edit</span>
+            </button>
     </div>
       </div>
     <% }) %>
 
-    <button onclick="confirmAddress()">Confirm</button>
+    <button class="confirm" onclick="confirmAddress()">Confirm</button>
   </div>
 </div>
 
@@ -211,21 +250,130 @@
     </div>
 </main>
 
+<!-- Modal -->
+<div class="add-address-modal-overlay" id="addAddressModalOverlay">
+    <div class="add-address-modal-content" id="addAddressModalContent">
+        
+        <div class="add-address-modal-header">
+            <div>
+                <h2 class="add-address-modal-title">Add New Address</h2>
+                <p class="add-address-modal-subtitle">Enter your address details</p>
+            </div>
+            <button class="add-address-modal-close" id="closeAddAddressModalBtn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form class="add-address-form" id="addAddressForm" novalidate>
+
+            <div class="form-group">
+                <label class="form-label">Full Name <span class="required">*</span></label>
+                <input type="text" id="addName" class="form-input" placeholder="Enter full name" required>
+                <input type="hidden" id="addAddressId">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number <span class="required">*</span></label>
+                <input type="tel" id="addPhone" class="form-input" placeholder="Enter phone number" required>
+                <small class="addPhoneError"></small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address Line 1 <span class="required">*</span></label>
+                <input type="text" id="addAddress1" class="form-input" placeholder="Street address, P.O. box" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address Line 2</label>
+                <input type="text" id="addAddress2" class="form-input" placeholder="Apartment, suite, etc.">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">City <span class="required">*</span></label>
+                    <input type="text" id="addCity" class="form-input" placeholder="Enter city" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">State <span class="required">*</span></label>
+                    <input type="text" id="addState" class="form-input" placeholder="Enter state" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">ZIP Code <span class="required">*</span></label>
+                    <input type="text" id="addZipCode" class="form-input" placeholder="Enter ZIP code" required>
+                    <small class="addZipCodeError"></small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Country <span class="required">*</span></label>
+                    <select class="form-input" id="addCountry" required>
+                        <option value="" disabled hidden>Select country</option>
+                        <option value="India">India</option>
+                        <option value="United States">United States</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Canada">Canada</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address Label <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="addLabel" value="Home" checked>
+                        <span>Home</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="addLabel" value="Work">
+                        <span>Work</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="addLabel" value="Other">
+                        <span>Other</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="addDefaultAddress" class="checkbox-input">
+                <label for="addDefaultAddress" class="checkbox-label">Set as default address</label>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" id="cancelAddAddressBtn">Cancel</button>
+                <button type="submit" class="btn-submit">
+                    <span class="submit-indicator"></span>
+                    Save Address
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
 <%- include('../partitials/user/footer.ejs') %>
 
 <script>
     const addresses = <%- JSON.stringify(address) %>;
-
-
+    let selectedAddressId = null
     document.querySelector('.proceed').addEventListener('click', function(e) {
-    // Basic interaction for the "Place Order" button
-    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    this.disabled = true;
+        // Basic interaction for the "Place Order" button
+        let originalText = this.textContent
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        this.disabled = true;
 
     // Simulate backend call
-    setTimeout(() => {
-        window.location.href = `/checkout/payment?addressId=${selectedAddressId}`; // Target for Step 4
-    }, 1500);
+    if(!selectedAddressId){
+        showToast("Add your delivery address","error")
+        this.textContent = originalText
+
+    }else{
+        setTimeout(() => {
+            window.location.href = `/checkout/payment?addressId=${selectedAddressId}`; // Target for Step 4
+        }, 1000);
+    }
 });
 
 let selectedAddressIndex = 0
@@ -235,6 +383,10 @@ function openAddressModal() {
 }
 
 function selectAddress(id) {
+    if(!id){
+        showToast("Add your delivery address")
+        return
+    }
   selectedAddressId = id
 }
 
@@ -263,8 +415,8 @@ function confirmAddress() {
   const selectedAddress = addresses.find(addr => addr._id === selectedAddressId)
 
   document.getElementById('selectedAddress').innerHTML = `
-  <p class="address-type">${selectedAddress.type}</p>
-    <div class="address-text" >
+  <div class="address-text" >
+    <p class="address-type">${selectedAddress.type}</p>
     <p class="address-name">${selectedAddress.fullName}</p>
     <p class="address-phone">+91 ${ selectedAddress.phone} </p>
     <p class="address-line"> ${selectedAddress.addressLine1}  </p>
@@ -279,5 +431,151 @@ function confirmAddress() {
 window.onload = () => {
   const firstCard = document.querySelector('.address-card')
   if (firstCard) selectCard(firstCard)
+}
+
+const modalOverlay = document.getElementById('addAddressModalOverlay');
+const closeBtn = document.getElementById('closeAddAddressModalBtn');
+const cancelBtn = document.getElementById('cancelAddAddressBtn');
+
+// Function to open the drawer
+function openDrawer() {
+    modalOverlay.classList.add('open');
+}
+
+// Function to close the drawer
+function closeDrawer() {
+    modalOverlay.classList.remove('open');
+}
+
+// Event Listeners for closing
+closeBtn.addEventListener('click', closeDrawer);
+cancelBtn.addEventListener('click', closeDrawer);
+
+// Optional: Close when clicking on the dark overlay outside the drawer
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        closeDrawer();
+    }
+});
+
+const addressForm = document.getElementById('addAddressForm'); // New form ID
+const phoneInput = document.getElementById('addPhone');
+const zipInput = document.getElementById('addZipCode');
+
+const phoneError = document.querySelector('.addPhoneError');
+const zipError = document.querySelector('.addZipCodeError');
+
+addressForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    let isValid = true;
+
+    // 1. Phone Validation
+    const phoneValue = phoneInput.value.trim();
+    if (!phoneValue) {
+        phoneError.textContent = 'Phone number is required';
+        phoneInput.classList.add('error');
+        isValid = false;
+    } else if (!/^[0-9]{10}$/.test(phoneValue)) {
+        phoneError.textContent = 'Phone number must be 10 digits';
+        phoneInput.classList.add('error');
+        isValid = false;
+    } else {
+        phoneError.textContent = '';
+        phoneInput.classList.remove('error');
+    }
+
+    // 2. ZIP Validation
+    const zipValue = zipInput.value.trim();
+    if (!zipValue) {
+        zipError.textContent = 'ZIP code is required';
+        zipInput.classList.add('error');
+        isValid = false;
+    } else if (!/^[0-9]{4,6}$/.test(zipValue)) {
+        zipError.textContent = 'Invalid ZIP code';
+        zipInput.classList.add('error');
+        isValid = false;
+    } else {
+        zipError.textContent = '';
+        zipInput.classList.remove('error');
+    }
+
+    // 3. Submit Data
+    if (isValid) {
+        const id = document.getElementById('addAddressId').value;
+
+        // MAP DATA TO MATCH YOUR API EXPECTATIONS
+        const addressData = {
+            fullName: document.getElementById('addName').value.trim(),
+            phone: phoneValue,
+            addressLine1: document.getElementById('addAddress1').value.trim(), // Matches original API
+            addressLine2: document.getElementById('addAddress2').value.trim(),
+            city: document.getElementById('addCity').value.trim(),
+            state: document.getElementById('addState').value.trim(),
+            zipCode: zipValue,
+            country: document.getElementById('addCountry').value,
+            type: document.querySelector('input[name="addLabel"]:checked').value, // Maps 'label' to 'type'
+            default: document.getElementById('addDefaultAddress').checked // Maps to 'default'
+        };
+
+        try {
+            if (id) {
+                const res = await axios.patch(`/profile/address/${id}`, addressData);
+                showToast(res.data?.message || 'Address edited successfully');
+            } else {
+                const res = await axios.post('/profile/address', addressData);
+                showToast(res.data?.message || 'Address added successfully');
+            }
+            
+            // Close the drawer (assuming you use the 'open' class toggle)
+            document.getElementById('addAddressModalOverlay').classList.remove('open');
+            addressForm.reset()
+            location.reload()
+        } catch (err) {
+            showToast(err.response?.data?.message || 'Something went wrong', 'error');
+        }
+    }
+});
+
+async function editAddress(id) {
+    try {
+        // 1. Fetch the data from your existing API
+        const res = await axios.get(`/profile/address/${id}`);
+        const data = res.data.address;
+
+        // 2. Populate the NEW Drawer fields (using 'add' prefix IDs)
+        document.getElementById('addName').value = data.fullName;
+        document.getElementById('addPhone').value = data.phone;
+        document.getElementById('addAddress1').value = data.addressLine1;
+        document.getElementById('addAddress2').value = data.addressLine2 || '';
+        document.getElementById('addCity').value = data.city;
+        document.getElementById('addState').value = data.state;
+        document.getElementById('addZipCode').value = data.zipCode;
+        document.getElementById('addCountry').value = data.country;
+
+        // 3. Handle the Radio Buttons (Home/Work/Other)
+        const labelRadio = document.querySelector(`input[name="addLabel"][value="${data.type}"]`);
+        if (labelRadio) labelRadio.checked = true;
+
+        // 4. Handle the Checkbox
+        document.getElementById('addDefaultAddress').checked = Boolean(data.default);
+
+        // 5. Set the hidden ID field so the submit function knows to PATCH
+        document.getElementById('addAddressId').value = id;
+
+        // 6. Update Drawer Title for better UX
+        document.querySelector('.add-address-modal-title').textContent = "Edit Address";
+
+        // 7. Close the "Select Address" modal if it's open
+        const selectionModal = document.getElementById('addressModal');
+        if (selectionModal) selectionModal.classList.add('hidden');
+
+        // 8. Open the Drawer
+        document.getElementById('addAddressModalOverlay').classList.add('open');
+
+    } catch (er) {
+        console.error(er);
+        showToast('Failed to load address', 'error');
+    }
 }
 </script>

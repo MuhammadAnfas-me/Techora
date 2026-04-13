@@ -33,7 +33,7 @@
           <h2 class="product-title"><%= item.name %></h2>
           <h5><%= item.color %></h5>
           <div class="price-status-row">
-            <span class="price">$<%= item.price %></span>
+            <span class="price"><%= formatINR(item.price) %></span>
             <span class="badge badge-instock">In Stock</span>
           </div>
           <% if(cartedItems){ %>

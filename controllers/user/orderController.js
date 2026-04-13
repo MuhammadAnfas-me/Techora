@@ -1,28 +1,28 @@
 import { Order } from '../../models/orderModel.js'
-import  {formatDate}  from "../../services/dateFormat.js"
-import puppeteer from "puppeteer";
-import ejs from "ejs"
-import path from "path";
-import { fileURLToPath } from "url";
-import Product from '../../models/productModel.js';
-import { resendOtp } from './authController.js';
+import { formatDate } from '../../services/dateFormat.js'
+import puppeteer from 'puppeteer'
+import ejs from 'ejs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import Product from '../../models/productModel.js'
+import { resendOtp } from './authController.js'
 
-const getStatusText = (status) => {
+const getStatusText = status => {
   switch (status) {
-    case "Placed":
-      return "Order Placed";
-    case "Confirmed":
-      return "Confirmed";
-    case "Shipped":
-      return "Shipped - In Transit";
-    case "Delivered":
-      return "Delivered";
-    case "Cancelled":
-      return "Cancelled";
+    case 'Placed':
+      return 'Order Placed'
+    case 'Confirmed':
+      return 'Confirmed'
+    case 'Shipped':
+      return 'Shipped - In Transit'
+    case 'Delivered':
+      return 'Delivered'
+    case 'Cancelled':
+      return 'Cancelled'
     default:
-      return status;
+      return status
   }
-};
+}
 
 export const OrderLoad = async (req, res) => {
   try {
@@ -33,10 +33,19 @@ export const OrderLoad = async (req, res) => {
     const orders = await Order.find({ userId: user.id })
       .sort({ createdAt: -1 })
       .limit(4)
-    const totalOrders = await Order.countDocuments({userId: user.id})
-    const delivered = await Order.countDocuments({ userId: user.id ,orderStatus: 'Delivered' })
-    const shipped = await Order.countDocuments({ userId: user.id ,orderStatus: 'Shipped' })
-    const cancelled = await Order.countDocuments({userId: user.id ,orderStatus: 'Cancelled' })
+    const totalOrders = await Order.countDocuments({ userId: user.id })
+    const delivered = await Order.countDocuments({
+      userId: user.id,
+      orderStatus: 'Delivered'
+    })
+    const shipped = await Order.countDocuments({
+      userId: user.id,
+      orderStatus: 'Shipped'
+    })
+    const cancelled = await Order.countDocuments({
+      userId: user.id,
+      orderStatus: 'Cancelled'
+    })
     res.render('User/order/orderPage.ejs', {
       orders,
       totalOrders,
@@ -76,7 +85,7 @@ export const orderListPage = async (req, res) => {
       .skip(skip)
       .limit(limit)
     const totalOrders = await Order.countDocuments(query)
-    
+
     if (req.headers.accept.includes('json')) {
       return res.json({
         orders,
@@ -99,263 +108,561 @@ export const orderListPage = async (req, res) => {
   }
 }
 
-export const orderDetailsLoad = async (req,res)=>{
+export const orderDetailsLoad = async (req, res) => {
   try {
     const orderId = req.params.orderId
     const user = req.session.user
-    if(!user){
-      return res.redirect("/")
+    if (!user) {
+      return res.redirect('/')
     }
-    if(!orderId){
-      return res.status(404).render("404",{message : "Order id not found"})
+    if (!orderId) {
+      return res.status(404).render('404', { message: 'Order id not found' })
     }
 
-    const order = await Order.findOne({orderId})
-    if(!order){
-      return res.status(404).render("404",{message : "Order not found"})
+    const order = await Order.findOne({ orderId })
+    if (!order) {
+      return res.status(404).render('404', { message: 'Order not found' })
     }
-    const allCancelled = order.items.every(i=> i.cancelRequest.status === "Pending")
-    console.log(allCancelled)
-    res.render('User/order/orderDetails.ejs',{
+    const allCancelled = order.items.every(i => i.status === 'Cancelled')
+
+    res.render('User/order/orderDetails.ejs', {
       order,
-      statusText : getStatusText(order.orderStatus) ,
+      statusText: getStatusText(order.orderStatus),
       formatDate,
       allCancelled
     })
-
   } catch (error) {
-    console.error("Error from orderDetailsPage :",error)
+    console.error('Error from orderDetailsPage :', error)
   }
 }
 
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 export const generateInvoicePDF = async (req, res) => {
   try {
-    const orderId = req.params.id;
-    const userId = req.session.user.id;
+    const orderId = req.params.id
 
     const order = await Order.findOne({
-      orderId,
-      userId
-    });
+      orderId
+    })
 
     if (!order) {
-      return res.status(404).send("Order not found");
+      return res.status(404).send('Order not found')
     }
 
     // ✅ Render EJS to HTML
-    const filePath = path.join("views/User/invoice.ejs");
+    const filePath = path.join('views/User/invoice.ejs')
 
-    const html = await ejs.renderFile(filePath, { order });
+    const html = await ejs.renderFile(filePath, { order })
 
     // 🚀 Launch Puppeteer
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    })
 
-    const page = await browser.newPage();
+    const page = await browser.newPage()
 
     await page.setContent(html, {
-      waitUntil: "networkidle0"
-    });
+      waitUntil: 'networkidle0'
+    })
 
     // ✅ Generate PDF
     const pdf = await page.pdf({
-      format: "A4",
+      format: 'A4',
       printBackground: true,
       margin: {
-        top: "20px",
-        bottom: "20px",
-        left: "15px",
-        right: "15px"
+        top: '20px',
+        bottom: '20px',
+        left: '15px',
+        right: '15px'
       }
-    });
+    })
 
-    await browser.close();
+    await browser.close()
 
     // 📥 Send as download
     res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=invoice-${order.orderId}.pdf`
-    });
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=invoice-${order.orderId}.pdf`
+    })
 
-    res.send(pdf);
-
+    res.send(pdf)
   } catch (error) {
-    console.error("Puppeteer Error:", error);
-    res.status(500).send("PDF generation failed");
+    console.error('Puppeteer Error:', error)
+    res.status(500).send('PDF generation failed')
   }
-};
+}
 
-
-export const cancelItem = async (req,res)=>{
+export const cancelItem = async (req, res) => {
   try {
-    const {orderId , itemId} = req.body
-    const order = await Order.findById(orderId)
+    const { orderId, itemId } = req.params
+    const { reason, comment } = req.body
+
+    const order = await Order.findOne({ orderId })
 
     const item = order.items.id(itemId)
-    if(!item){
+    if (!item) {
       return res.status(404).json({
-        success : false,
-        message : "Item not Found"
+        success: false,
+        message: 'Item not Found'
       })
     }
 
-    if(item.status === "Cancelled"){
+    if (item.status === 'Cancelled') {
       return res.status(400).json({
-        success : false,
-        message : "Already Cancelled"
+        success: false,
+        message: 'Already Cancelled'
       })
     }
-    const {productId,variantId,quantity} = item
-    const product = await Product.findOne({_id : productId})
-    if(!product){
+    const { productId, variantId, quantity } = item
+    const product = await Product.findOne({ _id: productId })
+    if (!product) {
       return res.status(400).json({
-        success : false,
-        message  : "Product not found"
+        success: false,
+        message: 'Product not found'
       })
     }
 
-    const variant = product.variants.find(v => v.varientId.toString() === variantId.toString())
+    const variant = product.variants.find(
+      v => v.varientId.toString() === variantId.toString()
+    )
 
-    if(!variant){
+    if(!reason){
       return res.status(400).json({
         success : false,
-        message : "Variant not found"
+        message : "Please select a reason"
       })
     }
-    item.status = "Cancelled"
+    if (!variant) {
+      return res.status(400).json({
+        success: false,
+        message: 'Variant not found'
+      })
+    }
+    item.status = 'Cancelled'
+    item.cancellation = {
+      reason,
+      comment,
+      cancelledAt: new Date()
+    }
     variant.stock += quantity
 
-    const allCancelled = order.items.every(i=> i.status === "Cancelled")
+    const allCancelled = order.items.every(i => i.status === 'Cancelled')
 
-    if(allCancelled){
-      order.orderStatus = "Cancelled"
+    if (allCancelled) {
+      order.orderStatus = 'Cancelled'
+      order.cancellation = {
+        reason,
+        comment,
+        cancelledAt: new Date()
+      }
     }
 
     await order.save()
     await product.save()
     return res.status(200).json({
-      success : true,
-      message : `${product.name} cancelled successfully`,
+      success: true,
+      message: `${product.name} cancelled successfully`
     })
   } catch (error) {
-    console.error("Error from cancelItem :",error)
+    console.error('Error from cancelItem :', error)
   }
 }
 
-export const orderCancelLoad = async (req,res)=>{
+export const itemCancelLoad = async (req, res) => {
   try {
-    const orderId = req.params.id;
-    const user = req.session.user;
+    const { orderId, itemId } = req.params
+    const user = req.session.user
 
-    if(!user){
-      return res.status(400).json({
-        success : false,
-        message : "Please login first"
-      })
+    if (!user) {
+      return res.redirect('/')
     }
 
-    if(!orderId){
+    if (!orderId) {
       return res.status(404).json({
-        success : false,
-        message : "Order not found"
+        success: false,
+        message: 'Order not found'
       })
     }
 
+    const order = await Order.findOne({
+      orderId
+    })
+    const item = order.items.find(item => item._id.toString() === itemId)
+
+    res.render('User/order/orderCancelPage.ejs', {
+      order,
+      item
+    })
+  } catch (error) {
+    console.log('Error from orderCancelLoad :', error)
+  }
+}
+
+export const orderCancelLoad = async (req, res) => {
+  try {
+    const orderId = req.params.id
+    const user = req.session.user
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please login first'
+      })
+    }
+
+    if (!orderId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      })
+    }
 
     const order = await Order.findOne({
       orderId,
-      userId : user.id
-    });
-
-    res.render("User/order/orderCancelPage.ejs",{
-      order,
+      userId: user.id
     })
 
+    res.render('User/order/orderCancelPage.ejs', {
+      order,
+      item : null
+    })
   } catch (error) {
-    console.log("Error from orderCancelLoad :",error)
+    console.log('Error from orderCancelLoad :', error)
   }
-
-  
 }
 
-export const orderCancel = async (req,res)=>{
+export const orderCancel = async (req, res) => {
   try {
     const user = req.session.user
     const orderId = req.params.id
 
-    if(!user){
+    if (!user) {
       return res.status(400).json({
-        success : false,
-        message : "Please login first"
+        success: false,
+        message: 'Please login first'
       })
     }
 
-    if(!orderId){
+    if (!orderId) {
       return res.status(400).json({
-        success : false,
-        message : "Order id not found"
+        success: false,
+        message: 'Order id not found'
       })
     }
     const order = await Order.findOne({
       orderId,
-      userId : user.id
-    });
+      userId: user.id
+    })
 
-    if(!order){
+    if (!order) {
       return res.status(400).json({
-        success : false,
-        message : "Order not found"
+        success: false,
+        message: 'Order not found'
       })
     }
 
-    const {reason , comment} = req.body
+    const { reason, comment } = req.body
 
-    if(!reason){
+    if (!reason) {
       return res.status(400).json({
-        success : false,
-        message : "Please select an reason"
+        success: false,
+        message: 'Please select an reason'
       })
     }
 
-    if(["Shipped" , "Delivered"].includes(order.orderStatus) ){
+    if (['Shipped', 'Delivered'].includes(order.orderStatus)) {
       return res.status(400).json({
-        success : false , 
-        message : "Your order already Shipped"
+        success: false,
+        message: 'Your order already Shipped'
       })
     }
-    const allCancelled = order.items.every(i => i.cancelRequest.status === "Cancelled");
-    const requested = order.items.every(i => i.cancelRequest.status === "Pending");
+    let allCancelled = order.items.every(i => i.status === 'Cancelled')
 
-    if(allCancelled){
+    if (allCancelled) {
       return res.json({
-        success : false,
-        message : "You already Cancelled"
+        success: false,
+        message: 'You already Cancelled'
       })
     }
 
-    if(requested){
-      return res.status(400).json({
-        success : false,
-        message : "You already requested to cancellation"
-      })
-    }
+    for (const item of order.items) {
+      if (item.status !== 'Cancelled') {
+        item.status = 'Cancelled'
 
-    order.items.forEach(i=> i.cancelRequest.status = "Pending")
+        item.cancellation = {
+          reason,
+          comment: comment?.trim() || '',
+          cancelledAt: new Date()
+        }
+        await Product.updateOne(
+          {
+            _id: item.productId,
+            'variants.varientId': item.variantId
+          },
+          {
+            $inc: { 'variants.$.stock': item.quantity }
+          }
+        )
+      }
+    }
+    // allCancelled = order.items.every(i => i.status === 'Cancelled')
+    order.orderStatus = 'Cancelled'
+    // if (allCancelled) {
+      order.timeline.cancelledAt = new Date()
+    // }
+
     order.save()
     return res.status(200).json({
-      success : true,
-      message : "Cancellation Requested"
+      success: true,
+      message: `${orderId} has Cancelled`
     })
   } catch (error) {
-    console.log("Error from orderCancel",error)
+    console.log('Error from orderCancel', error)
     return res.status(500).json({
-      success : false,
-      message : "Server error"
+      success: false,
+      message: 'Server error'
     })
   }
 }
+
+
+export const itemReturnLoad = async (req, res) => {
+  try {
+    const {orderId,itemId} = req.params
+    const user = req.session.user
+
+    if (!user) {
+      return res.redirect("/")
+    }
+
+    if (!orderId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      })
+    }
+
+    const order = await Order.findOne({
+      orderId
+    })
+    
+    const item = order.items.find(item => item._id.toString() === itemId)
+    res.render('User/order/orderReturnPage.ejs', {
+      order,
+      item
+    })
+  } catch (error) {
+    console.log('Error from orderCancelLoad :', error)
+  }
+}
+
+export const orderReturnLoad = async (req, res) => {
+  try {
+    const orderId = req.params.orderId
+    const user = req.session.user
+
+    if (!user) {
+      return res.redirect("/")
+    }
+
+    if (!orderId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      })
+    }
+
+    const order = await Order.findOne({
+      orderId
+    })
+
+    res.render('User/order/orderReturnPage.ejs', {
+      order,
+      item:null
+    })
+  } catch (error) {
+    console.log('Error from orderCancelLoad :', error)
+  }
+}
+
+
+export const returnOrderItem = async (req, res) => {
+  try {
+    const user = req.session.user;
+    const { orderId, itemId } = req.params;
+    const { reason, comment } = req.body;
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Please login first"
+      });
+    }
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select a reason"
+      });
+    }
+
+    const order = await Order.findOne({
+      orderId,
+      userId: user.id
+    });
+
+    if (!order) {
+      return res.status(400).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    const item = order.items.id(itemId);
+
+    if (!item) {
+      return res.status(400).json({
+        success: false,
+        message: "Item not found"
+      });
+    }
+
+    if (item.status !== "Delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "Only delivered items can be returned"
+      });
+    }
+
+    if (item.status === "Returned") {
+      return res.status(400).json({
+        success: false,
+        message: "Item already returned"
+      });
+    }
+
+    item.status = "Return Requested";
+    item.returnRequest = {
+      status : "Pending",
+      reason,
+      comment: comment?.trim() || "",
+      returnedAt: new Date()
+    };
+
+    const allReturned = order.items.every(i => i.status === "Return Requested");
+
+    if (allReturned) {
+      order.orderStatus = "Return Requested";
+      order.returnRequest={
+        status : "Pending",
+        reason,
+        comment : comment?.trim() || ""
+      }
+      order.timeline.returnedAt = new Date();
+    }
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Item returned successfully"
+    });
+
+  } catch (error) {
+    console.log("Error in returnOrderItem:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
+export const returnOrder = async (req, res) => {
+  try {
+    const user = req.session.user;
+    const orderId = req.params.orderId
+    const { reason, comment } = req.body;
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Please login first"
+      });
+    }
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select a reason"
+      });
+    }
+
+    const order = await Order.findOne({
+      orderId,
+      userId: user.id
+    });
+
+    if (!order) {
+      return res.status(400).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    if (order.orderStatus !== "Delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "Only delivered orders can be returned"
+      });
+    }
+
+    if (order.orderStatus === "Returned") {
+      return res.status(400).json({
+        success: false,
+        message: "Order already returned"
+      });
+    }
+
+    const now = new Date();
+
+    for (const item of order.items) {
+
+      if (item.status === "Returned") continue;
+
+      item.status = "Return Requested";
+
+      item.returnRequest = {
+        status : "Pending",
+        reason,
+        comment: comment?.trim() || "",
+        returnedAt: now
+      };
+
+    }
+
+    order.orderStatus = "Return Request";
+
+    order.returnRequest = {
+      status : "Pending",
+      reason,
+      comment: comment?.trim() || "",
+      requestedAt: now
+    };
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `${orderId} returned successfully`
+    });
+
+  } catch (error) {
+    console.log("Error in returnOrder:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};

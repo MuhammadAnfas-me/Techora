@@ -23,18 +23,13 @@ const orderSchema = new mongoose.Schema(
         image: String,
         status: {
           type: String,
-          enum: ['Placed', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'],
+          enum: ['Placed', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled' , "Returned", "Return Requested","Return Rejected","Return Approved"],
           default: 'Placed'
         },
-        cancelRequest: {
-          status: {
-            type: String,
-            enum: ['None', 'Approved', 'Pending', 'Rejected'],
-            default: 'None'
-          },
+        cancellation: {
           reason: String,
           comment: String,
-          requestedAt : Date
+          cancelledAt : Date
         },
         returnRequest: {
           status: {
@@ -75,7 +70,8 @@ const orderSchema = new mongoose.Schema(
         'Shipped',
         'Delivered',
         'Cancelled',
-        'Return Request',
+        'Returned' ,
+        'Return Requested',
         'Return Approved',
         'Return Rejected'
       ],
@@ -100,9 +96,10 @@ const orderSchema = new mongoose.Schema(
       requestedAt: Date
     },
     timeline: {
-      confirmedAt: Date,
-      shippedAt: Date,
-      deliveredAt: Date
+      confirmedAt: {type : Date},
+      shippedAt: {type : Date},
+      deliveredAt: {type : Date},
+      cancelledAt : {type : Date}
     }
   },
   { timestamps: true }

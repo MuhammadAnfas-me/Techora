@@ -33,7 +33,7 @@ router
 
 router.route('/resendOtp').post(userController.resendOtp)
 
-router.route('/').get(middlewares.isBlocked, userController.homeLoad)
+router.route('/').get(userController.homeLoad)
 
 router
   .route('/forgot-password')
@@ -162,7 +162,21 @@ router
 .get(orderController.orderCancelLoad)
 .patch(orderController.orderCancel)
 
-router.post("/orders/cancel-item",orderController.cancelItem)
+router
+  .route("/orders/:orderId/cancel/:itemId")
+  .get(orderController.itemCancelLoad)
+  .patch(orderController.cancelItem)
+
+router
+  .route("/orders/:orderId/return")
+  .get(orderController.orderReturnLoad)
+  .patch(orderController.returnOrder)
+router
+  .route("/orders/:orderId/return/:itemId")
+  .get(orderController.itemReturnLoad)
+  .patch(orderController.returnOrderItem)
+
+
 
 router.route('/logout').get(userController.logout)
 

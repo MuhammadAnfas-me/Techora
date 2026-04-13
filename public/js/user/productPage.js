@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function loadFilteredProducts (page = 1) {
+  async function loadFilteredProducts (page = 1,scroll = true) {
     try {
       const params = buildParams(page)
       const productsSection = document.getElementById('productsSection')
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         productsContainer.classList.remove('is-loading')
       }
 
-      if (productsSection) {
+      if (productsSection && scroll) {
         productsSection.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
@@ -272,11 +272,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   filterForm?.addEventListener('submit', e => {
     e.preventDefault()
-    loadFilteredProducts(1)
+    loadFilteredProducts(1,false)
   })
 
   sortSelect?.addEventListener('change', () => {
-    loadFilteredProducts(1)
+    loadFilteredProducts(1,false)
   })
 
   searchInput?.addEventListener('input', toggleClearBtn)
@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!searchInput) return
     searchInput.value = ''
     toggleClearBtn()
-    loadFilteredProducts(1)
+    loadFilteredProducts(1,false)
   })
 
   clearFiltersBtn?.addEventListener('click', () => {
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updatePriceLabels()
     toggleClearBtn()
-    loadFilteredProducts(1)
+    loadFilteredProducts(1,false)
   })
 
   document
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cartCountEl.classList.remove('cart-bounce')
       }, 300)
     }
-    loadFilteredProducts(1)
+    //  loadFilteredProducts(1,false)
     showToast(res.data.message || 'Added to cart')
   } catch (error) {
     showToast(error.response?.data?.message || 'Failed to add to cart', 'error')

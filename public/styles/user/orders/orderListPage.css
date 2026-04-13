@@ -133,7 +133,6 @@
   background: #fff3cd;
   color: #856404;
 }
-
 /* Shipped */
 .status-shipped {
   background: #d1ecf1;
@@ -142,6 +141,10 @@
 
 /* Delivered */
 .status-delivered {
+  background: #d4edda;
+  color: #155724;
+}
+.status-returned {
   background: #d4edda;
   color: #155724;
 }

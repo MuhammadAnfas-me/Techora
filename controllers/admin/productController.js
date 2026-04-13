@@ -27,7 +27,8 @@ const loadProducts = async (req, res) => {
     const categories = await Categories.find();
     let products = await Product.find(filter)
       .populate("categoryId", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean()
 
     // filter by TOTAL stock
     if (status) {

@@ -193,10 +193,10 @@
    }
 
    .prod-header {
-         display: flex;
-         justify-content: space-between;
-         align-items: flex-start;
-         gap: 10px;
+       display: flex;
+       justify-content: space-between;
+       align-items: flex-start;
+       gap: 10px;
    }
 
    .prod-name {
@@ -213,7 +213,9 @@
    .curr-price {
        font-weight: 700;
        font-size: 16px;
-       display: block;
+       display: flex;
+       justify-content: space-around;
+       padding-top: 0px;
    }
 
    .old-price {
@@ -410,52 +412,93 @@
    }
 
    /* Cancel Button */
-.cancel-btn {
-  background: #fee2e2;
-  color: #dc2626;
-}
+   .cancel-btn {
+       background: #fee2e2;
+       color: #dc2626;
+   }
 
-.cancel-btn:hover {
-  background: #fecaca;
-}
+   .cancel-btn:hover {
+       background: #fecaca;
+   }
 
-/* Return Button */
-.return-btn {
-  background: #fff7ed;
-  color: #ea580c;
-}
+   /* Return Button */
+   .return-btn {
+       background: #fff7ed;
+       color: #ea580c;
+   }
 
-.return-btn:hover {
-  background: #ffedd5;
-}
-.btn.disabled {
-  background: #e5e7eb;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-.item-status {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 20px;
-}
+   .return-btn:hover {
+       background: #ffedd5;
+   }
 
-.item-status.delivered {
-  background: #dcfce7;
-  color: #16a34a;
-}
+   .btn.disabled {
+       background: #e5e7eb;
+       color: #9ca3af;
+       cursor: not-allowed;
+   }
 
-.item-status.cancelled {
-  background: #fee2e2;
-  color: #dc2626;
-}
-.item-status.placed {
-  background: #fff3cd;
-  color: #856404;
-}
-.prod-right {
-  width: 130px;              /* 🔥 key fix */
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;     /* right align */
-  gap: 15px;
-}
+   .item-status {
+       font-size: 11px;
+       padding: 3px 8px;
+       border-radius: 20px;
+   }
+
+   .item-status.delivered {
+       background: #dcfce7;
+       color: #16a34a;
+       display: flex;
+       justify-content: center;
+   }
+
+   .item-status.cancelled {
+       background: #fee2e2;
+       color: #dc2626;
+       display: flex;
+       justify-content: center;
+   }
+
+   .item-status.placed {
+       background: #fff3cd;
+       color: #856404;
+       display: flex;
+       justify-content: center;
+   }
+
+   .item-status.confirmed {
+       background: #dbeafe;
+       /* light blue */
+       color: #1d4ed8;
+       display: flex;
+       justify-content: center;
+       /* strong blue */
+   }
+
+   .item-status.shipped {
+       background: #ede9fe;
+       /* light purple */
+       color: #7c3aed;
+       display: flex;
+       justify-content: center;
+       /* strong purple */
+   }
+
+   .prod-right {
+       width: 130px;
+       /* 🔥 key fix */
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       /* right align */
+       gap: 15px;
+       justify-content: flex-end
+   }
+
+   .back-link {
+       display: flex;
+       align-items: center;
+       gap: 0.5rem;
+       text-decoration: none;
+       color: #64748b;
+       font-size: 0.875rem;
+       margin-bottom: 1rem;
+   }

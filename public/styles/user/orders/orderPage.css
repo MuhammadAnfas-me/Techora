@@ -497,3 +497,66 @@ ul { list-style: none; }
         align-items: flex-start;
     }
 }
+
+.empty-orders-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    min-height: 260px;
+}
+
+.empty-orders-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.empty-orders-content .icon-circle {
+    width: 80px;
+    height: 80px;
+    background: var(--gray-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.empty-orders-content .icon-circle span {
+    font-size: 40px;
+    color: var(--gray-400);
+}
+
+.empty-orders-content h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--tech-dark);
+    margin-bottom: 0.5rem;
+}
+
+.empty-orders-content p {
+    color: var(--gray-500);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+}
+
+/* Reusing your primary button style */
+.empty-orders-content .btn-primary {
+    display: inline-block;
+    padding: 12px 32px;
+    background-color: var(--primary-blue);
+    color: var(--white );
+        margin-bottom: 0.8rem;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.empty-orders-content .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}

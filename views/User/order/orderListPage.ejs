@@ -174,7 +174,7 @@ function renderOrders(orders) {
             </div>
           </div>
 
-          <div class="status-badge status-${order.orderStatus.toLowerCase()}">
+          <div class="status-badge status-${order.orderStatus === "Return Request" ? "placed" : order.orderStatus === "Return Rejected" ? "cancelled" : order.orderStatus.toLowerCase()}">
             ${formatStatus(order.orderStatus)}
           </div>
         </div>
@@ -186,14 +186,47 @@ function renderOrders(orders) {
 
           <div class="order-actions">
              ${
-              order.orderStatus === " Delivered" 
-              ? `<p class="delivery-title">Delivered On</p>
-                <p class="delivery-date">Sep 15, 2024</p>
-                <p class="delivery-method">Via FedEx Express</p>`         
-              : `<div class="cancel-notice">
-                 This order was cancelled on<br>Aug 06, 2024 by user request.
-                 </div>`   
-             }
+                  order.orderStatus === "Delivered" 
+                    ? `<p class="delivery-title">Delivered On</p>
+                       <p class="delivery-date">
+                         ${
+                           order.timeline?.deliveredAt
+                           ? new Date(order.timeline.deliveredAt).toLocaleDateString('en-IN', {
+                               day: '2-digit',
+                               month: 'short',
+                               year: 'numeric'
+                             })
+                           : '—'
+                         }
+                       </p>
+                       <p class="delivery-method">
+                         ${order.courier || "Standard Delivery"}
+                       </p>`         
+                     
+                    : order.orderStatus === "Cancelled"
+                    ? `<div class="cancel-notice">
+                         This order was cancelled on<br>
+                         ${
+                           order.timeline?.cancelledAt
+                           ? new Date(order.timeline.cancelledAt).toLocaleDateString('en-IN', {
+                               day: '2-digit',
+                               month: 'short',
+                               year: 'numeric'
+                             })
+                           : '—'
+                         }
+                         <br>
+                         ${order.cancellation?.reason ? `Reason: ${order.cancellation.reason}` : ""}
+                       </div>`
+                     
+                    : `<p class="delivery-pending">
+                         ${
+                           order.estimatedDelivery
+                           ? `Expected by ${new Date(order.estimatedDelivery).toDateString()}`
+                           : "Delivery in progress..."
+                         }
+                       </p>`
+                }
             <button class="btn-view-details" onclick="window.location.href='/orders/${order.orderId}'">
               View Details
             </button>

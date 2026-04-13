@@ -73,15 +73,27 @@ router
   .route("/products/:id/block")
   .patch(middleWares.checkAdminAuth,productController.blockProduct)
 
-
+// ---------------------------------- Order management ---------------------------------------
 router
   .route("/orders")
   .get(middleWares.checkAdminAuth,orderController.orderListLoad)
 
+router.get("/orders/export-pdf", middleWares.checkAdminAuth, orderController.exportOrdersPDF)
+
 router
   .route('/orders/:orderId')
-  .get(orderController.orderDetailsPage)
-router.get("/orders/export-pdf",orderController.exportOrdersPDF)
+  .get(middleWares.checkAdminAuth,orderController.orderDetailsPage)
+  .patch(orderController.updateOrderStatus)
+
+router
+  .route('/orders/:orderId/cancel')
+  .patch(orderController.orderCancel)
+
+router
+  .route('/orders/return/update')
+  .patch(orderController.updateReturnStatus)
+// For return an item not the entire order
+router.patch('/orders/return/item/:orderId',orderController.returnItem)
 
 router.route('/logout').get(authController.logout)
 export default router

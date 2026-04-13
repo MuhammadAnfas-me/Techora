@@ -1,3 +1,5 @@
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <%- include("../../partitials/user/header.ejs",{tittle : "Techora | My Order"}) %>
 <link rel="stylesheet" href="/styles/user/orders/orderCancelPage.css">
 
@@ -17,14 +19,12 @@
       <div class="cr-card-header">
         <div class="cr-title-wrapper">
           <div class="cr-warning-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 9V13M12 17.01L12.01 16.999M12 3L2 21H22L12 3Z" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <i class="fas fa-rotate-left"></i>
           </div>
 
-          <h1 class="cr-title">Cancel <%= item ? "Item" : "Order" %></h1>
+          <h1 class="cr-title">Return <%= item ? "Item" : "Order" %></h1>
         </div>
-        <p class="cr-subtitle">Your request will be reviewed by our team. Refund will be processed after approval.</p>
+        <p class="cr-subtitle">YAre you sure you want to return order #SM-8355 ? This action cannot be undone once confirmed.</p>
       </div>
 
       <div class="cr-items-section">
@@ -85,10 +85,15 @@
           <label for="cancel-reason" class="cr-label">Reason for cancellation</label>
           <select id="cancel-reason" class="cr-input" required >
             <option value="" disabled selected>Select a reason...</option>
-            <option value="changed_mind">Changed my mind</option>
-            <option value="found_cheaper">Found a better price elsewhere</option>
-            <option value="ordered_mistake">Ordered by mistake</option>
-            <option value="delivery_delay">Delivery is taking too long</option>
+            <option value="defective">Product is defective / not working</option>
+            <option value="damaged">Received damaged item</option>
+            <option value="wrong_item">Wrong item delivered</option>
+            <option value="not_as_described">Product not as described</option>
+            <option value="missing_parts">Missing parts or accessories</option>
+            <option value="quality_issue">Poor quality</option>
+            <option value="size_issue">Size/fit issue</option>
+            <option value="no_longer_needed">No longer needed</option>
+            <option value="better_price">Found better price elsewhere</option>
             <option value="other">Other</option>
           </select>
         </div>
@@ -109,7 +114,7 @@
               <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Cancel <%= item ? "Item" : "Order" %>
+            Return <%= item ? "Item" : "Order" %>
           </button>
         </div>
       </form>
@@ -125,7 +130,7 @@
         const reason = document.getElementById("cancel-reason").value
         const comment = document.getElementById("cancel-comments").textContent || ""
         try {
-            const res = await axios.patch(`/orders/${id}/cancel`,{
+            const res = await axios.patch(`/orders/${id}/return`,{
                 reason,
                 comment
             })
@@ -146,7 +151,7 @@
         const reason = document.getElementById("cancel-reason").value
         const comment = document.getElementById("cancel-comments").textContent || ""
         try {
-            const res = await axios.patch(`/orders/${id}/cancel/${itemId}`,{
+            const res = await axios.patch(`/orders/${id}/return/${itemId}`,{
                 reason,
                 comment
             })

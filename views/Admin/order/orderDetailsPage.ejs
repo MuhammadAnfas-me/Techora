@@ -7,6 +7,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
       (function() {
         const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
@@ -288,6 +290,48 @@
         font-weight: 500;
       }
       .status-success { background: #d1fae5; color: #059669; }
+
+      .status-pill {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+      cursor: context-menu;
+    }
+
+
+    .status-delivered {
+      background-color: #d1fae5;
+      color: #059669;
+    }
+
+    .status-pending {
+      background-color: #ffedd5;
+      color: #d97706;
+    }
+
+    .status-cancelled {
+      background-color: #ffe4e6;
+      color: #e11d48;
+    }
+
+    .status-shipped {
+      background: #ede9fe;
+      /* light purple */
+      color: #7c3aed;
+      /* strong purple */
+    }
+    .status-return{
+      background-color: #1f2937;
+      color: #fff; ;
+      cursor: pointer;
+    }
+    .status-action{
+      background-color: #f1f5f9;
+      color:#111827 ;
+      cursor: pointer;
+    }
     </style>
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -316,12 +360,26 @@
               <p class="page-subtitle">View complete order information and manage status</p>
             </div>
             <div class="header-actions">
-              <button class="btn btn-danger-light">
-                <span class="material-symbols-outlined" style="font-size: 18px;">cancel</span> Cancel Order
+              <% if(["Placed","Confirmed"].includes(order.orderStatus)){ %>
+                <button class="btn btn-danger-light" onclick="cancelOrder('<%= order.orderId %>')">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">cancel</span> Cancel Order
+                </button>
+              <% } %>
+
+                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="updateStatus('<%= order.orderId %>')"
+                  <%= ["Delivered","Cancelled","Returned","Return Requested" , "Return Rejected"].includes(order.orderStatus) ? "disabled title='Order already delivered'" : "" %> >
+                  
+                  <% if(["Cancelled" , "Returned" , "Delivered","Return Requested" , "Return Rejected"].includes(order.orderStatus)) { %>
+                    Update Status<i class="fas fa-lock"></i>
+                  <% } else { %>
+                    Update Status
+                  <% } %>
+
               </button>
-              <button class="btn btn-primary">
+
+                <!-- <button class="btn btn-primary"  <%= order.orderStatus === "Delivered" ? "disabled title='Order already Delivered'" : "" %>>
                 Update Status
-              </button>
+              </button> -->
             </div>
           </div>
 
@@ -349,7 +407,7 @@
                   </div>
                   <div class="summary-item">
                     <label>Order Status</label>
-                    <select class="status-select">
+                    <select class="status-select" id="orderStatus">
                         <option selected><%= order.orderStatus %></option>
                     <% if(order.orderStatus === "Placed"){ %>
                         <option value="Confirmed">Confirmed</option>
@@ -357,6 +415,8 @@
                         <option value="Shipped">Shipped</option>
                     <% } else if(order.orderStatus === "Shipped"){ %>
                         <option value="Delivered">Delivered</option>
+                    <% }else if(order.orderStatus === "Return Approved"){ %>
+                          <option value="Returned">Returned</option>   
                     <% } %>
                     </select>
                   </div>
@@ -424,10 +484,11 @@
                     <thead>
                       <tr>
                         <th>Product</th>
-                        <th>SKU</th>
+                        <th>Status</th>
                         <th>Qty</th>
                         <th>Price</th>
                         <th>Total</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -444,10 +505,37 @@
                             </div>
                           </div>
                         </td>
-                        <td style="color:#6b7280; font-size:13px;">SW-700-SLV</td>
+                        <td style="color:#6b7280; font-size:13px;">
+                          <% if(["Returned","Delivered"].includes(item.status) ){ %>
+                          <span class="status-pill status-delivered">
+                              <%= item.status %>
+                            </span>
+                          <% }else if(["Cancelled","Return Rejected"].includes(item.status) ){ %>
+                            <span class="status-pill status-cancelled">
+                                <%= item.status %>
+                              </span>
+                            <% }else if(["Placed","Confirmed"].includes(item.status)){ %>
+                              <span class="status-pill status-pending">
+                                  <%= "Processing" %>
+                                </span>
+                              <% }else if(["Return Approved","Shipped"].includes(item.status) ){ %>
+                                <span class="status-pill status-shipped">
+                                    <%= item.status %>
+                                  </span>
+                                  <% }else if(item.status === "Return Requested") {%>
+                                    <span class="status-pill status-pending">
+                                      <%= item.status %>
+                                    </span>
+                                  <% } %>
+                        </td>
                         <td>1</td>
                         <td><%= formatINR(item.price)  %></td>
                         <td style="font-weight: 500;"><%= formatINR(item.total) %></td>
+                        <% if(item.status === "Return Approved") {%>
+                          <td><span class="status-pill status-return" onclick="returnItem('<%= order.orderId %>','<%= item._id %>')">Return item</span></td>
+                        <% }else{ %>
+                          <td><span class="status-pill status-action">No Actions</span></td>
+                        <% } %>
                       </tr>
                       <% }) %>
                     </tbody>
@@ -521,42 +609,99 @@
                 <div class="card-header">
                   <span class="material-symbols-outlined">history</span> Order History
                 </div>
-                <% const status = ["Placed","Confirmed","Shipped","Delivered"] %>
+                <% 
+                  let placedStatus = '', confirmedStatus = '', shippedStatus = '', deliveredStatus = '';
+                  const returnStatuses = ['Return Request', 'Return Approved', 'Return Rejected'];
+                  if (order.orderStatus === 'Delivered' || returnStatuses.includes(order.orderStatus)) {
+                    placedStatus = 'active'; confirmedStatus = 'active'; shippedStatus = 'active'; deliveredStatus = 'active';
+                  } else if (order.orderStatus === 'Shipped') {
+                    placedStatus = 'active'; confirmedStatus = 'active'; shippedStatus = 'current';
+                  } else if (order.orderStatus === 'Confirmed') {
+                    placedStatus = 'active'; confirmedStatus = 'current';
+                  } else if (order.orderStatus === 'Placed') {
+                    placedStatus = 'current';
+                  } else if (order.orderStatus === 'Cancelled') {
+                    if (order.timeline?.shippedAt) {
+                      placedStatus = 'active'; confirmedStatus = 'active'; shippedStatus = 'active';
+                    } else if (order.timeline?.confirmedAt) {
+                       placedStatus = 'active'; confirmedStatus = 'active';
+                    } else {
+                       placedStatus = 'active';
+                    }
+                  }
+                  
+                  const formatTimelineDate = (d) => {
+                    if (!d) return '';
+                    return new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+                  };
+                %>
                 <div class="timeline">
                   
+                  <% if (returnStatuses.includes(order.orderStatus)) { %>
                   <div class="timeline-item">
-                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'active' : '' %>"></div>
+                    <div class="timeline-dot current"></div>
                     <div class="timeline-content">
-                      <h5 style="color: #059669;">Delivered</h5>
+                      <h5 style="color: #ea580c;"><%= order.orderStatus %></h5>
+                      <p>Return process logged.</p>
+                      <% if(order.returnRequest?.requestedAt) { %>
+                        <span class="time"><%= formatTimelineDate(order.returnRequest.requestedAt) %></span>
+                      <% } else { %>
+                        <span class="time"><%= formatTimelineDate(order.updatedAt) %></span>
+                      <% } %>
+                    </div>
+                  </div>
+                  <% } %>
+
+                  <% if (order.orderStatus === 'Cancelled') { %>
+                  <div class="timeline-item">
+                    <div class="timeline-dot" style="background: #ef4444; border-color: #fca5a5;"></div>
+                    <div class="timeline-content">
+                      <h5 style="color: #ef4444;">Cancelled</h5>
+                      <p>Order was cancelled.</p>
+                      <span class="time"><%= formatTimelineDate(order.updatedAt) %></span>
+                    </div>
+                  </div>
+                  <% } else { %>
+                  <div class="timeline-item">
+                    <div class="timeline-dot <%= deliveredStatus %>"></div>
+                    <div class="timeline-content">
+                      <h5 style="<%= deliveredStatus ? 'color: #059669;' : '' %>">Delivered</h5>
                       <p>Package delivered successfully.</p>
-                      <span class="time">Oct 28, 2:15 PM</span>
+                      <% if(order.timeline?.deliveredAt) { %>
+                        <span class="time"><%= formatTimelineDate(order.timeline.deliveredAt) %></span>
+                      <% } %>
                     </div>
                   </div>
+                  <% } %>
 
                   <div class="timeline-item">
-                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'current' : '' %>"></div>
+                    <div class="timeline-dot <%= shippedStatus %>"></div>
                     <div class="timeline-content">
-                      <h5>Shipped</h5>
+                      <h5 style="<%= shippedStatus ? 'color: #111827;' : 'color: #9ca3af;' %>">Shipped</h5>
                       <p>Order dispatched from warehouse.</p>
-                      <span class="time">Oct 25, 3:20 PM</span>
+                      <% if(order.timeline?.shippedAt) { %>
+                        <span class="time"><%= formatTimelineDate(order.timeline.shippedAt) %></span>
+                      <% } %>
                     </div>
                   </div>
 
                   <div class="timeline-item">
-                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'current' : '' %> "></div>
+                    <div class="timeline-dot <%= confirmedStatus %> "></div>
                     <div class="timeline-content">
-                      <h5>Order Confirmed</h5>
+                      <h5 style="<%= confirmedStatus ? 'color: #111827;' : 'color: #9ca3af;' %>">Order Confirmed</h5>
                       <p>Your order has been verified.</p>
-                      <span class="time">Oct 24, 10:42 AM</span>
+                      <% if(order.timeline?.confirmedAt) { %>
+                        <span class="time"><%= formatTimelineDate(order.timeline.confirmedAt) %></span>
+                      <% } %>
                     </div>
                   </div>
 
                   <div class="timeline-item">
-                    <div class="timeline-dot <%= order.timeline.confirmedAt ? 'current' : '' %> "></div>
+                    <div class="timeline-dot <%= placedStatus %> "></div>
                     <div class="timeline-content">
                       <h5>Order Placed</h5>
                       <p>Order received and processing.</p>
-                      <span class="time">Oct 24, 10:40 AM</span>
+                      <span class="time"><%= formatTimelineDate(order.createdAt) %></span>
                     </div>
                   </div>
 
@@ -570,4 +715,57 @@
       </main>
     </div>
   </body>
+  <script>
+    
+    async function updateStatus(id){
+      try{
+          const orderStatus = document.getElementById("orderStatus").value
+            const res = await axios.patch(`/admin/orders/${id}`,{
+                orderStatus
+            })
+
+            if(res.data.success){
+                showToast(res.data.message || "Updated successfully")
+                setTimeout(()=>{
+                  window.location.reload()
+                },500)
+            }
+        }catch(error){
+            console.log(error)
+            showToast(error.response.data.message || "Something went wrong","error")
+        }
+    }
+
+    async function cancelOrder(id) {
+      try {
+        const res = await axios.patch(`/admin/orders/${id}/cancel`)
+        if(res.data.success){
+          showToast(res.data.message || "Order cancelled successfully")
+          setTimeout(()=>{
+            window.location.reload()
+          },700)
+        }
+      } catch (error) {
+        console.log(error)
+        showToast(error.response.data.message || "Something went wrong","error")
+      }
+    }
+
+    async function returnItem(orderId,itemId) {
+      try{
+        const res = await axios.patch(`/admin/orders/return/item/${orderId}`,{
+          itemId
+        })
+        if(res.data.success){
+          showToast(res.data.message || "Returned Successfully")
+          setTimeout(()=>{
+            window.location.reload()
+          },1000)
+        }
+      }catch(error){
+        console.error(error)
+        showToast(error.response.data.message || "Something went wrong","error")
+      }
+    }
+  </script>
 </html>

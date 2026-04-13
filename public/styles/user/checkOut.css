@@ -83,6 +83,7 @@
     .payment-main { grid-template-columns: 1fr 400px; }
 }
 
+
 /* --- General Card Styling --- */
 .card {
     background-color: var(--white);
@@ -262,7 +263,7 @@
 
 /* --- Buttons --- */
 .btn-primary {
-    background-color: var(--primary-navy);
+    background-color: var(--tech-accent);
     color: var(--white);
     font-size: 14px;
     font-weight: 600;
@@ -378,6 +379,10 @@
 }
 
 /* Address text */
+.address-details{
+    display: flex;
+    justify-content: space-between;
+}
 .address-details p {
   margin: 2px 0;
   font-size: 14px;
@@ -389,10 +394,10 @@
 }
 
 /* Confirm button */
-.modal-content button {
+.modal-content .confirm {
   width: 100%;
   padding: 10px;
-  background: #2b6cb0;
+  background: var(--text-dark);
   color: white;
   border: none;
   border-radius: 8px;
@@ -401,8 +406,512 @@
   transition: 0.2s;
 }
 
+.editBtn{
+    width: 20px;;
+}
+
 .modal-content button:hover {
-  background: #1f4e85;
+  background: var(--primary-hover);
+}
+
+/* 1. Target the specific edit button */
+.btn-edit-inline {
+    /* Reset global button styles */
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    width: 32px !important;   /* Fixed width */
+    height: 32px !important;  /* Fixed height */
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    
+    /* Center the icon */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    
+    color: var(--text-dark) !important; /* Muted gray icon color */
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* 2. Style the icon inside */
+.btn-edit-inline span {
+    font-size: 20px;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* 3. Hover effect */
+.btn-edit-inline:hover {
+    color: #4f46e5 !important; /* Blue on hover */
+    background-color: #f1f5f9 !important; /* Light circle background */
+    border-radius: 50%;
+}
+
+/* 4. Ensure the parent card allows positioning */
+.address-card {
+    position: relative; /* This is CRITICAL */
+    display: flex;
+    align-items: flex-start;
+    padding-right: 45px; /* Create a "safe zone" so text doesn't overlap the icon */
+}
+
+/* Mobile Responsive Design for Stepper */
+@media (max-width: 640px) {
+/* 1. Reset container for mobile */
+    .stepper-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start; /* Align to top so circles stay level */
+        max-width: 100%;
+    }
+
+    /* 2. Hide the actual .line divs from your HTML */
+    .line {
+        display: none;
+    }
+
+    /* 3. Stack step content */
+    .step {
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1; /* Gives each step equal width */
+    }
+
+    /* 4. Create a new line using CSS pseudo-elements */
+    /* This creates a line that connects to the NEXT step */
+    .step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 20px; /* Half of circle height */
+        left: 50%; /* Start from center of circle */
+        width: 100%; /* Stretch to next step center */
+        height: 2px;
+        background: var(--gray-400);
+        z-index: 1;
+    }
+
+    /* 5. Adjust Circle and Label */
+    .step-num {
+        width: 40px; 
+        height: 40px;
+        z-index: 2; /* Sit on top of the line */
+        margin-bottom: 8px; /* Space between circle and label */
+        font-size: 14px;
+    }
+
+    .step-label {
+        margin-left: 0;
+        font-size: 10px;
+        text-align: center;
+        line-height: 1.2;
+        width: 100%;
+        color: var(--text-main);
+    }
+}
+
+/* Adjusting the Card Layout from your image */
+.delivery-address-card {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.addressHeader{
+    display: flex;
+    justify-content: space-between;
+        margin-bottom: 0.5rem;
+}
+
+.address-btn{
+    height: 2rem;
+    background-color: var(--tech-accent);
+    color: var(--white);
+    font-size: 14px;
+    padding: 5px 20px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+}
+.address-empty-state {
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 30px;
+  text-align: center;
+  background: #f8fafc;
+}
+
+.empty-icon {
+  font-size: 32px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.address-empty-state h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.address-empty-state p {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+/* Add button */
+.btn-add-address {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-add-address:hover {
+  background: #4338ca;
+}
+/* Parent container */
+.address-container.empty {
+  height: 186px; /* control height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+}
+
+/* Center content */
+.empty-wrapper {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Icon */
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e0e7ff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon span {
+  font-size: 26px;
+  color: #4f46e5;
+}
+
+/* Text */
+.empty-wrapper h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.empty-wrapper p {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Button */
+.btn-add-address {
+  margin-top: 6px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--tech-dark);
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-add-address:hover {
+  background: var(--primary-hover);
+}
+/* ===================================
+   MODAL
+   =================================== */
+
+   /* --- Variables & Reset --- */
+:root {
+    --primary-color: #2563eb;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    --bg-main: #ffffff;
+    --bg-overlay: rgba(0, 0, 0, 0.5);
+    --error-color: #ef4444;
+    --transition-speed: 0.3s;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* --- Drawer Overlay (Background Backdrop) --- */
+.add-address-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--bg-overlay);
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end; /* Aligns drawer to the right on desktop */
+    
+    /* Hidden state */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-speed) ease, visibility var(--transition-speed) ease;
+}
+
+/* Add this class via JS to open the drawer */
+.add-address-modal-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- Drawer Content (The Panel) --- */
+.add-address-modal-content {
+    background-color: var(--bg-main);
+    width: 450px;
+    max-width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    
+    /* Hidden state (Slide right) */
+    transform: translateX(100%);
+    transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-address-modal-overlay.open .add-address-modal-content {
+    transform: translateX(0);
+}
+
+/* --- Header Section --- */
+.add-address-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.add-address-modal-title {
+    margin: 0 0 4px 0;
+    font-size: 1.25rem;
+    color: var(--text-main);
+}
+
+.add-address-modal-subtitle {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.add-address-modal-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.add-address-modal-close:hover {
+    background: #f3f4f6;
+    color: var(--text-main);
+}
+
+/* --- Form Scrollable Area --- */
+.add-address-form {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- Form Groups & Inputs --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.required {
+    color: var(--error-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+small[class$="Error"] {
+    color: var(--error-color);
+    font-size: 0.75rem;
+}
+
+/* --- Radio & Checkbox Styling --- */
+.radio-group {
+    display: flex;
+    gap: 16px;
+    margin-top: 4px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.checkbox-input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+/* --- Bottom Action Buttons --- */
+.form-actions {
+    padding-top:24px ;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+    background-color: var(--bg-main);
+}
+
+.btn-cancel, .btn-submit {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+
+.btn-cancel:hover {
+    background: #f9fafb;
+}
+
+.btn-submit {
+    background: var(--tech-accent);
+    border: 1px solid var(--tech-accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-submit:hover {
+    background: var(--primary-hover);
+}
+
+/* --- Mobile Responsiveness (Bottom Sheet Drawer) --- */
+@media (max-width: 600px) {
+    .add-address-modal-overlay {
+        align-items: flex-end; /* Align to bottom for mobile */
+        justify-content: center;
+    }
+
+    .add-address-modal-content {
+        width: 100%;
+        height: auto;
+        max-height: 90vh; /* Don't cover the whole screen, leave a gap at top */
+        border-radius: 16px 16px 0 0; /* Rounded top corners */
+        
+        /* Change animation to slide UP from bottom */
+        transform: translateY(100%);
+    }
+
+    .add-address-modal-overlay.open .add-address-modal-content {
+        transform: translateY(0);
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse; /* Put submit on top, cancel below on mobile */
+    }
+
+    .btn-cancel, .btn-submit {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
 }
 
 /* Animation */
