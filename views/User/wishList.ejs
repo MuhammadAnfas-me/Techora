@@ -13,7 +13,7 @@
     <% if (wishlistItems && wishlistItems.length > 0) { %>
     <div class="wishlist-grid">
       <% wishlistItems.forEach(item => { %>
-        <% const cartedItems = cart.items.find(cartItem=>
+        <% const cartedItems = cart?.items.find(cartItem=>
           item.productId.toString() === cartItem.productId.toString() && item.variantId === cartItem.variantId
         )
          %>
@@ -34,7 +34,11 @@
           <h5><%= item.color %></h5>
           <div class="price-status-row">
             <span class="price"><%= formatINR(item.price) %></span>
-            <span class="badge badge-instock">In Stock</span>
+              <% if (item.stock === 0) { %>
+                <span class="badge badge-outstock"> Out of Stock</span>
+            <% } else { %>
+                  <span class="badge badge-instock">In Stock</span>
+            <% } %>
           </div>
           <% if(cartedItems){ %>
             <button class="cart-btn-wish" onclick="addToCart(event,'<%= item.productId %>' , '<%= item.variantId %>',<%= user ? 'true' : 'false' %>)" disabled>

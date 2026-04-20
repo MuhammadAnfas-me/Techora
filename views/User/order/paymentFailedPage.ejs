@@ -1,0 +1,125 @@
+<link rel="stylesheet" href="/styles/user/orders/paymentFailedPage.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Failed"}) %>
+<main class="payment-main-container">
+  <div class="payment-modal">
+    <div class="icon-wrapper">
+      <div class="icon-inner">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </div>
+    </div>
+
+    <h1 class="modal-title">Payment Failed</h1>
+    <p class="modal-desc">
+      We couldn't complete your payment at this time. Don't worry—no amount has
+      been deducted.
+    </p>
+
+    <div class="info-box info-box-bordered">
+      This can happen due to network issues or bank authorization failure.
+    </div>
+
+    <div class="info-box info-box-gray">
+      <div class="box-label">Transaction Reference</div>
+      <div class="box-value">TXN-20240523-8492</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="payNow()">Retry Payment</button>
+    <button class="btn btn-secondary" onclick="window.location.href='/cart'">
+      Go to Cart
+    </button>
+
+    <p class="help-text">Need help? <a href="#">Contact Support</a></p>
+  </div>
+</main>
+
+<script>
+
+    const addressId = <%- JSON.stringify(addressId) %>
+  async function payNow() {
+    try {
+      const res = await axios.post('/create-order', {
+        amount: 500
+      })
+
+      const options = {
+        key: 'rzp_test_SeXq68d1LTx2HK',
+        amount: res.data.order.amount,
+        currency: 'INR',
+        name: 'Techora',
+        description: 'Test Transaction',
+        order_id: res.data.order.id,
+
+        handler: async function (response) {
+          const verifyRes = await axios.post('/verify-payment', {
+            ...response // ✅ send properly
+          })
+
+          if (verifyRes.data.success) {
+            const addressId = new URLSearchParams(window.location.search).get(
+              'addressId'
+            )
+            const paymentMethod = document.querySelector(
+              'input[name="payment_method"]:checked'
+            )?.value
+
+            const placeRes = await axios.post('/place-order', {
+              addressId,
+              paymentMethod : "RAZORPAY",
+              paymentId: verifyRes.data.paymentId
+            })
+            if (placeRes.data.success) {
+              showToast(placeRes.data.message)
+              setTimeout(() => {
+                window.location.href = `/checkout/payment/success?orderId=${placeRes.data.orderId}`
+              }, 1500)
+            }
+          } else {
+            showToast('Payment Verification Failed', 'error')
+            setTimeout(() => {
+              window.location.href = verifyRes.data.redirect
+            }, 1000)
+          }
+        },
+
+        prefill: {
+          name: 'Customer Name',
+          email: 'customer@email.com',
+          contact: '9999999999'
+        },
+
+        theme: {
+          color: '#3399cc'
+        }
+      }
+      const rzp = new Razorpay(options)
+      rzp.open()
+      rzp.on('payment.failed', function (response) {
+        showToast(response.error.description || 'Payment Failed', 'error')
+        window.location.href = '/checkout/payment/failed'
+      })
+
+      options.modal = {
+        ondismiss: function () {
+          showToast('Payment Cancelled', 'error')
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+</script>
+
+<%- include("../../partitials/user/footer.ejs") %>

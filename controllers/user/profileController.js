@@ -20,7 +20,10 @@ const profileLoad = async (req, res) => {
   }
   const email = req.session.user.email
   const user = await User.findOne({ email })
-  const address = await Address.findOne({ userId: user.userId, default: true })
+  let address = await Address.findOne({ userId: user.userId, default: true })
+  if(!address){
+    address = await Address.findOne({ userId: user.userId })
+  }
   res.render('User/userProfile/profile.ejs', { user, address })
 }
 

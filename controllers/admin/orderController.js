@@ -270,6 +270,13 @@ export const updateOrderStatus = async (req, res) => {
       })
     }
 
+    if(status === order.orderStatus){
+      return res.status(400).json({
+        success : false,
+        message : "Change status and update"
+      })
+    }
+
     order.orderStatus = status
     if (status === 'Confirmed') {
       order.timeline.confirmedAt = new Date()
@@ -279,7 +286,9 @@ export const updateOrderStatus = async (req, res) => {
     }
     if (status === 'Delivered') {
       order.timeline.deliveredAt = new Date()
-      order.paymentStatus = 'Paid'
+      if(order.paymentMethod != "RAZORPAY"){
+        order.paymentStatus = 'Paid'
+      }
     }
 
     order.items.forEach(item => {

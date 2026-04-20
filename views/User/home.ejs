@@ -202,7 +202,7 @@
                         </div>
                         <div class="product-footer">
                             <div class="price-group">
-                                <span class="product-price">$<%= product.variants[0].price %></span>
+                                <span class="product-price"><%= formatINR(product.variants[0].price) %></span>
                                 <span class="product-price-old">$70</span>
                             </div>
                             <button class="add-btn" onclick="addToCart(event,'<%= product._id %>', '<%= product.variants[0].varientId %>',<%= user ? 'true' : 'false' %>)">

@@ -2,6 +2,8 @@ import Address from "../../models/addressModel.js"
 import { Cart } from "../../models/cartModel.js"
 import {Order} from "../../models/orderModel.js"
 import Product from "../../models/productModel.js"
+import {razorpayInstance} from "../../config/razorpay.js"
+import crypto from "crypto"
 
 export const paymentPageLoad = async (req,res)=>{
     try {
@@ -69,26 +71,81 @@ export const paymentPageLoad = async (req,res)=>{
                   image: variant.image?.[0] || '',
                   price: variant.price,
                   stock: variant.stock,
-                //   total: item.total,
-                  subtotal: variant.price * item.quantity,
+                  subtotal: item.total,
                   //  validation fields
                   isValid,
                   message
                 }
               })
             }
-            const grandTotal = cartItems.reduce((sum,item)=> sum + item.subtotal,0)
+            let grandTotal = cartItems.reduce((sum,item)=> sum + item.subtotal,0)
+            grandTotal = Math.round(grandTotal+grandTotal*18/100)
             res.render("User/paymentPage.ejs",{
                 cartItems,
                 grandTotal
             })
     } catch (error) {
-        
+        console.log('Error from PaymentPageLoad :',error)
     }
 }
 
+export const createOrder = async (req,res)=>{
+    try {
+        const {amount} = req.body
+        console.log("Call reached in create order")
+        console.log(amount)
+
+        const options = {
+            amount : amount * 100,
+            currency : "INR",
+            receipt : "order_rcptid_"+Date.now()
+        }
+
+        const order = await razorpayInstance.orders.create(options)
+
+        res.json({
+            success : true,
+            order
+        })
+    } catch (error) {
+        console.log("error from createOrder :",error)
+        res.status(500).json({
+            success : false
+        })
+    }
+}
+
+export const verifyPayment = (req, res) => {
+    console.log("Call reached in verifyPsyment ")
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature
+  } = req.body;
+
+  const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', process.env.RAZOR_SECRET)
+    .update(body.toString())
+    .digest('hex');
+
+  if (expectedSignature === razorpay_signature) {
+    // Payment is verified
+    res.json({ 
+        success: true,
+        paymentId : razorpay_payment_id
+     });
+  } else {
+    res.status(400).json({ 
+        success: false,
+        redirect : '/checkout/payment/failed'
+    });
+  }
+};
+
 export const orderSuccess = (req,res)=>{
-    res.render("User/orderSuccessPage.ejs")
+    res.render("User/order/orderSuccessPage.ejs")
 }
 
 export const placeOrder = async (req,res)=>{
@@ -99,6 +156,7 @@ export const placeOrder = async (req,res)=>{
         }
         const addressId = req.body.addressId
         const paymentMethod = req.body.paymentMethod
+        const paymentId = req.body.paymentId
         const addressDoc = await Address.findOne({userId : user.userId, _id : addressId })
 
         if(!addressDoc){
@@ -193,16 +251,13 @@ export const placeOrder = async (req,res)=>{
                 state : addressDoc.state,
                 zipCode : addressDoc.zipCode
             },
-            paymentMethod : "COD",
-            paymentStatus : "Pending",
             orderStatus : "Placed",
         })
 
-        await newOrder.save()
-
+        
         for(let item of cart.items){
             const product = item.productId
-
+            
             await Product.updateOne({
                 _id : product.id,
                 "variants.varientId" : item.variantId
@@ -213,16 +268,23 @@ export const placeOrder = async (req,res)=>{
                 }
             })
         }
-
+        
         await Cart.findOneAndDelete({userId : user.id})
-
+        
         if(paymentMethod === "COD"){
-            return res.json({
+            newOrder.paymentMethod = "COD"
+            newOrder.paymentStatus = "Pending"
+        }else{
+            newOrder.paymentMethod = "RAZORPAY"
+            newOrder.paymentStatus = "Paid"
+            newOrder.razorpayPaymentId = paymentId
+        }
+        await newOrder.save()
+        return res.json({
                 success : true,
                 message : "Order placed successfully",
                 orderId : newOrder.orderId
             })
-        }
     }catch(er){
         console.error("Error from place order :",er)
         return res.json({
@@ -259,3 +321,11 @@ export const fetchOrderDetails = async (req,res)=>{
     }
 
 }
+
+export const paymentFailedPage = (req,res)=>{
+    const addressId = req.query.addressId
+    res.render("User/order/paymentFailedPage.ejs",{
+        addressId
+    })
+}
+

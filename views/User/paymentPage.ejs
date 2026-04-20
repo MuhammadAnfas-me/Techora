@@ -6,7 +6,7 @@
     <title>Techora - Mobile Payment Page</title>
 </head>
 <body> -->
-    
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link rel="stylesheet" href="/styles/user/paymentPage.css">
     <%- include("../partitials/user/header.ejs",{tittle : "Techora | Payment"}) %>
     <div class="stepper-bg">
@@ -42,7 +42,7 @@
                 <h3>Razorpay</h3>
                 <p>All major payment methods supported</p>
             </div>
-            <input type="radio" name="payment_method" value="ONLINE"  class="radio-input" disabled readonly>
+            <input type="radio" name="payment_method" value="ONLINE"  class="radio-input" >
         </label>
 
         <label class="payment-card">
@@ -72,7 +72,7 @@
             <div class="price-calc">
                 <div class="calc-row"><span>Subtotal</span><span class="font-semibold"><%= formatINR(grandTotal) %></span></div>
                 <div class="calc-row text-success"><span>Discount</span><span class="font-semibold">-₹5,000</span></div>
-                <div class="calc-row"><span>GST (18%)</span><span class="font-semibold"><%= formatINR(grandTotal*18/100) %> </span></div>
+                <div class="calc-row" id="totalAmount"><span>GST (18%)</span><span class="font-semibold"><%= formatINR(grandTotal*18/100) %> </span></div>
             </div>
 
             <div class="total-row">
@@ -80,7 +80,7 @@
                 <span class="total-amount"><%= formatINR(grandTotal+grandTotal*18/100) %></span>
             </div>
 
-            <button class="pay-btn payment" >Place Order</button>
+            <button class="pay-btn payment"  >Place Order</button>
             
             <p class="secure-badge">
                 <span class="success-icon">✔</span> 100% Secure Payments
@@ -99,8 +99,12 @@
 </html> -->
 
 <script>
+    const totalAmount = <%- JSON.stringify(grandTotal) %>;
     document.querySelector('.payment').addEventListener('click',async function(e) {
+
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
     // Basic interaction for the "Place Order" button
+    const originalText = this.textContent
     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     this.disabled = true;
 
@@ -110,6 +114,9 @@
     // }, 1500);
 
     try {
+        if(paymentMethod === "COD"){
+
+        
         const addressId = new URLSearchParams(window.location.search).get("addressId")
         const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value
         const res = await axios.post("/place-order",{
@@ -119,12 +126,88 @@
         if(res.data.success){
             showToast(res.data.message)
             setTimeout(() => {
-                window.location.href=`/checkout/success?orderId=${res.data.orderId}`
+                window.location.href=`/checkout/payment/success?orderId=${res.data.orderId}`
             }, 1500);
+        }
+        }else{
+            payNow(totalAmount)
         }
     } catch (error) {
         console.log(error)
-        showToast(error.response.message || "Failed to payment","error")
+        this.textContent = originalText
+        showToast(error.response?.data?.message || "Failed to payment","error")
     }
 });
+
+async function payNow(amt){
+    try {
+        const addressId = new URLSearchParams(window.location.search).get("addressId")
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value
+        
+
+
+        const res = await axios.post("/create-order",{
+            amount : totalAmount
+        })
+
+        const options= {
+            key : "rzp_test_SeXq68d1LTx2HK",
+            amount: res.data.order.amount,
+            currency: "INR",
+            name: "Techora",
+            description: "Test Transaction",
+            order_id: res.data.order.id,
+
+            handler: async function (response) {
+             const verifyRes = await axios.post('/verify-payment', {
+              ...response   // ✅ send properly
+            });
+    
+        if (verifyRes.data.success) {
+          const placeRes = await axios.post("/place-order",{
+            addressId,
+            paymentMethod,
+            paymentId : verifyRes.data.paymentId
+        })
+        if(placeRes.data.success){
+            showToast(placeRes.data.message)
+            setTimeout(() => {
+                window.location.href=`/checkout/payment/success?orderId=${placeRes.data.orderId}`
+            }, 1500);
+        }
+      
+        } else {
+          showToast("Payment Verification Failed", "error");
+          setTimeout(()=>{
+            window.location.href=verifyRes.data.redirect
+          },1000)
+        }
+        },
+
+        prefill: {
+          name: "Customer Name",
+          email: "customer@email.com",
+          contact: "9999999999"
+        },
+
+        theme: {
+          color: "#3399cc"
+        }
+        }
+        const rzp = new Razorpay(options);
+        rzp.open();
+        rzp.on('payment.failed', function (response) {
+          showToast(response.error.description || "Payment Failed", "error");
+          window.location.href=`/checkout/payment/failed?addressId=${addressId}`
+        });
+        
+        options.modal = {
+          ondismiss: function () {
+            showToast("Payment Cancelled", "error");
+          }
+        };
+    } catch (error) {
+        console.log(error)
+    }
+}
 </script>

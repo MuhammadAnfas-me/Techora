@@ -1,0 +1,202 @@
+ /* Reset and base styles */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        /* Main background color matching the image's middle section */
+        background-color: #e5e7eb; 
+    }
+
+    /* Container for the modal to take up main page space and center content */
+    .payment-main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 160px); /* Adjust based on your header/footer heights */
+        padding: 60px 20px;
+    }
+
+    /* The Modal Card */
+    .payment-modal {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 48px 40px;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Floating Close Button */
+    .btn-close {
+        position: absolute;
+        top: -24px;
+        right: 24px; /* Positioned intersecting the top edge, slightly inset */
+        width: 48px;
+        height: 48px;
+        background-color: #52585f;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.2s;
+    }
+
+    .btn-close:hover {
+        background-color: #3f444a;
+    }
+
+    /* Red Error Icon Wrapper */
+    .icon-wrapper {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 24px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+    .icon-inner {
+    width: 100%;
+    height: 100%;
+    background-color: #e04f3d; /* Same red from your design */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Optional: Subtle glow to match the 'failed' vibe */
+    box-shadow: 0 4px 12px rgba(224, 79, 61, 0.3);
+}
+
+.icon-inner svg {
+    color: white;
+    /* Ensure the X isn't too large for the circle */
+    width: 32px; 
+    height: 32px;
+}
+    /* Typography */
+    .modal-title {
+        font-size: 26px;
+        color: #1a3650;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .modal-desc {
+        font-size: 15px;
+        color: #64748b;
+        line-height: 1.5;
+        margin-bottom: 24px;
+    }
+
+    /* Info Boxes */
+    .info-box {
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .info-box-bordered {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        font-size: 14px;
+        color: #334155;
+        line-height: 1.4;
+    }
+
+    .info-box-gray {
+        background-color: #f3f4f6;
+        margin-bottom: 24px;
+    }
+
+    .box-label {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+
+    .box-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    /* Buttons */
+    .btn {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        border-radius: 6px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background-color: #1a3650;
+        color: #ffffff;
+        border: none;
+        margin-bottom: 12px;
+    }
+
+    .btn-primary:hover {
+        background-color: #122638;
+    }
+
+    .btn-secondary {
+        background-color: #ffffff;
+        color: #1a3650;
+        border: 1px solid #1a3650;
+        margin-bottom: 24px;
+    }
+
+    .btn-secondary:hover {
+        background-color: #f8fafc;
+    }
+
+    /* Footer Text */
+    .help-text {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .help-text a {
+        color: #1a3650;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .help-text a:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsive adjustments for mobile */
+    @media (max-width: 480px) {
+        .payment-modal {
+            padding: 40px 24px 32px;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+        }
+
+        .btn-close {
+            top: -20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+        }
+    }
+
+    

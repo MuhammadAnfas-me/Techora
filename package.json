@@ -38,7 +38,8 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.18.0",
-    "puppeteer": "^24.40.0"
+    "puppeteer": "^24.40.0",
+    "razorpay": "^2.9.6"
   },
   "type": "module",
   "devDependencies": {

@@ -15,6 +15,8 @@ import * as middlewares from '../../middlewares/user/auth.js'
 import upload from '../../middlewares/cloudinary/upload.js'
 
 /*---------------------------------------Auth section-----------------------------------------*/
+/*---------------------------------------Auth section-----------------------------------------*/
+/*---------------------------------------Auth section-----------------------------------------*/
 
 router
   .route('/login')
@@ -47,6 +49,8 @@ router
 
 router.route('/success').get(userController.resetConfirmation)
 
+/*-----------------------------------Profile section----------------------------------*/
+/*-----------------------------------Profile section----------------------------------*/
 /*-----------------------------------Profile section----------------------------------*/
 
 router
@@ -103,10 +107,14 @@ router.route('/profile/edit/email').post(profileController.emailChange)
 router.route('/profile/edit/email-verify').post(profileController.emailVerify)
 
 /*---------------------------------Product section---------------------------------------- */
+/*---------------------------------Product section---------------------------------------- */
+/*---------------------------------Product section---------------------------------------- */
 
 router.route('/products').get(productController.productsList)
 router.route('/products/:productId').get(productController.productPage)
 
+// --------------------------------Cart section ------------------------------------------
+// --------------------------------Cart section ------------------------------------------
 // --------------------------------Cart section ------------------------------------------
 
 router
@@ -130,53 +138,66 @@ router
     cartController.updateCartQuantity
   )
 
-
+// ---------------------------------------- Wish List section -------------------------------
+// ---------------------------------------- Wish List section -------------------------------
 // ---------------------------------------- Wish List section -------------------------------
 
-router.route("/wishlist").get(wishListController.wishListLoad)
-router.post("/wishlist/add",wishListController.toggleItem)
-router.delete("/wishlist/remove",wishListController.removeProduct)
-
+router.route('/wishlist').get(wishListController.wishListLoad)
+router.post('/wishlist/add', wishListController.toggleItem)
+router.delete('/wishlist/remove', wishListController.removeProduct)
 
 //----------------------------------------- checkout page------------------------------------
-router.get('/checkout',checkOutController.checkOutLoad)
-router.route("/checkout").post(checkOutController.validateCart)
+//----------------------------------------- checkout page------------------------------------
+//----------------------------------------- checkout page------------------------------------
+
+router.get('/checkout', checkOutController.checkOutLoad)
+router.route('/checkout').post(checkOutController.validateCart)
 
 // --------------------------- Payment section ----------------------------------------------
+// --------------------------- Payment section ----------------------------------------------
+// --------------------------- Payment section ----------------------------------------------
 
-router.get("/checkout/payment",paymentController.paymentPageLoad)
-router.get("/checkout/success",paymentController.orderSuccess)
+router.get('/checkout/payment', paymentController.paymentPageLoad)
+router.get('/checkout/payment/success', paymentController.orderSuccess)
 
-router.post("/place-order",paymentController.placeOrder)
-router.get("/order-details",paymentController.fetchOrderDetails)
+router.post('/place-order', paymentController.placeOrder)
+router.get('/order-details', paymentController.fetchOrderDetails)
 
 // -------------------------------Order section---------------------------------------------
-router.get("/profile-orders",orderController.OrderLoad)
-router.get("/orders",orderController.orderListPage)
-router.get("/orders/:orderId",orderController.orderDetailsLoad)
+// -------------------------------Order section---------------------------------------------
+// -------------------------------Order section---------------------------------------------
+router.get('/profile-orders', orderController.OrderLoad)
+router.get('/orders', orderController.orderListPage)
+router.get('/orders/:orderId', orderController.orderDetailsLoad)
 
-router.get("/orders/:id/invoice",orderController.generateInvoicePDF)
-
-router
-.route("/orders/:id/cancel")
-.get(orderController.orderCancelLoad)
-.patch(orderController.orderCancel)
+router.get('/orders/:id/invoice', orderController.generateInvoicePDF)
 
 router
-  .route("/orders/:orderId/cancel/:itemId")
+  .route('/orders/:id/cancel')
+  .get(orderController.orderCancelLoad)
+  .patch(orderController.orderCancel)
+
+router
+  .route('/orders/:orderId/cancel/:itemId')
   .get(orderController.itemCancelLoad)
   .patch(orderController.cancelItem)
 
 router
-  .route("/orders/:orderId/return")
+  .route('/orders/:orderId/return')
   .get(orderController.orderReturnLoad)
   .patch(orderController.returnOrder)
 router
-  .route("/orders/:orderId/return/:itemId")
+  .route('/orders/:orderId/return/:itemId')
   .get(orderController.itemReturnLoad)
   .patch(orderController.returnOrderItem)
 
+// ------------------------------------ Payment Section ----------------------------------------
+// ------------------------------------ Payment Section ----------------------------------------
+// ------------------------------------ Payment Section ----------------------------------------
 
+router.post('/create-order', paymentController.createOrder)
+router.post('/verify-payment', paymentController.verifyPayment)
+router.get('/checkout/payment/failed', paymentController.paymentFailedPage)
 
 router.route('/logout').get(userController.logout)
 

@@ -100,19 +100,31 @@
 </div>
                         <% }else{ %>
                             
-                        <% address.forEach(element => { %>
-                        <% if(!element.default) return %>    
-                        
-                        <div class="address-details" id="selectedAddress">
+                        <% const addr = address.find(item => item.default) %>
+
+                        <% if(addr){ %>
+                            <div class="address-details" id="selectedAddress">
                             <div class="address-text" >
-                                <p class="address-type"><%= element.type %></p>
-                                <p class="address-name"><%= element.fullName %></p>
-                                <p class="address-phone">+91 <%= element.phone %></p>
-                                <p class="address-line"><%= element.addressLine1 %> </p>
-                                <p class="address-line"><%= element.city %>, <%= element.state %> - <%= element.zipCode %></p>
+                                <p class="address-type"><%= addr.type %></p>
+                                <p class="address-name"><%= addr.fullName %></p>
+                                <p class="address-phone">+91 <%= addr.phone %></p>
+                                <p class="address-line"><%= addr.addressLine1 %> </p>
+                                <p class="address-line"><%= addr.city %>, <%= addr.state %> - <%= addr.zipCode %></p>
                             </div>
                         </div>
-                        <% }); %>
+                        <% }else{ %>
+                            <div class="address-details" id="selectedAddress">
+                            <div class="address-text" >
+                                <p class="address-type"><%= address[0].type %></p>
+                                <p class="address-name"><%= address[0].fullName %></p>
+                                <p class="address-phone">+91 <%= address[0].phone %></p>
+                                <p class="address-line"><%= address[0].addressLine1 %> </p>
+                                <p class="address-line"><%= address[0].city %>, <%= address[0].state %> - <%= address[0].zipCode %></p>
+                            </div>
+                        </div>
+                        <% } %>
+
+                 
                         <% } %>
                     </div>
                 </div>
@@ -458,81 +470,174 @@ modalOverlay.addEventListener('click', (e) => {
     }
 });
 
-const addressForm = document.getElementById('addAddressForm'); // New form ID
-const phoneInput = document.getElementById('addPhone');
-const zipInput = document.getElementById('addZipCode');
+const addressForm = document.getElementById('addAddressForm');
 
+// Inputs
+const inputs = {
+    name: document.getElementById('addName'),
+    phone: document.getElementById('addPhone'),
+    address1: document.getElementById('addAddress1'),
+    address2: document.getElementById('addAddress2'),
+    city: document.getElementById('addCity'),
+    state: document.getElementById('addState'),
+    zip: document.getElementById('addZipCode'),
+    country: document.getElementById('addCountry'),
+    default: document.getElementById('addDefaultAddress'),
+};
+
+// Error elements (only for custom ones you already added)
 const phoneError = document.querySelector('.addPhoneError');
 const zipError = document.querySelector('.addZipCodeError');
 
+
+// =========================
+// 🔹 Error Helpers
+// =========================
+function showError(input, message) {
+    let error = input.parentElement.querySelector("small");
+
+    if (!error) {
+        error = document.createElement("small");
+        error.classList.add("error-text");
+        input.parentElement.appendChild(error);
+    }
+
+    error.textContent = message;
+    input.classList.add("error");
+}
+
+function clearError(input) {
+    const error = input.parentElement.querySelector("small");
+    if (error) error.textContent = "";
+
+    input.classList.remove("error");
+}
+
+
+// =========================
+// 🔹 Live Error Clearing
+// =========================
+document.querySelectorAll("#addAddressForm input, #addAddressForm select")
+.forEach(input => {
+    input.addEventListener("input", () => clearError(input));
+    input.addEventListener("change", () => clearError(input));
+});
+
+
+// =========================
+// 🔹 Form Submit
+// =========================
 addressForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     let isValid = true;
 
-    // 1. Phone Validation
-    const phoneValue = phoneInput.value.trim();
+    // Get values
+    const nameValue = inputs.name.value.trim();
+    const phoneValue = inputs.phone.value.trim();
+    const address1Value = inputs.address1.value.trim();
+    const cityValue = inputs.city.value.trim();
+    const stateValue = inputs.state.value.trim();
+    const zipValue = inputs.zip.value.trim();
+    const countryValue = inputs.country.value;
+
+    // ===== Name =====
+    if (!nameValue) {
+        showError(inputs.name, "Full name is required");
+        isValid = false;
+    }
+
+    // ===== Phone =====
     if (!phoneValue) {
-        phoneError.textContent = 'Phone number is required';
-        phoneInput.classList.add('error');
+        phoneError.textContent = "Phone number is required";
+        inputs.phone.classList.add("error");
         isValid = false;
     } else if (!/^[0-9]{10}$/.test(phoneValue)) {
-        phoneError.textContent = 'Phone number must be 10 digits';
-        phoneInput.classList.add('error');
+        phoneError.textContent = "Phone number must be 10 digits";
+        inputs.phone.classList.add("error");
         isValid = false;
     } else {
-        phoneError.textContent = '';
-        phoneInput.classList.remove('error');
+        phoneError.textContent = "";
     }
 
-    // 2. ZIP Validation
-    const zipValue = zipInput.value.trim();
+    // ===== Address =====
+    if (!address1Value) {
+        showError(inputs.address1, "Address is required");
+        isValid = false;
+    }
+
+    // ===== City =====
+    if (!cityValue) {
+        showError(inputs.city, "City is required");
+        isValid = false;
+    }
+
+    // ===== State =====
+    if (!stateValue) {
+        showError(inputs.state, "State is required");
+        isValid = false;
+    }
+
+    // ===== ZIP =====
     if (!zipValue) {
-        zipError.textContent = 'ZIP code is required';
-        zipInput.classList.add('error');
+        zipError.textContent = "ZIP code is required";
+        inputs.zip.classList.add("error");
         isValid = false;
     } else if (!/^[0-9]{4,6}$/.test(zipValue)) {
-        zipError.textContent = 'Invalid ZIP code';
-        zipInput.classList.add('error');
+        zipError.textContent = "Invalid ZIP code";
+        inputs.zip.classList.add("error");
         isValid = false;
     } else {
-        zipError.textContent = '';
-        zipInput.classList.remove('error');
+        zipError.textContent = "";
     }
 
-    // 3. Submit Data
+    // ===== Country =====
+    if (!countryValue) {
+        showError(inputs.country, "Please select a country");
+        isValid = false;
+    }
+
+    // =========================
+    // 🚀 API CALL
+    // =========================
     if (isValid) {
         const id = document.getElementById('addAddressId').value;
 
-        // MAP DATA TO MATCH YOUR API EXPECTATIONS
         const addressData = {
-            fullName: document.getElementById('addName').value.trim(),
+            fullName: nameValue,
             phone: phoneValue,
-            addressLine1: document.getElementById('addAddress1').value.trim(), // Matches original API
-            addressLine2: document.getElementById('addAddress2').value.trim(),
-            city: document.getElementById('addCity').value.trim(),
-            state: document.getElementById('addState').value.trim(),
+            addressLine1: address1Value,
+            addressLine2: inputs.address2.value.trim(),
+            city: cityValue,
+            state: stateValue,
             zipCode: zipValue,
-            country: document.getElementById('addCountry').value,
-            type: document.querySelector('input[name="addLabel"]:checked').value, // Maps 'label' to 'type'
-            default: document.getElementById('addDefaultAddress').checked // Maps to 'default'
+            country: countryValue,
+            type: document.querySelector('input[name="addLabel"]:checked').value,
+            default: inputs.default.checked
         };
 
         try {
+            let res;
+
             if (id) {
-                const res = await axios.patch(`/profile/address/${id}`, addressData);
-                showToast(res.data?.message || 'Address edited successfully');
+                res = await axios.patch(`/profile/address/${id}`, addressData);
             } else {
-                const res = await axios.post('/profile/address', addressData);
-                showToast(res.data?.message || 'Address added successfully');
+                res = await axios.post('/profile/address', addressData);
             }
-            
-            // Close the drawer (assuming you use the 'open' class toggle)
+
+            showToast(res.data?.message || "Success");
+
+            // Close modal
             document.getElementById('addAddressModalOverlay').classList.remove('open');
-            addressForm.reset()
-            location.reload()
+
+            // Reset form
+            addressForm.reset();
+
+            // Reload page
+            location.reload();
+
         } catch (err) {
-            showToast(err.response?.data?.message || 'Something went wrong', 'error');
+            showToast(err.response?.data?.message || "Something went wrong", "error");
         }
     }
 });

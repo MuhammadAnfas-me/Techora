@@ -925,3 +925,13 @@ small[class$="Error"] {
     transform: translateY(0);
   }
 }
+.form-input.error {
+  border: 1px solid #e11d48;
+  outline: none;
+}
+.error-text {
+  color: #e11d48;   /* nice red */
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
