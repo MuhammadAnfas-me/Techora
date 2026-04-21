@@ -6,6 +6,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import Product from '../../models/productModel.js'
 import { resendOtp } from './authController.js'
+import { Wallet } from '../../models/walletModel.js'
 
 const getStatusText = status => {
   switch (status) {
@@ -196,6 +197,7 @@ export const generateInvoicePDF = async (req, res) => {
 
 export const cancelItem = async (req, res) => {
   try {
+    const user = req.session.user
     const { orderId, itemId } = req.params
     const { reason, comment } = req.body
 
@@ -259,8 +261,19 @@ export const cancelItem = async (req, res) => {
       }
     }
 
+    const wallet = await Wallet.findOne({userId : user.id})
+    if( ["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
+      wallet.balance += item.total
+      wallet.transaction.push({
+        type : "credit",
+        amount : item.total,
+        description : "Item cancellation amount refunded"
+      })
+    }
+
     await order.save()
     await product.save()
+    await wallet.save()
     return res.status(200).json({
       success: true,
       message: `${product.name} cancelled successfully`
@@ -410,10 +423,20 @@ export const orderCancel = async (req, res) => {
     // allCancelled = order.items.every(i => i.status === 'Cancelled')
     order.orderStatus = 'Cancelled'
     // if (allCancelled) {
-      order.timeline.cancelledAt = new Date()
+    order.timeline.cancelledAt = new Date()
     // }
+    const wallet = await Wallet.findOne({userId : order.userId})
 
-    order.save()
+    if(["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
+      wallet.balance += order.totalAmount
+      wallet.transaction.push({
+        type : "credit",
+        amount : order.totalAmount,
+        description : "Order cancellation amount refunded"
+      })
+    }
+    await wallet.save()
+    await order.save()
     return res.status(200).json({
       success: true,
       message: `${orderId} has Cancelled`
@@ -642,7 +665,7 @@ export const returnOrder = async (req, res) => {
 
     }
 
-    order.orderStatus = "Return Request";
+    order.orderStatus = "Return Requested";
 
     order.returnRequest = {
       status : "Pending",

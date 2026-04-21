@@ -164,10 +164,10 @@
                 </div>
                 <% if(order.paymentStatus === "Paid"){ %>
                 <div class="payment-status">
-                    <% if(order.paymentMethod === "ONLINE"){ %>
+                    <% if(order.paymentMethod === "RAZORPAY"){ %>
                     <div class="visa-info">
                         <i class="fab fa-cc-visa" style="color: #1a1f71; font-size: 20px;"></i>
-                        Paid via Visa ending in <strong>4242</strong>
+                        Paid through <strong>Razorpay</strong>
                     </div>
                     <% }else{ %>
                         <div class="visa-info">

@@ -54,12 +54,12 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['COD', 'RAZORPAY'],
+      enum: ['COD', 'RAZORPAY',"WALLET"],
       required: true
     },
     paymentStatus: {
       type: String,
-      enum: ['Pending', 'Paid', 'Failed'],
+      enum: ['Pending', 'Paid', 'Failed',"Refunded"],
       default: 'Pending'
     },
     razorpayPaymentId :{
@@ -103,7 +103,8 @@ const orderSchema = new mongoose.Schema(
       confirmedAt: {type : Date},
       shippedAt: {type : Date},
       deliveredAt: {type : Date},
-      cancelledAt : {type : Date}
+      cancelledAt : {type : Date},
+      returnedAt : {type : Date}
     }
   },
   { timestamps: true }

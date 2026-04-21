@@ -6,8 +6,8 @@
     <title>Techora - Mobile Payment Page</title>
 </head>
 <body> -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link rel="stylesheet" href="/styles/user/paymentPage.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <%- include("../partitials/user/header.ejs",{tittle : "Techora | Payment"}) %>
     <div class="stepper-bg">
     <div class="stepper-container">
@@ -42,15 +42,23 @@
                 <h3>Razorpay</h3>
                 <p>All major payment methods supported</p>
             </div>
-            <input type="radio" name="payment_method" value="ONLINE"  class="radio-input" >
+            <input type="radio" name="payment_method" value="ONLINE" checked class="radio-input" >
         </label>
 
+        <label class="payment-card">
+            <div class="payment-info">
+                <h3>Wallet</h3>
+                <p>Pay using your wallet.</p>
+            </div>
+            <input type="radio" value="WALLET" name="payment_method"  class="radio-input">
+        </label>
+        
         <label class="payment-card">
             <div class="payment-info">
                 <h3>Cash on Delivery</h3>
                 <p>Pay when you receive your order.</p>
             </div>
-            <input type="radio" value="COD" name="payment_method" checked class="radio-input">
+            <input type="radio" value="COD" name="payment_method"  class="radio-input">
         </label>
     </section>
 
@@ -99,7 +107,11 @@
 </html> -->
 
 <script>
+    const userNumber = <%- JSON.stringify(user.number) %> ;
+    const userEmail = <%- JSON.stringify(user.email) %> ;
+    const userName = <%- JSON.stringify(user.fullName) %> ;
     const totalAmount = <%- JSON.stringify(grandTotal) %>;
+
     document.querySelector('.payment').addEventListener('click',async function(e) {
 
     const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
@@ -108,15 +120,9 @@
     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     this.disabled = true;
 
-    // // Simulate backend call
-    // setTimeout(() => {
-    //     window.location.href = '/checkout/success'; // Target for Step 4
-    // }, 1500);
-
     try {
         if(paymentMethod === "COD"){
 
-        
         const addressId = new URLSearchParams(window.location.search).get("addressId")
         const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value
         const res = await axios.post("/place-order",{
@@ -129,12 +135,29 @@
                 window.location.href=`/checkout/payment/success?orderId=${res.data.orderId}`
             }, 1500);
         }
+
+        }else if(paymentMethod === "WALLET"){
+            const addressId = new URLSearchParams(window.location.search).get("addressId")
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value
+            const res = await axios.post("/place-order",{
+                addressId,
+                paymentMethod
+            })
+
+        if(res.data.success){
+            showToast(res.data.message)
+            setTimeout(() => {
+                window.location.href=`/checkout/payment/success?orderId=${res.data.orderId}`
+            }, 1500);
+        }
+
         }else{
             payNow(totalAmount)
         }
     } catch (error) {
         console.log(error)
         this.textContent = originalText
+        this.disabled = false
         showToast(error.response?.data?.message || "Failed to payment","error")
     }
 });
@@ -151,7 +174,7 @@ async function payNow(amt){
         })
 
         const options= {
-            key : "rzp_test_SeXq68d1LTx2HK",
+            key : res.data.key,
             amount: res.data.order.amount,
             currency: "INR",
             name: "Techora",
@@ -174,20 +197,22 @@ async function payNow(amt){
             setTimeout(() => {
                 window.location.href=`/checkout/payment/success?orderId=${placeRes.data.orderId}`
             }, 1500);
+        }else{
+            showToast("Failed to place order","error")
         }
       
         } else {
           showToast("Payment Verification Failed", "error");
-          setTimeout(()=>{
-            window.location.href=verifyRes.data.redirect
-          },1000)
+        //   setTimeout(()=>{
+        //     window.location.href=verifyRes.data.redirect
+        //   },1000)
         }
         },
 
         prefill: {
-          name: "Customer Name",
-          email: "customer@email.com",
-          contact: "9999999999"
+          name: userName,
+          email: userEmail,
+          contact: userNumber
         },
 
         theme: {

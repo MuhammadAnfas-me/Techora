@@ -49,7 +49,7 @@ const cartLoad = async (req, res) => {
             price: variant.price,
             stock: variant.stock,
             color: variant.color || '',
-            // total: item.total,
+            total: item.total,
             variantDeleted: false,
             subtotal: variant.price * item.quantity
           }

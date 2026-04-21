@@ -1,4 +1,5 @@
 import { Order } from '../../models/orderModel.js'
+import { Wallet } from '../../models/walletModel.js'
 import PDFDocument from 'pdfkit'
 import Product from '../../models/productModel.js'
 
@@ -286,9 +287,25 @@ export const updateOrderStatus = async (req, res) => {
     }
     if (status === 'Delivered') {
       order.timeline.deliveredAt = new Date()
-      if(order.paymentMethod != "RAZORPAY"){
+      if(order.paymentMethod != "RAZORPAY" && order.paymentMethod != "WALLET"){
         order.paymentStatus = 'Paid'
       }
+    }
+
+    if(status === "Returned"){
+      order.timeline.returnedAt = new Date()
+      const wallet = await Wallet.findOne({userId : order.userId})
+
+    if(["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
+      wallet.balance += order.totalAmount
+      wallet.transaction.push({
+        type : "credit",
+        amount : order.totalAmount,
+        description : "Order return amount refunded"
+      })
+    }
+    
+    await wallet.save()
     }
 
     order.items.forEach(item => {
@@ -336,8 +353,10 @@ export const returnItem = async (req, res) => {
         message: 'Order not found'
       })
     }
-
     const item = order.items.find(i => i._id.toString() === itemId)
+
+    item.status = "Returned"
+    
     const allReturned = order.items.every(item => item.status === "Returned")
     if(allReturned){
       order.orderStatus = "Returned"
@@ -350,7 +369,19 @@ export const returnItem = async (req, res) => {
       })
     }
 
-    item.status = "Returned"
+    
+
+    const wallet = await Wallet.findOne({userId : order.userId})
+    if( ["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
+      wallet.balance += item.total
+      wallet.transaction.push({
+        type : "credit",
+        amount : item.total,
+        description : "Item cancellation amount refunded"
+      })
+    }
+
+    await wallet.save()
     await order.save()
     return res.status(200).json({
       success : true,

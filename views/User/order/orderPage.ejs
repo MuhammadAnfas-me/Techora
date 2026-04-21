@@ -39,8 +39,8 @@
     <div class="tabs-wrapper">
         <div class="tabs">
             <button class="tab-btn " data-tab="profile" onclick="window.location.href='/profile'">Profile</button>
-            <button class="tab-btn active" data-tab="orders">My Orders</button>
-            <button class="tab-btn" data-tab="wallet">Wallet</button>
+            <button class="tab-btn active" data-tab="orders" onclick="window.location.href='/profile-orders'">My Orders</button>
+            <button class="tab-btn" data-tab="wallet" onclick="window.location.href='/profile-wallet'">Wallet</button>
             <button class="tab-btn" data-tab="referrals">Referrals</button>
         </div>
     </div>
@@ -178,9 +178,6 @@
             }
             function changePass(){
                 window.location.href = "/profile/password"
-            }
-            function manageAddress(){
-                window.location.href = "/profile/address"
             }
         </script>
         </body>

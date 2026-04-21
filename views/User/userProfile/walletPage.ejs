@@ -1,0 +1,278 @@
+<link rel="stylesheet" href="/styles/user/userProfile/walletPage.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Profile" ,email : user.email , name : user.fullName}) %>
+
+
+    <main class="main-content">
+        <div class="container">
+
+            <section class="profile-header-card">
+                <div class="profile-info">
+                    <div class="profile-avatar-large">
+                        <img src="<%= user.profileImage %>"
+                            alt="Michael Anderson">
+                    </div>
+                    <div class="profile-details">
+                        <h1>
+                            <%= user.fullName %>
+                        </h1>
+                        <div class="profile-meta">
+                            <span><i class="fas fa-envelope"></i>
+                                <%= user.email %>
+                            </span>
+                            <span><i class="fas fa-phone-alt"></i>
+                                <%= user.number ? user.number : "---" %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button onclick="editProfile()" class="btn btn-primary">Edit Profile</button>
+                    <% if(!user.googleId){ %>
+                    <button onclick="changePass()" class="btn btn-secondary">Change Password</button>
+                    <% } %>
+            </section>
+
+            <section class="details-container">
+    <div class="tabs-wrapper">
+        <div class="tabs">
+            <button class="tab-btn " data-tab="profile" onclick="window.location.href='/profile'">Profile</button>
+            <button class="tab-btn " data-tab="orders" onclick="window.location.href='/profile-orders'">My Orders</button>
+            <button class="tab-btn active" data-tab="wallet" onclick="window.location.href='/profile-wallet'">Wallet</button>
+            <button class="tab-btn" data-tab="referrals">Referrals</button>
+        </div>
+    </div>
+
+    
+
+    <div class="tab-content" id="wallet">
+    <div class="orders-layout-grid">
+        
+        <div class="orders-list-container">
+            <h2 class="section-title">Wallet Transactions</h2>
+            
+            <div class="order-items-wrapper">
+                <div class="table-responsive">
+                    <table class="wallet-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 17%;">Date</th>
+                                <th style="width: 43%;">Transaction Details</th>
+                                <th style="width: 20%;">Type</th>
+                                <th style="width: 20%;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% const transactions = wallet?.transaction.sort((a, b) => new Date(b.date) - new Date(a.date)); %>
+                            <% transactions.forEach(trns => { %>
+                            <tr>
+                                <td class="text-muted"><%= new Date(trns.date).toLocaleDateString("en-US", { month: "long" ,
+                                            day: "numeric" , year: "numeric" }) %></td>
+                                <td>
+                                    <div class="txn-title"><%= trns.description %></div>
+                                    <div class="txn-id">ID: <%= trns.txnId ? trns.txnId : "TXN-982341"%></div>
+                                </td>
+                                <td><span class="badge badge-credit <%= trns.type === "credit" ? "badge-credit" : "badge-debit" %>"><%= trns.type === "credit" ? "CREDIT" : "DEBIT" %></span></td>
+                                <% if(trns.type === "credit"){ %>
+                                    <td class="amount text-success">+<%= formatINR(trns.amount) %></td>
+                                <% }else{ %>
+                                    <td class="amount text-danger">-<%= formatINR(trns.amount) %></td>
+                                <% } %>
+                            </tr>
+                        
+                           <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-summary-container">
+            <h2 class="section-title">Wallet Summary</h2>
+            
+            <div class="balance-box">
+                <span class="balance-label">Available Balance</span>
+                <h3 class="balance-amount"><%= formatINR(wallet.balance) %></h3>
+            </div>
+
+            <div class="summary-stats-list">
+                <div class="summary-stat-row">
+                    <span class="stat-label">Total Credits</span>
+                    <span class="stat-value text-success">+<%= formatINR(totalCredits) %></span>
+                </div>
+                <div class="summary-stat-row">
+                    <span class="stat-label">Total Debits</span>
+                    <span class="stat-value text-danger">-<%= formatINR(totalDebits) %></span>
+                </div>
+            </div>
+
+            <div class="sidebar-actions">
+                <button class="btn-view-all" onclick="openAddFundsModal()">Add Funds</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="addFundsModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Add Funds to Wallet</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <p class="modal-description">Enter the amount you would like to add to your Techora wallet.</p>
+            
+            <div class="amount-input-group">
+                <span class="currency-prefix">₹</span>
+                <input type="number" id="addAmount" placeholder="0.00" min="1">
+            </div>
+
+            <div class="quick-amounts">
+                <button onclick="setAmount(100)">+₹100</button>
+                <button onclick="setAmount(500)">+₹500</button>
+                <button onclick="setAmount(1000)">+₹1000</button>
+                <button onclick="setAmount(5000)">+₹5000</button>
+            </div>
+
+            <div class="payment-method-selector">
+                <label>Select Payment Method</label>
+                <div class="method-option selected">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <span>Razor Pay</span>
+                    <i class="fa-solid fa-circle-check check-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm" id="confirmBtn" onclick="processAddFunds()">Confirm & Pay</button>
+        </div>
+    </div>
+</div>
+</section>
+
+        </div>
+    </main>
+
+    <%- include("../../partitials/user/footer.ejs") %>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Tab Switching Logic
+                const tabBtns = document.querySelectorAll('.tab-btn');
+
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // Remove active class from all buttons
+                        tabBtns.forEach(b => b.classList.remove('active'));
+
+                        // Add active class to clicked button
+                        btn.classList.add('active');
+
+                        // For demo: Log the tab switch
+                        console.log(`Switched to tab: ${btn.dataset.tab}`);
+                    });
+                });
+
+                
+               
+            });
+
+            function editProfile(){
+                window.location.href = `/profile/edit`
+            }
+            function changePass(){
+                window.location.href = "/profile/password"
+            }
+
+            const addMoney = async (amount) => {
+            const res = await axios.post("/wallet/create-order", { amount })
+
+            const options = {
+                key: res.data.key,
+                amount: res.data.order.amount,
+                currency: "INR",
+                name: "Techora Wallet",
+                description: "Add Money to Wallet",
+                order_id: res.data.order.id,
+            
+                handler: async function (response) {
+                    const verifyRes = await axios.post("/wallet/verify-payment", {
+                        ...response,
+                        amount
+                    })
+                    if (verifyRes.data.success) {
+                        showToast("Money added to wallet")
+                        closeModal()
+                        location.reload()
+                    }else{
+                        showToast("Failed to add money","error")
+                    }
+                },
+            
+                modal: {
+                    ondismiss: function () {
+                        showToast("Payment Cancelled", "error")
+                    }
+                }
+            }
+        
+            const rzp = new Razorpay(options)
+        
+            // ✅ Handle failure properly
+            rzp.on('payment.failed', function (response) {
+                closeModal()     // your custom UI close
+            })
+        
+            rzp.open()
+        }
+
+
+            // Function to open modal
+            function openAddFundsModal() {
+                const modal = document.getElementById('addFundsModal');
+                modal.classList.add('active');
+                // document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+
+            // Function to close modal
+            function closeModal() {
+                const modal = document.getElementById('addFundsModal');
+                modal.classList.remove('active');
+                // document.body.style.overflow = 'auto';
+            }
+
+            // Close modal if clicking outside the container
+            window.onclick = function(event) {
+                const modal = document.getElementById('addFundsModal');
+                if (event.target == modal) {
+                    closeModal();
+                }
+            }
+
+            // Set amount from quick buttons
+            function setAmount(value) {
+                document.getElementById('addAmount').value = value;
+            }
+
+            function processAddFunds() {
+                const amount = document.getElementById('addAmount').value;
+                if (amount <= 0) {
+                    showToast("Please enter a valid amount.","error");
+                    return;
+                }
+                // Handle logic here (e.g., Stripe/Razorpay integration)
+                addMoney(amount)
+                console.log("Processing payment for: $" + amount);
+            }
+        </script>
+        </body>
+
+        </html>

@@ -10,6 +10,7 @@ import * as wishListController from '../../controllers/user/wishListController.j
 import * as checkOutController from '../../controllers/user/checkOutController.js'
 import * as paymentController from '../../controllers/user/paymentController.js'
 import * as orderController from '../../controllers/user/orderController.js'
+import * as walletController from '../../controllers/user/walletController.js'
 
 import * as middlewares from '../../middlewares/user/auth.js'
 import upload from '../../middlewares/cloudinary/upload.js'
@@ -199,6 +200,14 @@ router.post('/create-order', paymentController.createOrder)
 router.post('/verify-payment', paymentController.verifyPayment)
 router.get('/checkout/payment/failed', paymentController.paymentFailedPage)
 
+
+//-------------------------------------- Wallet Section -----------------------------------------
+//-------------------------------------- Wallet Section -----------------------------------------
+//-------------------------------------- Wallet Section -----------------------------------------
+
+router.get('/profile-wallet',middlewares.checkAuth,walletController.loadWallet)
+router.post('/wallet/create-order',walletController.createWalletOrder)
+router.post('/wallet/verify-payment',walletController.verifyWalletPayment)
 router.route('/logout').get(userController.logout)
 
 export default router

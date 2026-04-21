@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import { User } from '../../models/userModel.js'
 import { verifyOtp } from '../../services/authService/emailVerify.js'
 import { sendOtp } from '../../utils/sendOtpMail.js'
+import { Wallet } from '../../models/walletModel.js'
 import generateUserId from '../../utils/generateUserId.js'
 import crypto from 'crypto'
 import Product from '../../models/productModel.js'
@@ -105,6 +106,13 @@ const signUp = async (req, res) => {
         role : "Customer"
       })
       await newUser.save()
+
+      const newWallet = Wallet({
+          userId : newUser._id,
+          balance : 0,
+      })
+
+      await newWallet.save()
     }
 
     sendOtp({

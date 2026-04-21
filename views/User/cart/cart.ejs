@@ -82,7 +82,7 @@
         <% } %>
       </div>
 
-      <span class="item-price" id="itemTotal"><%= formatINR(item.subtotal) %></span>
+      <span class="item-price" id="itemTotal"><%= formatINR(item.total) %></span>
     </div>
 
   </div>
@@ -168,6 +168,9 @@
     window.location.href= `/products/${name}`
   }
 
+  const formatINR = function(amount) {
+    return "₹" + Number(amount).toLocaleString('en-IN')
+  }
   async function deleteItem(productId , variantId){
     try {
       const res = await axios.delete(`/cart/delete`,{data :{productId,variantId}})
@@ -221,7 +224,7 @@
         const itemTotal = cartItem.querySelector(".item-price")
 
         if(qtyInput) qtyInput.value = res.data.quantity
-        if(itemTotal) itemTotal.textContent = `₹${Number(res.data.itemTotal || 0).toFixed()}`
+        if(itemTotal) itemTotal.innerHTML = formatINR(res.data.itemTotal)
       }
       updateCartSummary(res.data);     
       showToast?.(res.data.message || "Quantity updated", "success");      
@@ -246,7 +249,7 @@
     }
   
     if (cartSubtotal) {
-      cartSubtotal.textContent = `₹${Number(summary.cartTotal || 0).toFixed()}`;
+      cartSubtotal.textContent = formatINR(cartSubtotal);
     }
   
     // if (cartDiscount) {
@@ -258,7 +261,7 @@
     // }
   
     if (cartTotal) {
-      cartTotal.textContent =  `₹${Number(summary.cartTotal || 0).toFixed()}`;
+      cartTotal.textContent =  formatINR(summary.cartTotal);
     }
   }
 
