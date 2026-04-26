@@ -11,6 +11,7 @@ import * as checkOutController from '../../controllers/user/checkOutController.j
 import * as paymentController from '../../controllers/user/paymentController.js'
 import * as orderController from '../../controllers/user/orderController.js'
 import * as walletController from '../../controllers/user/walletController.js'
+import * as couponController from "../../controllers/user/couponController.js"
 
 import * as middlewares from '../../middlewares/user/auth.js'
 import upload from '../../middlewares/cloudinary/upload.js'
@@ -198,7 +199,7 @@ router
 
 router.post('/create-order', paymentController.createOrder)
 router.post('/verify-payment', paymentController.verifyPayment)
-router.get('/checkout/payment/failed', paymentController.paymentFailedPage)
+router.get('/checkout/payment/failed', middlewares.checkAuth, paymentController.paymentFailedPage)
 
 
 //-------------------------------------- Wallet Section -----------------------------------------
@@ -208,6 +209,21 @@ router.get('/checkout/payment/failed', paymentController.paymentFailedPage)
 router.get('/profile-wallet',middlewares.checkAuth,walletController.loadWallet)
 router.post('/wallet/create-order',walletController.createWalletOrder)
 router.post('/wallet/verify-payment',walletController.verifyWalletPayment)
+
+// ------------------------------------- Coupon managment --------------------------------------
+// ------------------------------------- Coupon managment --------------------------------------
+// ------------------------------------- Coupon managment --------------------------------------
+
+router
+  .route("/available-coupons")
+  .get(couponController.getAvailableCoupons)
+
+router
+  .route("/apply-coupon").post(couponController.applyCoupon)
+router
+  .route('/remove-coupon').post(couponController.removeCoupon)
+
+
 router.route('/logout').get(userController.logout)
 
 export default router

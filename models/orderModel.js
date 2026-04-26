@@ -62,6 +62,16 @@ const orderSchema = new mongoose.Schema(
       enum: ['Pending', 'Paid', 'Failed',"Refunded"],
       default: 'Pending'
     },
+    coupon :{
+      couponId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Coupon"
+      },
+      code : String,
+      discountType : String,
+      discountValue : Number,
+      discount : Number
+    },
     razorpayPaymentId :{
       type : String,
       default : ""
@@ -80,6 +90,10 @@ const orderSchema = new mongoose.Schema(
         'Return Rejected'
       ],
       default: 'Placed'
+    },
+    subtotal : {
+      type : Number,
+      required : true
     },
     totalAmount: {
       type: Number,

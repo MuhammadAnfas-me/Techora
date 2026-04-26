@@ -2,8 +2,12 @@ import express from 'express'
 import * as userController from '../../controllers/admin/userController.js'
 import * as authController from '../../controllers/admin/authController.js'
 import * as categoryController from '../../controllers/admin/categoryController.js'
-import * as productController from "../../controllers/admin/productController.js"
-import * as orderController from "../../controllers/admin/orderController.js"
+import * as productController from '../../controllers/admin/productController.js'
+import * as orderController from '../../controllers/admin/orderController.js'
+import * as couponController from '../../controllers/admin/couponController.js'
+import * as offerController from '../../controllers/admin/offerController.js'
+import * as dashboardController from '../../controllers/admin/dashboardController.js'
+import * as reportController from '../../controllers/admin/reportController.js'
 
 import * as middleWares from '../../middlewares/admin/adminAuth.js'
 import uploadProductImage from '../../middlewares/cloudinary/uploadProductImages.js'
@@ -27,73 +31,131 @@ router.route('/users/block/:id').patch(userController.blockUser)
 
 // -------------- Category lisiting and Management --------------//
 
-router.route('/category').get(middleWares.checkAdminAuth,categoryController.categoryListPage)
-router.route('/category/api').get(middleWares.checkAdminAuth,categoryController.categoryListApi)
+router
+  .route('/category')
+  .get(middleWares.checkAdminAuth, categoryController.categoryListPage)
+router
+  .route('/category/api')
+  .get(middleWares.checkAdminAuth, categoryController.categoryListApi)
 
 router
   .route('/category/add')
-  .get(middleWares.checkAdminAuth,categoryController.addCategoryLoad)
-  .post(middleWares.checkAdminAuth,categoryController.addCategory)
+  .get(middleWares.checkAdminAuth, categoryController.addCategoryLoad)
+  .post(middleWares.checkAdminAuth, categoryController.addCategory)
 
 router
   .route('/category/:id')
-  .get(middleWares.checkAdminAuth,categoryController.editPageLoad)
-  .patch(middleWares.checkAdminAuth,categoryController.editCategory)
-  .delete(middleWares.checkAdminAuth,categoryController.deleteCategory)
-
-  
-
+  .get(middleWares.checkAdminAuth, categoryController.editPageLoad)
+  .patch(middleWares.checkAdminAuth, categoryController.editCategory)
+  .delete(middleWares.checkAdminAuth, categoryController.deleteCategory)
 
 // --------------- Product Listing and Management ---------------//
 
 router
-  .route("/products")
-  .get(middleWares.checkAdminAuth,productController.loadProducts)
+  .route('/products')
+  .get(middleWares.checkAdminAuth, productController.loadProducts)
 
 router
-  .route("/products/add")
-  .get(middleWares.checkAdminAuth,productController.loadAddPage)
-  .post(middleWares.checkAdminAuth,uploadProductImage.fields([
-    {name : "variantImages" , maxCount : 20}
-  ]),productController.addProduct)
-
-
-router
-  .route("/products/variants/:id")
-  .get(middleWares.checkAdminAuth,productController.variantLoad)
-  .delete(middleWares.checkAdminAuth,productController.deleteVariant)
+  .route('/products/add')
+  .get(middleWares.checkAdminAuth, productController.loadAddPage)
+  .post(
+    middleWares.checkAdminAuth,
+    uploadProductImage.fields([{ name: 'variantImages', maxCount: 20 }]),
+    productController.addProduct
+  )
 
 router
-  .route("/products/:id")
-  .get(middleWares.checkAdminAuth,productController.loadEdit)
-  .patch(middleWares.checkAdminAuth,uploadProductImage.any()
-  ,productController.editProduct)
+  .route('/products/variants/:id')
+  .get(middleWares.checkAdminAuth, productController.variantLoad)
+  .delete(middleWares.checkAdminAuth, productController.deleteVariant)
 
 router
-  .route("/products/:id/block")
-  .patch(middleWares.checkAdminAuth,productController.blockProduct)
+  .route('/products/:id')
+  .get(middleWares.checkAdminAuth, productController.loadEdit)
+  .patch(
+    middleWares.checkAdminAuth,
+    uploadProductImage.any(),
+    productController.editProduct
+  )
+
+router
+  .route('/products/:id/block')
+  .patch(middleWares.checkAdminAuth, productController.blockProduct)
 
 // ---------------------------------- Order management ---------------------------------------
 router
-  .route("/orders")
-  .get(middleWares.checkAdminAuth,orderController.orderListLoad)
+  .route('/orders')
+  .get(middleWares.checkAdminAuth, orderController.orderListLoad)
 
-router.get("/orders/export-pdf", middleWares.checkAdminAuth, orderController.exportOrdersPDF)
+router.get(
+  '/orders/export-pdf',
+  middleWares.checkAdminAuth,
+  orderController.exportOrdersPDF
+)
 
 router
   .route('/orders/:orderId')
-  .get(middleWares.checkAdminAuth,orderController.orderDetailsPage)
+  .get(middleWares.checkAdminAuth, orderController.orderDetailsPage)
   .patch(orderController.updateOrderStatus)
 
+router.route('/orders/:orderId/cancel').patch(orderController.orderCancel)
+
+router.route('/orders/return/update').patch(orderController.updateReturnStatus)
+// For return an item not the entire order
+router.patch('/orders/return/item/:orderId', orderController.returnItem)
+
+//-------------------------------------- Coupon Management --------------------------------
 router
-  .route('/orders/:orderId/cancel')
-  .patch(orderController.orderCancel)
+  .route('/coupons')
+  .get(middleWares.checkAdminAuth, couponController.couponListLoad)
+  .delete(couponController.deleteCoupon)
+router.route('/coupons/:code').delete(couponController.deleteCoupon)
+router
+  .route('/coupons/add')
+  .get(middleWares.checkAdminAuth, couponController.addCouponPage)
+  .post(couponController.addCoupon)
 
 router
-  .route('/orders/return/update')
-  .patch(orderController.updateReturnStatus)
-// For return an item not the entire order
-router.patch('/orders/return/item/:orderId',orderController.returnItem)
+  .route('/coupons/edit/:code')
+  .get(middleWares.checkAdminAuth, couponController.editPageLoad)
+  .patch(couponController.editCoupon)
+
+router.route('/coupons/toggle').patch(couponController.statusToggle)
+
+// -------------------------------------- Offers Management -------------------------------------
+
+router
+  .route('/offers')
+  .get(middleWares.checkAdminAuth, offerController.offerLoad)
+
+router
+  .route('/offers/add')
+  .get(middleWares.checkAdminAuth, offerController.addOfferLoad)
+  .post(offerController.addOffer)
+router
+  .route('/offer/categories/list')
+  .get(middleWares.checkAdminAuth, offerController.listCategories)
+router
+  .route('/offer/products/list')
+  .get(middleWares.checkAdminAuth, offerController.listProducts)
+router
+  .route('/offer/edit/:id')
+  .get(middleWares.checkAdminAuth, offerController.editLoad)
+  .patch(offerController.updateOffer)
+
+  router
+    .route('/offer/:id').delete(offerController.deleteCoupon)
+
+  router
+    .route("/offer/toggle").patch(offerController.toggleStatus)
+
+
+router
+  .route('/dashboard').get(dashboardController.dashboardLoad)
+
+
+router
+  .route('/report').get(reportController.reportLoad)
 
 router.route('/logout').get(authController.logout)
 export default router

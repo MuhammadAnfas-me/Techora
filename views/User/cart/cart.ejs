@@ -102,7 +102,7 @@
     <div class="order-summary">
       <h2>Order Summary</h2>
       
-      <div class="coupon-section">
+      <!-- <div class="coupon-section">
         <label for="coupon">Apply Coupon</label>
         <div class="coupon-input-group">
           <input type="text" id="coupon" placeholder="Enter coupon code">
@@ -115,20 +115,17 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#d32f2f" stroke="none"><circle cx="12" cy="12" r="10"></circle></svg>
           </button>
         </div>
-      </div>
+      </div> -->
 
       <div class="price-breakdown">
         <div class="price-row">
           <span id="summaryItemCount">Subtotal (<%= cartItems.length %> items)</span>
           <span class="amount-bold" id="cartSubtotal"><%= formatINR(grandTotal) %></span>
         </div>
-        <div class="price-row">
-          <span>Discount</span>
-          <span class="amount-discount" id="cartDiscount" >-₹00.00</span>
-        </div>
+
         <div class="price-row">
           <span>Delivery Charges</span>
-          <span class="amount-bold" id="deliveryCharge">₹0.00</span>
+          <span class="amount-bold" id="deliveryCharge" style="color: #16a34a;">Free</span>
         </div>
       </div>
 
@@ -149,11 +146,7 @@
         </li>
         <li>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5998" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-          Free returns within 30 days
-        </li>
-        <li>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5998" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          2-year warranty included
+          Free returns within 7 days
         </li>
       </ul>
     </div>
@@ -249,7 +242,7 @@
     }
   
     if (cartSubtotal) {
-      cartSubtotal.textContent = formatINR(cartSubtotal);
+      cartSubtotal.textContent = formatINR(summary.cartTotal);
     }
   
     // if (cartDiscount) {

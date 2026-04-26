@@ -129,7 +129,7 @@
                         class="category-status <%= category.isActive ? 'category-status-active' : 'category-status-inactive' %>"
                       >
                         <%= category.isActive ? "Active" : "Inactive" %>
-                      </span>
+                      </span> 
                     </td>
 
                     <td class="category-muted"><%= category.createdAt.toISOString().split('T')[0] %></td>
@@ -140,7 +140,7 @@
                           class="category-edit-btn"
                           type="button"
                           title="Edit",
-                          onclick="window.location.href='/admin/category/edit'"
+                          onclick="window.location.href='/admin/category/<%= category._id %>'"
                         >
                           <span class="material-symbols-outlined">edit</span>
                         </button>

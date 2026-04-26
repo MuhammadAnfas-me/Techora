@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offers Management - Techora</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    (function () {
+      const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+      if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+    })();
+  </script>
+
+  <link rel="stylesheet" href="/styles/admin/products/productsList.css" />
+  <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+  <link rel="stylesheet" href="/styles/user/popup.css" />
+
+  <style>
+    /* ── Page Header ── */
+    .page-header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-primary-dark {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #1B3C53;
+      color: #fff;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary-dark:hover {
+      background-color: #14303f;
+    }
+
+    /* ── Filters Card ── */
+    .filters-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      align-items: flex-end;
+      border: 1px solid #e5e7eb;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .filter-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .filter-select,
+    .search-input {
+      padding: 9px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background-color: #fafafa;
+      font-size: 14px;
+      color: #374151;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .filter-select:focus,
+    .search-input:focus {
+      border-color: #1B3C53;
+    }
+
+    .search-wrapper {
+      flex: 2;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .search-wrapper label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .search-input-wrap {
+      position: relative;
+    }
+
+    .search-input-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .search-input-wrap input {
+      padding-left: 36px;
+      width: 100%;
+      padding-top: 9px;
+      padding-bottom: 9px;
+      padding-right: 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background-color: #fafafa;
+      font-size: 14px;
+      color: #374151;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .search-input-wrap input:focus {
+      border-color: #1B3C53;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      padding-bottom: 0;
+    }
+
+    .btn-search {
+      padding: 9px 20px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover {
+      background: #f3f4f6;
+    }
+
+    .btn-filter {
+      padding: 9px 20px;
+      background: #1B3C53;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-filter:hover {
+      background: #14303f;
+    }
+
+    /* ── Table Card ── */
+    .table-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .product-table thead tr {
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .product-table th {
+      padding: 13px 16px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    .product-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      color: #374151;
+      vertical-align: middle;
+    }
+
+    .product-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .product-table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    /* ── Offer Type Tags ── */
+    .offer-type-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid #d1d5db;
+      color: #374151;
+      background: #fff;
+      white-space: nowrap;
+    }
+
+    /* ── Status Pills ── */
+    .status-pill {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-pill::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .status-active {
+      background-color: #d1fae5;
+      color: #059669;
+    }
+
+    .status-active::before {
+      background: #059669;
+    }
+
+    .status-scheduled {
+      background-color: #ede9fe;
+      color: #7c3aed;
+    }
+
+    .status-scheduled::before {
+      background: #7c3aed;
+    }
+
+    .status-expired {
+      background-color: #f3f4f6;
+      color: #6b7280;
+    }
+    
+    .status-inactive {
+      background: #ffe5e5;
+      color: #d63031;
+    }
+    .status-inactive::before {
+      background: #d63031;
+    }
+    .status-expired::before {
+      background: #9ca3af;
+    }
+
+    /* ── Discount Value ── */
+    .discount-value {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    /* ── Action Buttons ── */
+    .action-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .action-btn:hover {
+      color: #111827;
+      background: #f3f4f6;
+    }
+
+    /* ── Toggle Switch ── */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #d1d5db; /* light gray = OFF */
+      border-radius: 22px;
+      transition: background-color 0.3s;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #1B3C53; /* dark navy = ON */
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(18px);
+    }
+
+    /* ── Actions cell ── */
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── Pagination ── */
+    .pagination-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: #fff;
+      border-top: 1px solid #f3f4f6;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pagination-info {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-link {
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .page-link.active {
+      background-color: #f3f4f6;
+      background-color: #1e3a5f;
+      font-weight: 600;
+    }
+
+    .page-link:hover:not(.active) {
+      background-color: #e5e7eb;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .filters-card {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .filter-group,
+      .search-wrapper {
+        min-width: unset;
+        width: 100%;
+      }
+
+      .filter-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .product-table th,
+      .product-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .page-header-actions {
+        flex-wrap: wrap;
+      }
+
+      .pagination-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+    .status-type {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .status-type::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="/js/popup.js" defer></script>
+  <script src="/js/partitials/Admin/sidebar.js" defer></script>
+</head>
+
+<body>
+  <div id="toast" class="toast"></div>
+  <%- include("../../partitials/admin/sidebar.ejs", { currentPage: 'offers' }) %>
+
+  <div class="main-wrapper">
+    <%- include("../../partitials/admin/header.ejs", { currentPage: 'offers' }) %>
+
+    <main class="main-content">
+      <div class="content-container">
+
+        <!-- Page Header -->
+        <div class="page-header-wrapper">
+          <div class="page-header-left">
+            <h1 class="page-title">Offers Management</h1>
+            <p class="page-subtitle">Manage promotional offers and discounts</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn-primary-dark" onclick="window.location.href='/admin/offers/add'">
+              <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+              Add New Offer
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="GET" class="filters-card">
+
+          <!-- Search -->
+          <div class="search-wrapper">
+            <label>Search</label>
+            <div class="search-input-wrap">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                name="search"
+                id="search-input"
+                placeholder="Search offer by name..."
+                value="<%= typeof search !== 'undefined' ? search : '' %>"
+              />
+            </div>
+          </div>
+
+          <!-- Offer Type -->
+          <div class="filter-group">
+            <label>Offer Type</label>
+            <select class="filter-select" name="type" id="offerTypeSelect">
+              <option value="">All</option>
+              <option value="percentage" <%= typeof type !== 'undefined' && type === 'Percentage' ? 'selected' : '' %>>Percentage</option>
+              <option value="flat" <%= typeof type !== 'undefined' && type === 'Flat' ? 'selected' : '' %>>Flat Discount</option>
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div class="filter-group">
+            <label>Status</label>
+            <select class="filter-select" name="status" id="offerStatusSelect">
+              <option value="">All Status</option>
+              <option value="Active" <%= typeof status !== 'undefined' && status === 'Active' ? 'selected' : '' %>>Active</option>
+              <option value="Scheduled" <%= typeof status !== 'undefined' && status === 'Scheduled' ? 'selected' : '' %>>Scheduled</option>
+              <option value="Expired" <%= typeof status !== 'undefined' && status === 'Expired' ? 'selected' : '' %>>Expired</option>
+            </select>
+          </div>
+
+          <!-- Actions -->
+          <div class="filter-actions">
+            <button type="button" class="btn-search" id="search">Search</button>
+            <button type="button"   class="btn-filter" onclick="window.location.href='/admin/offers'">Reset</button>
+          </div>
+
+        </form>
+
+        <!-- Table -->
+        <div class="table-card">
+          <div style="overflow-x: auto;">
+            <table class="product-table">
+              <thead>
+                <tr>
+                  <th>Offer Name</th>
+                  <th>Offer Type</th>
+                  <th>Discount Value</th>
+                  <th>Applicable Products</th>
+                  <th>Valid From</th>
+                  <th>Valid To</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+
+    
+
+                <% offers.forEach((offer, index) => { %>
+                <tr>
+                  <td style="font-weight: 500; color: #111827;"><%= offer.name %></td>
+                  <td><span class="offer-type-tag"><%= offer.type === "percentage" ? "PERCENTAGE" : "FLAT" %></span></td>
+                  <td class="discount-value "><%= offer.type === "percentage" ? `${offer.value}% OFF` : `₹${offer.value} OFF` %></td>
+                  <td style="display: flex; justify-content: space-between;">
+                    <%= offer.scope === "product" ? offer.product.name : offer.category.name %>
+                    <% if(offer.scope === "product"){ %>
+                        <span class="status-type status-active" style="width: 5.5rem;">Product</span>
+                    <% }else{ %>
+                        <span class="status-type status-expired" style="width: 5.5rem;">Category</span>
+                    <% } %>
+                </td>
+                  <td><%= new Date(offer.start).toISOString().split('T')[0] %></td>
+                  <td><%= new Date(offer.end).toISOString().split('T')[0] %></td>
+                  <td>
+                    <% if (offer.start > new Date()) { %>
+                      <span class="status-pill status-scheduled"><%= offer.status ? "Scheduled" : "Scheduled" %></span>
+                    <% } else if (offer.end < new Date()) { %>
+                      <span class="status-pill status-expired">Expired</span>
+                    <% } else if(offer.isActive) { %>
+                      <span class="status-pill status-active"><%= offer.status ? offer.status : "Active" %></span>
+                    <% }else{ %>
+                      <span class="status-pill status-inactive"><%= offer.status ? offer.status : "Inactive" %></span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <div class="actions-cell">
+                      <button class="action-btn" title="Edit" onclick="window.location.href='/admin/offer/edit/<%= offer.name %>'">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
+                      </button>
+                      <label class="toggle-switch" title="Toggle Status">
+                        <input type="checkbox" class="toggleBtn" <%= offer.isActive ? 'checked' : '' %> onchange="toggleOfferStatus(<%= index %>, this.checked)" data-id="<%= offer._id %>">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </td>
+                </tr>
+                <% }) %>
+
+              </tbody>
+            </table>
+          </div>
+
+          <div class="confirm-overlay" id="confirmOverlay">
+            <div class="confirm-box">
+              <h3 id="confirmTitle">Confirm Action</h3>
+              <p id="confirmMessage">Are you sure?</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" id="confirmCancel">Cancel</button>
+                <button class="btn-confirm" id="confirmOk">Confirm</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-wrapper">
+            <span class="pagination-info">
+            Showing 
+            <%= (currentPage - 1) * limit + 1 %> 
+            - 
+            <%= Math.min(currentPage * limit, totalOffers) %> 
+            of <%= totalOffers %> offers
+            </span>
+            <div class="pagination-controls">
+               <% if (currentPage > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %>&search=<%= search %>&type=<%= type %>&status=<%= status %>" class="page-link">Prev</a>
+               <% } %>
+
+                   <!-- 🔢 Page Numbers -->
+              <% for(let i = 1; i <= totalPages; i++) { %>
+                <a href="?page=<%= i %>&search=<%= search %>&type=<%= type %>&status=<%= status %>"
+                   class="page-link <%= currentPage === i ? 'active' : '' %>">
+                   <%= i %>
+                </a>
+              <% } %>
+
+              <% if (currentPage < totalPages) { %>
+                <a href="?page=<%= currentPage + 1 %>&search=<%= search %>&type=<%= type %>&status=<%= status %>" class="page-link">Next</a>
+              <% } %>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function toggleOfferStatus(id, isActive) {
+      try {
+        const res = await axios.patch(`/admin/offers/toggle/${id}`, { isActive });
+        if (res.data.success) {
+          console.log('Status updated');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // Filter auto-apply on status change
+    document.getElementById("offerStatusSelect").addEventListener("change", function () {
+      this.closest("form").submit();
+    });
+
+    document.getElementById("offerTypeSelect").addEventListener("change", function () {
+      this.closest("form").submit();
+    });
+    document.getElementById("search").addEventListener("click", function () {
+      this.closest("form").submit();
+    });
+    
+
+    document.addEventListener("change", (e) => {
+      if (!e.target.classList.contains("toggleBtn")) return;
+
+      const checkbox = e.target;
+      const id = checkbox.dataset.id;
+
+      const newValue = checkbox.checked;
+
+      //  revert UI immediately (so cancel keeps original UI)
+      checkbox.checked = !newValue;
+
+        showConfirm("Are you sure to change status of this offer?", async () => {
+              try { 
+                checkbox.checked = newValue;
+                const res = await axios.patch('/admin/offer/toggle', { id, isActive : newValue });
+                showToast(res.data?.message || "Status updated successfully");
+                if (res.data.success){
+                  setTimeout(()=>{
+                    window.location.reload();
+                  },800)
+                }
+              } catch (error) {
+                // ✅ revert if API fails
+                checkbox.checked = !newValue;
+                console.error('Toggle error:', error);
+                showToast(error.response?.data?.message || "Failed to update status", "error");
+              }
+          });
+      });
+  </script>
+</body>
+
+</html>

@@ -10,6 +10,7 @@ passport.use(
             clientID : process.env.GOOGLE_CLIENT_ID,
             clientSecret : process.env.GOOGLE_CLIENT_SECRET,
             callbackURL : '/auth/google/callback'
+            // https://qxsmm2fx-3000.inc1.devtunnels.ms
         },
         async (accessToken, refreshToken, profile, done)=>{
             try {

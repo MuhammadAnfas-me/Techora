@@ -151,12 +151,8 @@
                     <span style="color: var(--success);">Free</span>
                 </div>
                 <div class="summary-row">
-                    <span style="color: var(--text-muted);">Discount (WELCOME10)</span>
-                    <span style="color: var(--success);">-$00.00</span>
-                </div>
-                <div class="summary-row">
-                    <span style="color: var(--text-muted);">Tax (Estimated)</span>
-                    <span><%= formatINR(order.totalAmount*18/100) %></span>
+                    <span style="color: var(--text-muted);">Discount (<%= order.coupon?.code %>)</span>
+                    <span style="color: var(--success);"><%= formatINR(order.coupon?.discount) ? formatINR(order.coupon?.discount) : '-$00.00' %>  </span>
                 </div>
                 <div class="summary-row total-row">
                     <span>Order Total</span>
@@ -169,10 +165,15 @@
                         <i class="fab fa-cc-visa" style="color: #1a1f71; font-size: 20px;"></i>
                         Paid through <strong>Razorpay</strong>
                     </div>
+                    <% }else if(order.paymentMethod === "COD"){ %>
+                        <div class="visa-info">
+                        <i class="fab fa-cod" style="color: #1a1f71; font-size: 20px;"></i>
+                            Paid on COD 
+                        </div>
                     <% }else{ %>
                         <div class="visa-info">
-                        <i class="fab fa-cc-visa" style="color: #1a1f71; font-size: 20px;"></i>
-                            Paid on COD 
+                        <i class="fab fa-wallet" style="color: #1a1f71; font-size: 20px;"></i>
+                            Paid using WALLET 
                         </div>
                     <% } %>
                     <span class="paid-badge">Paid</span>

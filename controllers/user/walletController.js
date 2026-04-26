@@ -8,6 +8,20 @@ export const loadWallet = async (req, res) => {
     const user = req.session.user
 
     let wallet = await Wallet.findOne({ userId: user.id })
+    
+    if (!wallet) {
+      const newWallet = Wallet({
+        userId: user.id,
+        balance: 0
+      })
+      await newWallet.save()
+      res.render('User/userProfile/walletPage.ejs', {
+        wallet: newWallet,
+        totalCredits : 0,
+        totalDebits : 0
+      })
+    }
+    
     const totalCredits = wallet?.transaction?.reduce((acc, trs) => {
       if (trs.type === 'credit') {
         acc = acc + trs.amount
@@ -21,20 +35,6 @@ export const loadWallet = async (req, res) => {
       }
       return acc
     }, 0)
-
-    if (!wallet) {
-      const newWallet = Wallet({
-        userId: user.id,
-        balance: 0
-      })
-      await newWallet.save()
-      res.render('User/userProfile/walletPage.ejs', {
-        wallet: newWallet,
-        totalCredits,
-        totalDebits
-      })
-    }
-
     res.render('User/userProfile/walletPage.ejs', {
       wallet,
       totalCredits,

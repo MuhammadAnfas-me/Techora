@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coupons Management - Techora</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    (function () {
+      const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+      if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+    })();
+  </script>
+
+  <link rel="stylesheet" href="/styles/admin/products/productsList.css" />
+  <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+  <link rel="stylesheet" href="/styles/user/popup.css" />
+
+  <style>
+    /* ── Page Header ── */
+    .page-header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* ── Add New Coupon Button ── */
+    .btn-add-coupon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #1b3c53;
+      color: #fff;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-add-coupon:hover {
+      background-color: #16324a;
+    }
+
+    .btn-add-coupon .btn-icon {
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* ── Filters Card ── */
+    .filters-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 24px 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .filters-top-labels {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 10px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b7280;
+    }
+
+    .filter-group.search-group {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-wrap .search-icon {
+      position: absolute;
+      left: 10px;
+      color: #9ca3af;
+      font-size: 15px;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+      padding: 9px 14px 9px 32px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background-color: #fafafa;
+      font-size: 14px;
+      color: #374151;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
+    }
+
+    .search-input-wrap input::placeholder {
+      color: #9ca3af;
+    }
+
+    .filter-select {
+      padding: 9px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background-color: #fafafa;
+      font-size: 14px;
+      color: #374151;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      min-width: 130px;
+      cursor: pointer;
+      appearance: auto;
+    }
+
+    .filters-actions {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .btn-search {
+      background-color: #1b3c53;
+      color: #fff;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover {
+      background-color: #16324a;
+    }
+
+    .btn-apply-filter {
+      background-color: #fff;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-apply-filter:hover {
+      background-color: #f3f4f6;
+    }
+
+    /* ── Table Card ── */
+    .table-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .product-table thead tr {
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .product-table th {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    .product-table tbody tr {
+      border-bottom: 1px solid #f9fafb;
+      transition: background 0.15s;
+    }
+
+    .product-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .product-table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+
+    .product-table td {
+      padding: 14px 16px;
+      color: #374151;
+      vertical-align: middle;
+    }
+
+    /* ── Coupon Code cell ── */
+    .coupon-code-text {
+      font-weight: 600;
+      color: #1b3c53;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Value colors ── */
+    .value-percentage {
+      color: #16a34a;
+      font-weight: 500;
+    }
+
+    .value-flat {
+      color: #2563eb;
+      font-weight: 500;
+    }
+
+    /* ── Usage Progress Bar ── */
+    .usage-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 100px;
+    }
+
+    .usage-count {
+      min-width: 36px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .usage-bar-track {
+      flex: 1;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+      min-width: 50px;
+    }
+
+    .usage-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+
+    .bar-green  { background-color: #22c55e; }
+    .bar-orange { background-color: #f97316; }
+    .bar-gray   { background-color: #9ca3af; }
+
+    /* ── Status Pills ── */
+    .status-pill {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .status-active {
+      background-color: #d1fae5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+
+    .status-expired {
+      background-color: #f3f4f6;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+    }
+
+    .status-disabled-pill {
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .status-disabled-muted {
+      background-color: #f3f4f6;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* ── Toggle Switch ── */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #d1d5db;
+      border-radius: 99px;
+      transition: 0.25s;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: 0.25s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #1b3c53;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(18px);
+    }
+
+    /* ── Actions Column ── */
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+    }
+
+    .action-btn:hover {
+      color: #111827;
+    }
+
+    .action-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    .delete-btn:hover {
+      color: #dc2626;
+    }
+
+    /* ── Pagination ── */
+    .pagination-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: #fff;
+      border-top: 1px solid #f3f4f6;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pagination-info {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .page-link {
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .page-link.active {
+      background-color: #1e3a5f;
+      font-weight: 600;
+    }
+
+    .page-link:hover:not(.dots) {
+      background-color: #e5e7eb;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .filters-top-labels {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-group.search-group {
+        width: 100%;
+      }
+
+      .filters-actions {
+        justify-content: flex-end;
+        width: 100%;
+      }
+
+      .product-table th,
+      .product-table td {
+        padding: 12px 10px;
+        font-size: 13px;
+      }
+
+      .usage-bar-track {
+        min-width: 36px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .page-header-actions .btn-add-coupon span:not(.btn-icon) {
+        display: none;
+      }
+
+      .btn-search,
+      .btn-apply-filter {
+        padding: 9px 14px;
+        font-size: 13px;
+      }
+    }
+    .clear-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      display: none;
+      font-size: 18px;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="/js/popup.js" defer></script>
+  <script src="/js/partitials/Admin/sidebar.js" defer></script>
+</head>
+
+<body>
+  <div id="toast" class="toast"></div>
+  <%- include("../../partitials/admin/sidebar.ejs", { currentPage: 'coupons' }) %>
+
+  <div class="main-wrapper">
+    <%- include("../../partitials/admin/header.ejs", { currentPage: 'coupons' }) %>
+
+    <main class="main-content">
+      <div class="content-container">
+
+        <!-- Page Header -->
+        <div class="page-header-wrapper">
+          <div class="page-header-left">
+            <h1 class="page-title">Coupons Management</h1>
+            <p class="page-subtitle">Create, manage, and control discount coupons</p>
+          </div>
+          <div class="page-header-actions">
+            <a href="/admin/coupons/add" class="btn-add-coupon">
+              <span class="btn-icon">+</span>
+              Add New Coupon
+            </a>
+          </div>
+        </div>
+
+        <!-- Filters Card -->
+        <form method="GET" class="filters-card">
+          <div class="filters-top-labels">
+
+            <!-- Search -->
+            <div class="filter-group search-group">
+              <label>Search</label>
+              <div class="search-input-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                  type="text"
+                  id="search-input"
+                  name="search"
+                  placeholder="Search by coupon code"
+                  value="<%= typeof search !== 'undefined' ? search : '' %>"
+                />
+                <span id="clear-btn" class="clear-btn">&times;</span>
+              </div>
+            </div>
+
+            <!-- Coupon Type -->
+            <div class="filter-group">
+              <label>Coupon Type</label>
+              <select class="filter-select" name="type">
+                <option value="All" <%= !type || type === "All" ? "selected" : "" %>>All</option>
+                  <option value="Percentage" 
+                    <%= type === "Percentage" ? "selected" : "" %>>
+                    Percentage
+                  </option>
+                  <option value="Flat" 
+                    <%= type === "Flat" ? "selected" : "" %>>
+                    Flat
+                  </option>
+              </select>
+            </div>
+
+            <!-- Status -->
+            <div class="filter-group">
+              <label>Status</label>
+              <select class="filter-select" name="status">
+                <option value="All Status" <%= !status || status === "All Status" ? "selected" : "" %>>
+                  All Status
+                </option>
+                <option value="Active" <%= status === "Active" ? "selected" : "" %>>Active</option>
+                <option value="Expired" <%= status === "Expired" ? "selected" : "" %>>Expired</option>
+                <option value="Disabled" <%= status === "Disabled" ? "selected" : "" %>>Disabled</option>
+              </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="filters-actions">
+              <button type="submit" class="btn-search">Search</button>
+              <button type="button" class="btn-apply-filter">Apply Filter</button>
+            </div>
+
+          </div>
+        </form>
+
+        <!-- Table Card -->
+        <div class="table-card">
+          <div style="overflow-x: auto;">
+            <table class="product-table">
+              <thead>
+                <tr>
+                  <th>Coupon Code</th>
+                  <th>Discount Type</th>
+                  <th>Value</th>
+                  <th>Min Order</th>
+                  <th>Usage Limit</th>
+                  <th>Used</th>
+                  <th>Expiry Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                  <% if (coupons.length === 0) { %>
+                    <tr>
+                      <td colspan="9" class="no-data">
+                        <div class="no-data-wrapper">
+                          <p>No coupons found</p>
+                          <small>Try adjusting your search or filters</small>
+                        </div>
+                      </td>
+                    </tr>
+                  <% } else { %>
+                <% coupons.forEach(function(coupon) { %>
+                <tr>
+                  <!-- Coupon Code -->
+                  <td><span class="coupon-code-text"><%= coupon.code %></span></td>
+
+                  <!-- Discount Type -->
+                  <td><%= coupon.type %></td>
+
+                  <!-- Value -->
+                  <td>
+                    <% if (coupon.type === 'Percentage') { %>
+                      <span class="value-percentage"><%= coupon.value %></span>
+                    <% } else { %>
+                      <span class="value-flat"><%= coupon.value %></span>
+                    <% } %>
+                  </td>
+
+                  <!-- Min Order -->
+                  <td><%= coupon.minOrder %></td>
+
+                  <!-- Usage Limit -->
+                  <td><%= coupon.usageLimit %></td>
+
+                  <!-- Used + Progress Bar -->
+                  <td>
+                    <div class="usage-wrap">
+                      <span class="usage-count"><%= coupon.used %></span>
+                      <div class="usage-bar-track">
+                        <div class="usage-bar-fill <%= coupon.barClass %>"
+                             style="width: <%= coupon.usedBar %>%;"></div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Expiry Date -->
+                  <td><%= new Date(coupon.expiry).toISOString().split('T')[0] %></td>
+
+                  <!-- Status -->
+                  <td>
+                    <% if (coupon.status === 'Active') { %>
+                      <span class="status-pill status-active">Active</span>
+                    <% } else if (coupon.status === 'Expired') { %>
+                      <span class="status-pill status-expired">Expired</span>
+                    <% } else if (coupon.status === 'Disabled') { %>
+                      <%
+                        // SUMMER50 gets red disabled badge; DIWALI2023 gets muted
+                        var isRedDisabled = (coupon.code === 'SUMMER50');
+                      %>
+                      <span class="status-pill <%= isRedDisabled ? 'status-disabled-pill' : 'status-disabled-muted' %>">Disabled</span>
+                    <% } %>
+                  </td>
+
+                  <!-- Actions: Edit | Toggle | Delete -->
+                  <td>
+                    <div class="actions-cell">
+                      <!-- Edit -->
+                      <button class="action-btn" type="button" title="Edit"
+                        onclick="window.location.href='/admin/coupons/edit/<%= coupon.code %>'">
+                        <span class="material-symbols-outlined">edit</span>
+                      </button>
+
+                      <!-- Toggle -->
+                      <label class="toggle-switch" title="Enable / Disable">
+                        <input type="checkbox" class="toggleBtn" <%= coupon.toggleOn ? 'checked' : '' %>
+                         data-id="<%= coupon.code %>">
+                        <span class="toggle-slider"></span>
+                      </label>
+
+                      <!-- Delete -->
+                      <button class="action-btn delete-btn" type="button" title="Delete"
+                        onclick="deleteCoupon('<%= coupon.code %>')">
+                        <span class="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <% }); %>
+                <% } %>
+
+              </tbody>
+            </table>
+          </div>
+
+                    <div class="confirm-overlay" id="confirmOverlay">
+            <div class="confirm-box">
+              <h3 id="confirmTitle">Confirm Action</h3>
+              <p id="confirmMessage">Are you sure?</p>
+              <div class="confirm-actions">
+                <button class="btn-cancel" id="confirmCancel">Cancel</button>
+                <button class="btn-confirm" id="confirmOk">Confirm</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-wrapper">
+            <span class="pagination-info">
+              Showing <%= (currentPage - 1) * limit + 1 %> -
+              <%= Math.min(currentPage * limit, totalCoupons) %>
+              of <%= totalCoupons %> coupons
+            </span>
+            <div class="pagination-controls">
+            
+              <% if (currentPage > 1) { %>
+                <a href="?page=<%= currentPage - 1 %>" class="page-link">Prev</a>
+              <% } %>
+              
+              <% for(let i = 1; i <= totalPages; i++) { %>
+                <a href="?page=<%= i %>" 
+                   class="page-link <%= currentPage === i ? 'active' : '' %>">
+                   <%= i %>
+                </a>
+              <% } %>
+              
+              <% if (currentPage < totalPages) { %>
+                <a href="?page=<%= currentPage + 1 %>" class="page-link">Next</a>
+              <% } %>
+              
+            </div>
+          </div>
+
+        </div><!-- /.table-card -->
+
+      </div><!-- /.content-container -->
+    </main>
+  </div>
+
+  <script>
+    const input = document.getElementById("search-input");
+    const clearBtn = document.getElementById("clear-btn");
+
+    function toggleClear() {
+        clearBtn.style.display = input.value ? "block" : "none";
+    }
+
+    input.addEventListener("input", toggleClear);
+
+    clearBtn.addEventListener("click", () => {
+        const url = new URL(window.location.href);
+    
+        // ❌ remove only search
+        url.searchParams.delete("search");
+    
+        // 🔁 reset to first page (important)
+        url.searchParams.set("page", 1);
+    
+        // keep type & status automatically
+        window.location.href = url.toString();
+    });
+
+
+    toggleClear();
+
+    document.querySelectorAll(".filter-select").forEach(select => {
+      select.addEventListener("change", () => {
+        select.form.submit();
+      });
+    });
+    // async function toggleCoupon(code, isActive) {
+    //   if (!e.target.classList.contains("toggleBtn")) return;
+
+    //   const checkbox = e.target;
+    //   const id = checkbox.dataset.id;  
+    //   const newValue = checkbox.checked;
+
+    //   // ✅ revert UI immediately (so cancel keeps original UI)
+    //   checkbox.checked = !newValue;
+    //   showConfirm("Are you sure to change status of this category?", async () => {
+    //       try {
+    //         heckbox.checked = newValue;
+    //         const res = await axios.patch('/admin/coupons/toggle', { code, isActive });
+    //         showToast(res.data?.message || "Status updated successfully");
+    //         if (res.data.success){
+    //           setTimeout(()=>{
+    //             window.location.reload();
+    //           },800)
+    //         }
+    //       } catch (error) {
+    //         // ✅ revert if API fails
+    //         checkbox.checked = !newValue;
+    //         console.error('Toggle error:', err);
+    //         showToast(error.response?.data?.message || "Failed to update status", "error");
+    //       }
+    //   });
+
+    // }
+
+document.addEventListener("change", (e) => {
+  if (!e.target.classList.contains("toggleBtn")) return;
+
+  const checkbox = e.target;
+  const code = checkbox.dataset.id;
+
+  const newValue = checkbox.checked;
+
+  //  revert UI immediately (so cancel keeps original UI)
+  checkbox.checked = !newValue;
+
+    showConfirm("Are you sure to change status of this coupon?", async () => {
+          try {
+            checkbox.checked = newValue;
+            const res = await axios.patch('/admin/coupons/toggle', { code, isActive : newValue });
+            showToast(res.data?.message || "Status updated successfully");
+            if (res.data.success){
+              setTimeout(()=>{
+                window.location.reload();
+              },800)
+            }
+          } catch (error) {
+            // ✅ revert if API fails
+            checkbox.checked = !newValue;
+            console.error('Toggle error:', error);
+            showToast(error.response?.data?.message || "Failed to update status", "error");
+          }
+      });
+  });
+
+    async function deleteCoupon(code) {
+      showConfirm("Are you sure to delete this coupon?", async () => {
+      try {
+        const res = await axios.delete(`/admin/coupons/${code}`);
+        showToast(res.data?.message || 'Deleted successfully')
+        setTimeout(()=>{
+          if (res.data.success) window.location.reload();
+        },800)
+      } catch (err) {
+        console.error('Delete error:', err);
+        showToast(err.response?.data?.message || "Failed to delete coupon", "error")
+      }
+      });
+    }
+  </script>
+</body>
+</html>

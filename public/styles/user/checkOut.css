@@ -935,3 +935,242 @@ small[class$="Error"] {
   margin-top: 4px;
   display: block;
 }
+
+.coupon-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.coupon-section label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a202c;
+}
+
+.coupon-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.coupon-input-group input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.coupon-input-group input:focus {
+  outline: none;
+  border-color: #2b4c65;
+}
+
+.apply-btn {
+  background: #2b4c65;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.active-coupon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #2e7d32;
+}
+
+.remove-coupon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  display: flex;
+}
+
+
+
+.coupon-card {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+.coupon-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #1e3a5f, #2f5d8a);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.coupon-btn:hover {
+  background: linear-gradient(135deg, #2f5d8a, #1e3a5f);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.coupon-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.coupon-input-group input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.apply-btn {
+  background: #1e3a5f;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.apply-btn:hover {
+  background: #2f5d8a;
+}
+
+.coupon-view-btn {
+  width: 100%;
+  background: #f5f8fc;
+  border: 1px dashed #1e3a5f;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.applied-coupon-box {
+  background: #eafaf1;
+  border: 1px solid #b7ebc6;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Overlay */
+.coupon-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+}
+
+/* Modal Box */
+.coupon-modal-content {
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #fff;
+  margin: 6% auto;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+
+/* Animation */
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+.coupon-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.coupon-modal-header h3 {
+  font-size: 18px;
+  color: #1e3a5f;
+}
+
+.close-btn {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* Coupon List */
+.coupon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Coupon Card */
+.coupon-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fbfd;
+  transition: 0.25s;
+}
+
+.coupon-item:hover {
+  border-color: #1e3a5f;
+  background: #f1f6fb;
+  transform: translateY(-2px);
+}
+
+/* Left Content */
+.coupon-left h4 {
+  margin: 0;
+  font-size: 15px;
+  color: #1e3a5f;
+}
+
+.coupon-left p {
+  margin: 4px 0;
+  font-weight: 500;
+}
+
+.min-order {
+  font-size: 12px;
+  color: #777;
+}
+
+/* Apply Button */
+.select-btn {
+  background: #1e3a5f;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.select-btn:hover {
+  background: #2f5d8a;
+}

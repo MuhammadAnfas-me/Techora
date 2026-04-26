@@ -26,7 +26,10 @@ router.get('/google/callback', (req, res, next) => {
       }
 
       req.session.user = {
-        userId: user.userId
+        userId: user.userId,
+        id : user._id,
+        email : user.email,
+        number : user?.number
       };
 
       return res.redirect('/');

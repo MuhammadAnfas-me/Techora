@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
 
               <div class="card-footer">
-                <span class="price">$${price}</span>
+                <span class="price">₹${price}</span>
                 <button
                   type="button"
                   class="add-btn"
@@ -467,7 +467,7 @@ async function addToWishlist(e, productId, variantId, isLogged,btn) {
     }
   } catch (error) {
     console.error(error)
-    showToast(error?.response?.message || "Something went wrong")
+    showToast(error?.response?.data?.message || "Something went wrong","error")
   }
 }
 

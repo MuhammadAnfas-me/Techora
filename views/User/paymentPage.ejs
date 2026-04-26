@@ -79,13 +79,12 @@
 
             <div class="price-calc">
                 <div class="calc-row"><span>Subtotal</span><span class="font-semibold"><%= formatINR(grandTotal) %></span></div>
-                <div class="calc-row text-success"><span>Discount</span><span class="font-semibold">-₹5,000</span></div>
-                <div class="calc-row" id="totalAmount"><span>GST (18%)</span><span class="font-semibold"><%= formatINR(grandTotal*18/100) %> </span></div>
+                <div class="calc-row text-success"><span>Discount</span><span class="font-semibold"><%= discount ? formatINR(discount) : "-₹0.00" %></span></div>
             </div>
 
             <div class="total-row">
                 <span class="total-label">Total Amount</span>
-                <span class="total-amount"><%= formatINR(grandTotal+grandTotal*18/100) %></span>
+                <span class="total-amount"><%= finalAmount ? formatINR(finalAmount) : formatINR(grandTotal) %></span>
             </div>
 
             <button class="pay-btn payment"  >Place Order</button>
@@ -107,10 +106,10 @@
 </html> -->
 
 <script>
-    const userNumber = <%- JSON.stringify(user.number) %> ;
+    const userNumber = <%- JSON.stringify(user.number || "Not added") %>  ;
     const userEmail = <%- JSON.stringify(user.email) %> ;
     const userName = <%- JSON.stringify(user.fullName) %> ;
-    const totalAmount = <%- JSON.stringify(grandTotal) %>;
+    const totalAmount = <%- finalAmount ? JSON.stringify(finalAmount) : JSON.stringify(grandTotal) %> ;
 
     document.querySelector('.payment').addEventListener('click',async function(e) {
 
@@ -169,9 +168,7 @@ async function payNow(amt){
         
 
 
-        const res = await axios.post("/create-order",{
-            amount : totalAmount
-        })
+        const res = await axios.post("/create-order")
 
         const options= {
             key : res.data.key,
@@ -193,10 +190,9 @@ async function payNow(amt){
             paymentId : verifyRes.data.paymentId
         })
         if(placeRes.data.success){
-            showToast(placeRes.data.message)
             setTimeout(() => {
                 window.location.href=`/checkout/payment/success?orderId=${placeRes.data.orderId}`
-            }, 1500);
+            }, 300);
         }else{
             showToast("Failed to place order","error")
         }
@@ -222,13 +218,16 @@ async function payNow(amt){
         const rzp = new Razorpay(options);
         rzp.open();
         rzp.on('payment.failed', function (response) {
-          showToast(response.error.description || "Payment Failed", "error");
-          window.location.href=`/checkout/payment/failed?addressId=${addressId}`
+        //   showToast(response.error.descrition || "Payment Failed", "error");
+        sessionStorage.setItem("paymentError",response.error.description)
+        console.log(response.error.description)
+          window.location.href=`/checkout/payment/failed?addressId=${addressId}?message=${response.error.description}`
         });
         
         options.modal = {
           ondismiss: function () {
             showToast("Payment Cancelled", "error");
+            location.reload()
           }
         };
     } catch (error) {

@@ -52,8 +52,12 @@
                 </div>
 
                 <div class="pricing">
-                    <span class="current-price">₹<span  id="currentPrice"><%= product.variants[0].price %></span></span>
-                    <span class="old-price" id="oldPrice">₹<%=  product.variants[0].price*2  %></span>
+                  <% if (product.variants[0].offerPrice < product.variants[0].originalPrice) { %>
+                    <span class="current-price">₹<span  id="currentPrice"><%= formatINR(product.variants[0].offerPrice) %></span></span>
+                    <span class="old-price" id="oldPrice"><%=  formatINR(product.variants[0].price)  %></span>
+                    <% } else { %>
+                      <span class="old-price" id="oldPrice"><%=  formatINR(product.variants[0].price)  %></span>
+                    <% } %>
                     <span class="discount-badge">Save 50%</span>
                 </div>
 
@@ -311,7 +315,6 @@ function updateQty(change,price) {
     if (newQty < 1) return
 
         qtyInput.value = newQty;
-        currentPrice.textContent = (newQty * price).toFixed(2);
     
 }
 
@@ -443,11 +446,11 @@ function moveLens(e) {
     }
 
     if (currentPrice) {
-      currentPrice.textContent = variant.price;
+      currentPrice.textContent = variant.offerPrice;
     }
 
     if(oldPrice){
-      oldPrice.textContent = variant.price*2
+      oldPrice.textContent = variant.orginalPrice
     }
 
     if (mainImage && variant.image?.length) {

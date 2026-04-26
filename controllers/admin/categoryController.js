@@ -2,7 +2,7 @@ import { Categories } from '../../models/categoryModel.js'
 import Product from '../../models/productModel.js'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
-dayjs.extend(relativeTime);
+dayjs.extend(relativeTime)
 
 const escapeRegex = (text = '') => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -138,7 +138,7 @@ const editPageLoad = async (req, res) => {
     const productsCount = await Product.countDocuments({
       categoryId: category._id
     })
-    category.lastUpdated = dayjs(category.updatedAt).fromNow();
+    category.lastUpdated = dayjs(category.updatedAt).fromNow()
     res.render('Admin/category/editPage', {
       currentPage: 'category',
       category,

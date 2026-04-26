@@ -27,8 +27,12 @@
       been deducted.
     </p>
 
-    <div class="info-box info-box-bordered">
-      This can happen due to network issues or bank authorization failure.
+    <div class="info-box info-box-bordered" id="message">
+      <% if(message){ %>
+        <%= message %>
+      <% }else{ %>
+        "This can happen due to network issues or bank authorization failure."
+      <% } %>
     </div>
 
     <div class="info-box info-box-gray">
@@ -50,9 +54,7 @@
     const addressId = <%- JSON.stringify(addressId) %>
   async function payNow() {
     try {
-      const res = await axios.post('/create-order', {
-        amount: 500
-      })
+      const res = await axios.post('/create-order')
 
       const options = {
         key: 'rzp_test_SeXq68d1LTx2HK',
@@ -107,8 +109,9 @@
       const rzp = new Razorpay(options)
       rzp.open()
       rzp.on('payment.failed', function (response) {
-        showToast(response.error.description || 'Payment Failed', 'error')
-        window.location.href = '/checkout/payment/failed'
+        // showToast(response.error.description || 'Payment Failed', 'error')
+        sessionStorage.setItem("paymentError",response.error.description)
+        window.location.href = `/checkout/payment/failed?addressId=${addressId}?message=${response.error.description}`
       })
 
       options.modal = {
@@ -119,6 +122,12 @@
     } catch (error) {
       console.log(error)
     }
+  }
+
+  const message = sessionStorage.getItem("paymentError")
+  if(message){
+    document.getElementById("message").textContent = message
+    sessionStorage.removeItem("paymentError")
   }
 </script>
 

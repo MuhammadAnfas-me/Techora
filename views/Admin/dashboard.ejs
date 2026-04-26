@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Techora</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    (function () {
+      const collapsed = localStorage.getItem("sidebarCollapsed") === "true";
+      if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
+    })();
+  </script>
+
+  <link rel="stylesheet" href="/styles/admin/products/productsList.css" />
+  <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
+  <link rel="stylesheet" href="/styles/user/popup.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <style>
+
+    /* ── Stat Cards Row ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 540px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      padding: 22px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1;
+    }
+
+    .stat-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-icon-wrap .material-symbols-outlined {
+      font-size: 22px;
+      color: #1B3C53;
+    }
+
+    /* ── Section Cards ── */
+    .section-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 20px 0;
+    }
+
+    /* ── Chart wrapper ── */
+    .chart-wrapper {
+      position: relative;
+      width: 100%;
+      height: 280px;
+    }
+
+    /* ── Recent Orders Table ── */
+    .recent-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .recent-table thead tr {
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .recent-table th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .recent-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #f9fafb;
+      color: #374151;
+      vertical-align: middle;
+    }
+
+    .recent-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .recent-table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    /* ── Status Pills ── */
+    .status-pill {
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+    }
+
+    .status-delivered {
+      background-color: #d1fae5;
+      color: #059669;
+    }
+
+    .status-pending {
+      background-color: #ffedd5;
+      color: #d97706;
+    }
+
+    .status-cancelled {
+      background-color: #ffe4e6;
+      color: #e11d48;
+    }
+
+    /* ── Footer ── */
+    .dashboard-footer {
+      text-align: center;
+      font-size: 13px;
+      color: #9ca3af;
+      padding: 16px 0 8px;
+    }
+
+    /* ── Responsive table scroll ── */
+    .table-scroll {
+      overflow-x: auto;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="/js/popup.js" defer></script>
+  <script src="/js/partitials/Admin/sidebar.js" defer></script>
+</head>
+
+<body>
+  <div id="toast" class="toast"></div>
+  <%- include("../partitials/admin/sidebar.ejs", { currentPage: 'dashboard' }) %>
+
+  <div class="main-wrapper">
+    <%- include("../partitials/admin/header.ejs", { currentPage: 'dashboard' }) %>
+
+    <main class="main-content">
+      <div class="content-container">
+
+        <%
+          // ── Dummy Data ──
+          const stats = [
+            { label: "Total Orders",   value: "1,248",  icon: "shopping_bag"  },
+            { label: "Total Revenue",  value: "$48,392", icon: "circle"        },
+            { label: "Total Users",    value: "3,572",  icon: "group"         },
+            { label: "Pending Orders", value: "87",     icon: "crop_square"   }
+          ];
+
+          const recentOrders = [
+            { id: "#ORD-1248", customer: "John Smith",     date: "2024-01-15", status: "Delivered", amount: "$248.00" },
+            { id: "#ORD-1247", customer: "Sarah Johnson",  date: "2024-01-15", status: "Pending",   amount: "$412.00" },
+            { id: "#ORD-1246", customer: "Michael Brown",  date: "2024-01-14", status: "Delivered", amount: "$186.00" },
+            { id: "#ORD-1245", customer: "Emily Davis",    date: "2024-01-14", status: "Cancelled", amount: "$324.00" },
+            { id: "#ORD-1244", customer: "David Wilson",   date: "2024-01-13", status: "Delivered", amount: "$562.00" }
+          ];
+        %>
+
+        <!-- ── Stat Cards ── -->
+        <div class="stats-grid">
+          <% stats.forEach(stat => { %>
+          <div class="stat-card">
+            <div>
+              <p class="stat-label"><%= stat.label %></p>
+              <p class="stat-value"><%= stat.value %></p>
+            </div>
+            <div class="stat-icon-wrap">
+              <span class="material-symbols-outlined"><%= stat.icon %></span>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+
+        <!-- ── Sales Overview Chart ── -->
+        <div class="section-card">
+          <h2 class="section-title">Sales Overview</h2>
+          <div class="chart-wrapper">
+            <canvas id="salesChart"></canvas>
+          </div>
+        </div>
+
+        <!-- ── Recent Orders Table ── -->
+        <div class="section-card">
+          <h2 class="section-title">Recent Orders</h2>
+          <div class="table-scroll">
+            <table class="recent-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recentOrders.forEach(order => { %>
+                <tr>
+                  <td style="font-weight: 500; color: #111827;"><%= order.id %></td>
+                  <td><%= order.customer %></td>
+                  <td><%= order.date %></td>
+                  <td>
+                    <% if (order.status === 'Delivered') { %>
+                      <span class="status-pill status-delivered"><%= order.status %></span>
+                    <% } else if (order.status === 'Pending') { %>
+                      <span class="status-pill status-pending"><%= order.status %></span>
+                    <% } else if (order.status === 'Cancelled') { %>
+                      <span class="status-pill status-cancelled"><%= order.status %></span>
+                    <% } %>
+                  </td>
+                  <td style="font-weight: 500; color: #111827;"><%= order.amount %></td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Footer ── -->
+        <p class="dashboard-footer">© 2024 MobileMart Admin. All rights reserved.</p>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ── Sales Overview Bar Chart ──
+    const ctx = document.getElementById("salesChart").getContext("2d");
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        datasets: [{
+          data: [4100, 3750, 5100, 4600, 5850, 6150],
+          backgroundColor: "#1B3C53",
+          borderRadius: 4,
+          borderSkipped: false,
+          barPercentage: 0.55,
+          categoryPercentage: 0.7
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` $${ctx.parsed.y.toLocaleString()}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { family: "Inter", size: 13 },
+              color: "#6b7280"
+            },
+            border: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            max: 8000,
+            ticks: {
+              stepSize: 2000,
+              font: { family: "Inter", size: 12 },
+              color: "#6b7280",
+              callback: (val) => val.toLocaleString()
+            },
+            grid: {
+              color: "#f3f4f6",
+              drawBorder: false
+            },
+            border: { display: false, dash: [4, 4] }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

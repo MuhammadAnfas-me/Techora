@@ -87,12 +87,16 @@ export const checkOutLoad = async (req, res) => {
     if (cartItems.length === 0) {
       return res.redirect('/cart')
     }
-    
+    let coupon = null
+    if(req.session.coupon){
+       coupon = req.session.coupon?.code
+    }
     res.render("User/checkOut.ejs", {
       address,
       cartItems,
       hasInvalidItems , 
-      grandTotal 
+      grandTotal ,
+      coupon : coupon ? coupon : null
     })
 
   } catch (error) {

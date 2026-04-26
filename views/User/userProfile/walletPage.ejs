@@ -101,11 +101,11 @@
             <div class="summary-stats-list">
                 <div class="summary-stat-row">
                     <span class="stat-label">Total Credits</span>
-                    <span class="stat-value text-success">+<%= formatINR(totalCredits) %></span>
+                    <span class="stat-value text-success">+<%= totalCredits ? formatINR(totalCredits) : "0.00" %></span>
                 </div>
                 <div class="summary-stat-row">
                     <span class="stat-label">Total Debits</span>
-                    <span class="stat-value text-danger">-<%= formatINR(totalDebits) %></span>
+                    <span class="stat-value text-danger">-<%= totalDebits ? formatINR(totalDebits) : "0.00"  %></span>
                 </div>
             </div>
 

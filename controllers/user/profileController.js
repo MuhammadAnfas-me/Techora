@@ -318,10 +318,8 @@ const removeProfileImage = async (req, res) => {
     if (user.profileImage?.publicId) {
       await cloudinary.uploader.destroy(user.profileImage.publicId)
     }
-    user.profileImage = {
-      url: process.env.DEFAULT_IMAGE,
-      publicId: ''
-    }
+    user.profileImage =  process.env.DEFAULT_IMAGE,
+  
     await user.save()
     return res
       .status(201)
