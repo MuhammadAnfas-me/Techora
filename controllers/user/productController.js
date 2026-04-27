@@ -3,6 +3,8 @@ import { Categories } from '../../models/categoryModel.js'
 import { Cart } from '../../models/cartModel.js'
 import { Offers } from '../../models/offerModel.js'
 import { Wishlist } from '../../models/wishListModel.js'
+import {getDiscountAmount} from '../../utils/offer.js'
+
 
 const productsList = async (req, res) => {
   try {
@@ -21,7 +23,7 @@ const productsList = async (req, res) => {
 
     const selectedBrands = brand ? (Array.isArray(brand) ? brand : [brand]) : []
 
-    const filter = { status: 'active', 'variants.stock': { $gte: 1 } }
+    const filter = { status: 'active', 'variants.stock': { $gt: 0 } }
 
     if (selectedCategory.length) {
       filter.categoryId = { $in: selectedCategory }
@@ -65,6 +67,58 @@ const productsList = async (req, res) => {
     ])
 
     const totalPages = Math.ceil(totalProducts / limit)
+
+    const now = new Date()
+
+    const offers = await Offers.find({
+      isActive: true,
+      start: { $lte: now },
+      end: { $gte: now }
+    }).lean()
+
+    products.forEach(product => {
+      if (!product.variants || product.variants.length === 0) return
+
+      const variant = product.variants[0]
+
+      let bestOffer = null
+      let maxDiscount = 0
+
+      for (let offer of offers) {
+        if (!offer.isActive) continue;
+        if (
+          (offer.scope === 'product' &&
+            offer.product?.toString() === product._id.toString()) ||
+          (offer.scope === 'category' &&
+            offer.category?.toString() === (product.categoryId?._id || product.categoryId)?.toString())
+        ) {
+          const discount = getDiscountAmount(offer, variant.price)
+
+          if (discount > maxDiscount) {
+            maxDiscount = discount
+            bestOffer = offer
+          }
+        }
+      }
+
+      //  apply best offer
+      let discountAmount = 0
+
+      if (bestOffer) {
+        discountAmount = getDiscountAmount(bestOffer, variant.price)
+
+        // prevent over discount
+        discountAmount = Math.min(discountAmount, variant.price)
+      }
+
+      const finalPrice = variant.price - discountAmount
+
+      //  DO NOT overwrite price
+      variant.originalPrice = variant.price
+      variant.offerPrice = Math.max(1, Math.round(finalPrice))
+
+      product.offer = bestOffer
+    })
 
     let wishListIds = []
     if (user) {
@@ -115,94 +169,95 @@ const productsList = async (req, res) => {
 }
 
 const productPage = async (req, res) => {
-  const user = req?.session?.user || '';
-  const productName = req.params.productId;
+  const user = req?.session?.user || ''
+  const productName = req.params.productId
 
-  const product = await Product.findOne({ name: productName });
+  const product = await Product.findOne({ name: productName }).lean()
 
   const relatedItems = await Product.find({
     categoryId: product.categoryId,
     status: 'active'
-  }).limit(4);
+  })
+    .limit(4)
+    .lean()
 
-  const now = new Date();
+  const now = new Date()
 
   const offers = await Offers.find({
     isActive: true,
     start: { $lte: now },
     end: { $gte: now }
-  });
+  })
 
   // ✅ helper to calculate discount
-  function getDiscountAmount(offer, price) {
+  function getDiscountAmount (offer, price) {
     if (offer.type === 'flat') {
-      return offer.value;
+      return offer.value
     } else {
-      return (price * offer.value) / 100;
+      return (price * offer.value) / 100
     }
   }
 
   // ✅ find best offer
-  let bestOffer = null;
-  let maxDiscount = 0;
+  let bestOffer = null
+  let maxDiscount = 0
 
   for (let offer of offers) {
     if (
-      (offer.scope === 'product' && offer.product.toString() === product._id.toString() ) ||
-      (offer.scope === 'category' && offer.category.toString() === product.categoryId.toString() )
+      (offer.scope === 'product' &&
+        offer.product?.toString() === product._id.toString()) ||
+      (offer.scope === 'category' &&
+        offer.category?.toString() === product.categoryId?.toString())
     ) {
-      const discount = getDiscountAmount(offer, product.variants[0].price);
+      const discount = getDiscountAmount(offer, product.variants[0].price)
 
       if (discount > maxDiscount) {
-        maxDiscount = discount;
-        bestOffer = offer;
+        maxDiscount = discount
+        bestOffer = offer
       }
     }
   }
 
   // ✅ apply offer to each variant (WITHOUT modifying original price)
   product.variants.forEach(variant => {
-    let finalPrice = variant.price;
+    let finalPrice = variant.price
 
     if (bestOffer) {
-      const discountAmount = getDiscountAmount(bestOffer, variant.price);
-      finalPrice = variant.price - discountAmount;
+      const discountAmount = getDiscountAmount(bestOffer, variant.price)
+      finalPrice = variant.price - discountAmount
     }
 
     // ✅ store both prices
-    variant.originalPrice = variant.price;
-    variant.offerPrice = Math.max(1, Math.round(finalPrice));
-  });
+    variant.originalPrice = variant.price
+    variant.offerPrice = Math.max(1, Math.round(finalPrice))
+  })
 
-  product.offer = bestOffer;
+  product.offer = bestOffer
 
   // ======================
   // Wishlist + Cart
   // ======================
 
-  let wishListIds = [];
-  console.log("Best Offer:", bestOffer);
-  product.variants.forEach(v => {
-  console.log(v.price, v.originalPrice, v.offerPrice)
-})
+  let wishListIds = []
+
   if (user) {
-    const wishList = await Wishlist.findOne({ userId: user.id });
+    const wishList = await Wishlist.findOne({ userId: user.id })
 
     if (wishList && Array.isArray(wishList.items)) {
       wishListIds = wishList.items.map(item => ({
         productId: item.productId.toString(),
         variantId: item.variantId || ''
-      }));
+      }))
     }
 
-    const cart = await Cart.findOne({ userId: user.id });
+    const cart = await Cart.findOne({ userId: user.id })
 
     return res.render('User/products/productDetails', {
       product,
       relatedItems,
       cart,
       wishListIds
-    });
+    })
   }
 
   res.render('User/products/productDetails', {
@@ -210,7 +265,7 @@ const productPage = async (req, res) => {
     relatedItems,
     wishListIds,
     cart: null
-  });
-};
+  })
+}
 
 export { productsList, productPage }

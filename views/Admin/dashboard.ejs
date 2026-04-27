@@ -197,20 +197,11 @@
       <div class="content-container">
 
         <%
-          // ── Dummy Data ──
           const stats = [
-            { label: "Total Orders",   value: "1,248",  icon: "shopping_bag"  },
-            { label: "Total Revenue",  value: "$48,392", icon: "circle"        },
-            { label: "Total Users",    value: "3,572",  icon: "group"         },
-            { label: "Pending Orders", value: "87",     icon: "crop_square"   }
-          ];
-
-          const recentOrders = [
-            { id: "#ORD-1248", customer: "John Smith",     date: "2024-01-15", status: "Delivered", amount: "$248.00" },
-            { id: "#ORD-1247", customer: "Sarah Johnson",  date: "2024-01-15", status: "Pending",   amount: "$412.00" },
-            { id: "#ORD-1246", customer: "Michael Brown",  date: "2024-01-14", status: "Delivered", amount: "$186.00" },
-            { id: "#ORD-1245", customer: "Emily Davis",    date: "2024-01-14", status: "Cancelled", amount: "$324.00" },
-            { id: "#ORD-1244", customer: "David Wilson",   date: "2024-01-13", status: "Delivered", amount: "$562.00" }
+            { label: "Total Orders",   value: totalOrders,  icon: "shopping_bag"  },
+            { label: "Total Revenue",  value: "₹" + totalRevenue.toLocaleString(), icon: "circle"        },
+            { label: "Total Users",    value: totalUsers,  icon: "group"         },
+            { label: "Pending Orders", value: pendingOrders,     icon: "crop_square"   }
           ];
         %>
 
@@ -260,9 +251,9 @@
                   <td>
                     <% if (order.status === 'Delivered') { %>
                       <span class="status-pill status-delivered"><%= order.status %></span>
-                    <% } else if (order.status === 'Pending') { %>
+                    <% } else if (['Pending', 'Placed', 'Confirmed'].includes(order.status)) { %>
                       <span class="status-pill status-pending"><%= order.status %></span>
-                    <% } else if (order.status === 'Cancelled') { %>
+                    <% } else { %>
                       <span class="status-pill status-cancelled"><%= order.status %></span>
                     <% } %>
                   </td>
@@ -288,9 +279,9 @@
     new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        labels: <%- chartLabels %>,
         datasets: [{
-          data: [4100, 3750, 5100, 4600, 5850, 6150],
+          data: <%- chartData %>,
           backgroundColor: "#1B3C53",
           borderRadius: 4,
           borderSkipped: false,
@@ -305,7 +296,7 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` $${ctx.parsed.y.toLocaleString()}`
+              label: (ctx) => ` ₹${ctx.raw.toLocaleString()}`
             }
           }
         },

@@ -581,19 +581,15 @@
                 <div class="card-header">Order Total</div>
                 <div class="totals-row">
                   <span>Subtotal</span>
-                  <span><%= formatINR(order.totalAmount) %></span>
+                  <span><%= formatINR(order.subtotal) %></span>
                 </div>
                 <div class="totals-row discount">
-                  <span>Discount (AutumnSale)</span>
-                  <span>-<%= formatINR(50.00) %></span>
+                  <span>Discount (<%= order.coupon.code ? order.coupon.code : "--" %>)</span>
+                  <span>-<%= order.coupon.discount ? formatINR(order.coupon.discount) : "-₹00.00" %></span>
                 </div>
                 <div class="totals-row">
                   <span>Shipping</span>
-                  <span><%= formatINR(15.00) %></span>
-                </div>
-                <div class="totals-row">
-                  <span>Tax (Estimated)</span>
-                  <span><%= formatINR(43.60) %></span>
+                  <span style="color : #22c55e">Free</span>
                 </div>
                 <div class="totals-divider"></div>
                 <div class="totals-grand">

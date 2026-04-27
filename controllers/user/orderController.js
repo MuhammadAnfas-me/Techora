@@ -230,10 +230,10 @@ export const cancelItem = async (req, res) => {
       v => v.varientId.toString() === variantId.toString()
     )
 
-    if(!reason){
+    if (!reason) {
       return res.status(400).json({
-        success : false,
-        message : "Please select a reason"
+        success: false,
+        message: 'Please select a reason'
       })
     }
     if (!variant) {
@@ -259,16 +259,18 @@ export const cancelItem = async (req, res) => {
         comment,
         cancelledAt: new Date()
       }
+      order.timeline.cancelledAt = new Date()
     }
 
-    const wallet = await Wallet.findOne({userId : user.id})
+    const wallet = await Wallet.findOne({ userId: user.id })
+
     if( ["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
-      wallet.balance += item.total
-      wallet.transaction.push({
-        type : "credit",
-        amount : item.total,
-        description : "Item cancellation amount refunded"
-      })
+    wallet.balance += item.finalTotal
+    wallet.transaction.push({
+      type: 'credit',
+      amount: item.finalTotal,
+      description: 'Item cancellation amount refunded'
+    })
     }
 
     await order.save()
@@ -319,10 +321,7 @@ export const orderCancelLoad = async (req, res) => {
     const user = req.session.user
 
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please login first'
-      })
+      res.redirect('/')
     }
 
     if (!orderId) {
@@ -339,7 +338,7 @@ export const orderCancelLoad = async (req, res) => {
 
     res.render('User/order/orderCancelPage.ejs', {
       order,
-      item : null
+      item: null
     })
   } catch (error) {
     console.log('Error from orderCancelLoad :', error)
@@ -420,20 +419,19 @@ export const orderCancel = async (req, res) => {
         )
       }
     }
-    // allCancelled = order.items.every(i => i.status === 'Cancelled')
+
     order.orderStatus = 'Cancelled'
-    // if (allCancelled) {
+
     order.timeline.cancelledAt = new Date()
-    // }
-    const wallet = await Wallet.findOne({userId : order.userId})
+    const wallet = await Wallet.findOne({ userId: order.userId })
 
     if(["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
-      wallet.balance += order.totalAmount
-      wallet.transaction.push({
-        type : "credit",
-        amount : order.totalAmount,
-        description : "Order cancellation amount refunded"
-      })
+    wallet.balance += order.totalAmount
+    wallet.transaction.push({
+      type: 'credit',
+      amount: order.totalAmount,
+      description: 'Order cancellation amount refunded'
+    })
     }
     await wallet.save()
     await order.save()
@@ -450,14 +448,13 @@ export const orderCancel = async (req, res) => {
   }
 }
 
-
 export const itemReturnLoad = async (req, res) => {
   try {
-    const {orderId,itemId} = req.params
+    const { orderId, itemId } = req.params
     const user = req.session.user
 
     if (!user) {
-      return res.redirect("/")
+      return res.redirect('/')
     }
 
     if (!orderId) {
@@ -470,7 +467,7 @@ export const itemReturnLoad = async (req, res) => {
     const order = await Order.findOne({
       orderId
     })
-    
+
     const item = order.items.find(item => item._id.toString() === itemId)
     res.render('User/order/orderReturnPage.ejs', {
       order,
@@ -487,7 +484,7 @@ export const orderReturnLoad = async (req, res) => {
     const user = req.session.user
 
     if (!user) {
-      return res.redirect("/")
+      return res.redirect('/')
     }
 
     if (!orderId) {
@@ -503,189 +500,184 @@ export const orderReturnLoad = async (req, res) => {
 
     res.render('User/order/orderReturnPage.ejs', {
       order,
-      item:null
+      item: null
     })
   } catch (error) {
     console.log('Error from orderCancelLoad :', error)
   }
 }
 
-
 export const returnOrderItem = async (req, res) => {
   try {
-    const user = req.session.user;
-    const { orderId, itemId } = req.params;
-    const { reason, comment } = req.body;
+    const user = req.session.user
+    const { orderId, itemId } = req.params
+    const { reason, comment } = req.body
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Please login first"
-      });
+        message: 'Please login first'
+      })
     }
 
     if (!reason) {
       return res.status(400).json({
         success: false,
-        message: "Please select a reason"
-      });
+        message: 'Please select a reason'
+      })
     }
 
     const order = await Order.findOne({
       orderId,
       userId: user.id
-    });
+    })
 
     if (!order) {
       return res.status(400).json({
         success: false,
-        message: "Order not found"
-      });
+        message: 'Order not found'
+      })
     }
 
-    const item = order.items.id(itemId);
+    const item = order.items.id(itemId)
 
     if (!item) {
       return res.status(400).json({
         success: false,
-        message: "Item not found"
-      });
+        message: 'Item not found'
+      })
     }
 
-    if (item.status !== "Delivered") {
+    if (item.status !== 'Delivered') {
       return res.status(400).json({
         success: false,
-        message: "Only delivered items can be returned"
-      });
+        message: 'Only delivered items can be returned'
+      })
     }
 
-    if (item.status === "Returned") {
+    if (item.status === 'Returned') {
       return res.status(400).json({
         success: false,
-        message: "Item already returned"
-      });
+        message: 'Item already returned'
+      })
     }
 
-    item.status = "Return Requested";
+    item.status = 'Return Requested'
     item.returnRequest = {
-      status : "Pending",
+      status: 'Pending',
       reason,
-      comment: comment?.trim() || "",
+      comment: comment?.trim() || '',
       returnedAt: new Date()
-    };
+    }
 
-    const allReturned = order.items.every(i => i.status === "Return Requested");
+    const allReturned = order.items.every(i => i.status === 'Return Requested')
 
     if (allReturned) {
-      order.orderStatus = "Return Requested";
-      order.returnRequest={
-        status : "Pending",
+      order.orderStatus = 'Return Requested'
+      order.returnRequest = {
+        status: 'Pending',
         reason,
-        comment : comment?.trim() || ""
+        comment: comment?.trim() || ''
       }
-      order.timeline.returnedAt = new Date();
+      order.timeline.returnedAt = new Date()
     }
 
-    await order.save();
+    await order.save()
 
     return res.status(200).json({
       success: true,
-      message: "Item returned successfully"
-    });
-
+      message: 'Item returned successfully'
+    })
   } catch (error) {
-    console.log("Error in returnOrderItem:", error);
+    console.log('Error in returnOrderItem:', error)
     return res.status(500).json({
       success: false,
-      message: "Server error"
-    });
+      message: 'Server error'
+    })
   }
-};
+}
 
 export const returnOrder = async (req, res) => {
   try {
-    const user = req.session.user;
+    const user = req.session.user
     const orderId = req.params.orderId
-    const { reason, comment } = req.body;
+    const { reason, comment } = req.body
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Please login first"
-      });
+        message: 'Please login first'
+      })
     }
 
     if (!reason) {
       return res.status(400).json({
         success: false,
-        message: "Please select a reason"
-      });
+        message: 'Please select a reason'
+      })
     }
 
     const order = await Order.findOne({
       orderId,
       userId: user.id
-    });
+    })
 
     if (!order) {
       return res.status(400).json({
         success: false,
-        message: "Order not found"
-      });
+        message: 'Order not found'
+      })
     }
 
-    if (order.orderStatus !== "Delivered") {
+    if (order.orderStatus !== 'Delivered') {
       return res.status(400).json({
         success: false,
-        message: "Only delivered orders can be returned"
-      });
+        message: 'Only delivered orders can be returned'
+      })
     }
 
-    if (order.orderStatus === "Returned") {
+    if (order.orderStatus === 'Returned') {
       return res.status(400).json({
         success: false,
-        message: "Order already returned"
-      });
+        message: 'Order already returned'
+      })
     }
 
-    const now = new Date();
+    const now = new Date()
 
     for (const item of order.items) {
+      if (item.status === 'Returned') continue
 
-      if (item.status === "Returned") continue;
-
-      item.status = "Return Requested";
+      item.status = 'Return Requested'
 
       item.returnRequest = {
-        status : "Pending",
+        status: 'Pending',
         reason,
-        comment: comment?.trim() || "",
+        comment: comment?.trim() || '',
         returnedAt: now
-      };
-
+      }
     }
 
-    order.orderStatus = "Return Requested";
+    order.orderStatus = 'Return Requested'
 
     order.returnRequest = {
-      status : "Pending",
+      status: 'Pending',
       reason,
-      comment: comment?.trim() || "",
+      comment: comment?.trim() || '',
       requestedAt: now
-    };
+    }
 
-    await order.save();
+    await order.save()
 
     return res.status(200).json({
       success: true,
       message: `${orderId} returned successfully`
-    });
-
+    })
   } catch (error) {
-    console.log("Error in returnOrder:", error);
+    console.log('Error in returnOrder:', error)
     return res.status(500).json({
       success: false,
-      message: "Server error"
-    });
+      message: 'Server error'
+    })
   }
-};
+}

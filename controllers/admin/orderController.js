@@ -95,7 +95,7 @@ export const orderListLoad = async (req, res) => {
               productName: item.name,
               quantity: item.quantity,
               reason: item.returnRequest.reason,
-              amount: item.price,
+              amount: item.finalTotal,
               id: item._id
             })
 
@@ -296,14 +296,14 @@ export const updateOrderStatus = async (req, res) => {
       order.timeline.returnedAt = new Date()
       const wallet = await Wallet.findOne({userId : order.userId})
 
-    if(["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
+    // if(["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
       wallet.balance += order.totalAmount
       wallet.transaction.push({
         type : "credit",
         amount : order.totalAmount,
         description : "Order return amount refunded"
       })
-    }
+    // }
     
     await wallet.save()
     }
@@ -372,14 +372,14 @@ export const returnItem = async (req, res) => {
     
 
     const wallet = await Wallet.findOne({userId : order.userId})
-    if( ["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
-      wallet.balance += item.total
+    // if( ["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
+      wallet.balance += item.finalTotal
       wallet.transaction.push({
         type : "credit",
-        amount : item.total,
-        description : "Item cancellation amount refunded"
+        amount : item.finalTotal,
+        description : "Item return amount refunded"
       })
-    }
+    // }
 
     await wallet.save()
     await order.save()

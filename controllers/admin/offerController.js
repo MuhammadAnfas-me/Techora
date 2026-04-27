@@ -125,13 +125,13 @@ export const addOffer = async (req, res) => {
       type,
       value,
       scope,
-      product,
-      category,
+      product: productId,
+      category: categoryId,
       start,
       end,
       isActive
     } = req.body
-
+  
     // 🔹 Basic validation
     if (!name?.trim()) {
       return res
@@ -149,10 +149,10 @@ export const addOffer = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid value' })
     }
 
-    if (type === 'percentage' && value > 100) {
+    if (type === 'percentage' && value > 80) {
       return res
         .status(400)
-        .json({ success: false, message: 'Percentage cannot exceed 100' })
+        .json({ success: false, message: 'Percentage cannot exceed 80' })
     }
 
     if (!['product', 'category'].includes(scope)) {
@@ -160,13 +160,13 @@ export const addOffer = async (req, res) => {
     }
 
     // 🔥 Scope validation
-    if (scope === 'product' && !product) {
+    if (scope === 'product' && !productId) {
       return res
         .status(400)
         .json({ success: false, message: 'Product required' })
     }
 
-    if (scope === 'category' && !category) {
+    if (scope === 'category' && !categoryId) {
       return res
         .status(400)
         .json({ success: false, message: 'Category required' })
@@ -198,7 +198,7 @@ export const addOffer = async (req, res) => {
     if (scope === 'product') {
       existing = await Offers.findOne({
         scope: 'product',
-        product,
+        product: productId,
         isActive: true,
         isDeleted: false
       })
@@ -207,7 +207,7 @@ export const addOffer = async (req, res) => {
     if (scope === 'category') {
       existing = await Offers.findOne({
         scope: 'category',
-        category,
+        category: categoryId,
         isActive: true,
         isDeleted: false
       })
@@ -220,14 +220,38 @@ export const addOffer = async (req, res) => {
       })
     }
 
+    if (type === 'flat') {
+      let minPrice = Infinity;
+      if (scope === 'product') {
+        const product = await Product.findById(productId);
+        product?.variants?.forEach(v => {
+          if (v.price < minPrice) minPrice = v.price;
+        });
+      } else if (scope === 'category') {
+        const products = await Product.find({ categoryId });
+        products.forEach(p => {
+          p.variants?.forEach(v => {
+            if (v.price < minPrice) minPrice = v.price;
+          });
+        });
+      }
+      
+      if (minPrice !== Infinity && value >= minPrice) {
+        return res.status(400).json({
+          success: false,
+          message: "Flat discount cannot be equal to or exceed the minimum product price."
+        });
+      }
+    }
+
     // 🔹 Create offer
     const offer = new Offers({
       name: name.trim(),
       type,
       value: Number(value),
       scope,
-      product: scope === 'product' ? product : null,
-      category: scope === 'category' ? category : null,
+      product: scope === 'product' ? productId : null,
+      category: scope === 'category' ? categoryId : null,
       start,
       end,
       isActive: isActive ?? true
@@ -248,34 +272,34 @@ export const addOffer = async (req, res) => {
 
 export const editLoad = async (req, res) => {
   try {
-    const name = req.params.id 
-    const offer = await Offers.findOne({name : name})
+    const name = req.params.id
+    const offer = await Offers.findOne({ name: name })
     let items = null
     let selected = null
 
-    if(offer.category != null){
+    if (offer.category != null) {
       items = await Categories.find()
       selected = items.find(item => item._id.equals(offer.category))
-    }else if(offer.product != null){
+    } else if (offer.product != null) {
       items = await Product.find()
       selected = items.find(item => item._id.equals(offer.product))
     }
 
-    res.render('Admin/offer/editOffer.ejs',{
+    res.render('Admin/offer/editOffer.ejs', {
       offer,
       items,
       selected,
       date: new Date(),
-      selectedId : selected._id
+      selectedId: selected._id
     })
   } catch (error) {
-    console.log('Error from aditLoad :',error)
+    console.log('Error from aditLoad :', error)
   }
 }
 
 export const updateOffer = async (req, res) => {
   try {
-    const nameId = req.params.id;
+    const nameId = req.params.id
 
     const {
       name,
@@ -284,57 +308,92 @@ export const updateOffer = async (req, res) => {
       start,
       end,
       scope, // Product or Category
-      product,
-      category
-    } = req.body;
+      product: productId,
+      category: categoryId,
+      isActive
+    } = req.body
 
     // 🔴 Basic Validation
     if (!name || !type || !value || !start || !end) {
-      return res.status(400).json({ success: false, message: "All fields required" });
+      return res
+        .status(400)
+        .json({ success: false, message: 'All fields required' })
     }
 
     if (new Date(start) >= new Date(end)) {
-      return res.status(400).json({ success: false, message: "Expiry must be after start date" });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Expiry must be after start date' })
+    }
+
+    if (type === 'percentage' && value > 80) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Percentage cannot exceed 80' })
+    }
+
+    if (type === 'flat') {
+      let minPrice = Infinity;
+      if (scope === 'product') {
+        const product = await Product.findById(productId);
+        product?.variants?.forEach(v => {
+          if (v.price < minPrice) minPrice = v.price;
+        });
+      } else if (scope === 'category') {
+        const products = await Product.find({ categoryId });
+        products.forEach(p => {
+          p.variants?.forEach(v => {
+            if (v.price < minPrice) minPrice = v.price;
+          });
+        });
+      }
+      
+      if (minPrice !== Infinity && value >= minPrice) {
+        return res.status(400).json({
+          success: false,
+          message: "Flat discount cannot be equal to or exceed the minimum product price."
+        });
+      }
     }
 
     // 🎯 Prepare update data
     const updateData = {
       name,
       type,
-      value : Number(value),
+      value: Number(value),
       start,
       end,
       scope,
-      product: scope === 'product' ? product : null,
-      category: scope === 'category' ? category : null,
-    };
+      product: scope === 'product' ? productId : null,
+      category: scope === 'category' ? categoryId : null,
+      isActive
+    }
 
     // 🔄 Update
-    await Offers.findOneAndUpdate({name : nameId}, updateData, { new: true });
+    await Offers.findOneAndUpdate({ name: nameId }, updateData, { new: true })
     return res.status(200).json({
-      success : true,
-      message : "Offer updated successfully"
+      success: true,
+      message: 'Offer updated successfully'
     })
-    
   } catch (error) {
-    console.log("Error updating offer:", error);
+    console.log('Error updating offer:', error)
     return res.status(500).json({
-      success : false,
-      message : "Server error"
+      success: false,
+      message: 'Server error'
     })
   }
-};
+}
 
 export const deleteCoupon = async (req, res) => {
   try {
-    const offerId = req.params.id;
+    const offerId = req.params.id
 
     // 1. Validate ID
     if (!offerId) {
       return res.status(400).json({
         success: false,
-        message: "Offer Id is required"
-      });
+        message: 'Offer Id is required'
+      })
     }
 
     // 2. Find offer
@@ -343,56 +402,55 @@ export const deleteCoupon = async (req, res) => {
     if (!offer) {
       return res.status(404).json({
         success: false,
-        message: "Offer not found"
-      });
+        message: 'Offer not found'
+      })
     }
 
     // 3. Prevent deleting already deleted
     if (offer.isDeleted) {
       return res.status(400).json({
         success: false,
-        message: "Offer already deleted"
-      });
+        message: 'Offer already deleted'
+      })
     }
 
     // 4. Check if coupon is used in orders
-    const isUsed = await Order.exists({ _id : offerId});
+    const isUsed = await Order.exists({ _id: offerId })
 
     if (isUsed) {
       return res.status(400).json({
         success: false,
-        message: "Cannot delete Offer already used in orders"
-      });
+        message: 'Cannot delete Offer already used in orders'
+      })
     }
 
     // 5. Soft delete
-    offer.isDeleted = true;
-    offer.isActive = false;
+    offer.isDeleted = true
+    offer.isActive = false
 
-    await offer.save();
+    await offer.save()
 
     return res.status(200).json({
       success: true,
-      message: "Coupon deleted successfully"
-    });
-
+      message: 'Coupon deleted successfully'
+    })
   } catch (error) {
-    console.error("Delete offer Error:", error);
+    console.error('Delete offer Error:', error)
     return res.status(500).json({
       success: false,
-      message: "Server error"
-    });
+      message: 'Server error'
+    })
   }
-};
+}
 
-export const toggleStatus = async (req,res)=>{
+export const toggleStatus = async (req, res) => {
   try {
-    const {id , isActive} = req.body
+    const { id, isActive } = req.body
     const offer = await Offers.findById(id)
-    if(!offer){
+    if (!offer) {
       return res.status(400).json({
-        success : false,
-        message : "Offer not found"
+        success: false,
+        message: 'Offer not found'
       })
     }
 
@@ -401,14 +459,16 @@ export const toggleStatus = async (req,res)=>{
     await offer.save()
 
     return res.status(200).json({
-      success : true,
-      message :  `Offer ${offer.isActive ? "activated" : "deactivated"} successfully`
+      success: true,
+      message: `Offer ${
+        offer.isActive ? 'activated' : 'deactivated'
+      } successfully`
     })
   } catch (error) {
-    console.log("Toggle offer error :",error)
+    console.log('Toggle offer error :', error)
     return res.status(500).json({
-      success : false,
-      message : "Server error"
+      success: false,
+      message: 'Server error'
     })
   }
 }

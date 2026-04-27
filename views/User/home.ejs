@@ -202,8 +202,12 @@
                         </div>
                         <div class="product-footer">
                             <div class="price-group">
-                                <span class="product-price"><%= formatINR(product.variants[0].price) %></span>
-                                <span class="product-price-old">$70</span>
+                                <% if (product.variants[0].offerPrice < product.variants[0].originalPrice) { %>
+                                    <span class="product-price"><%= formatINR(product.variants[0].offerPrice) %></span>
+                                    <span class="product-price-old" style="text-decoration: line-through;"><%= formatINR(product.variants[0].originalPrice) %></span>
+                                <% } else { %>
+                                    <span class="product-price"><%= formatINR(product.variants[0].offerPrice) %></span>
+                                <% } %>
                             </div>
                             <button class="add-btn" onclick="addToCart(event,'<%= product._id %>', '<%= product.variants[0].varientId %>',<%= user ? 'true' : 'false' %>)">
                                 <span class="material-symbols-outlined">shopping_cart</span>

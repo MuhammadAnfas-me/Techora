@@ -2,6 +2,11 @@ import { Cart } from '../../models/cartModel.js'
 import Product from '../../models/productModel.js'
 import { User } from '../../models/userModel.js'
 import { Wishlist } from '../../models/wishListModel.js'
+import { Offers } from '../../models/offerModel.js'
+import { getOfferPrice } from '../../utils/offer.js'
+import {getDiscountAmount} from '../../utils/offer.js'
+
+
 const cartLoad = async (req, res) => {
   try {
     const user = req.session.user
@@ -9,6 +14,10 @@ const cartLoad = async (req, res) => {
     const cart = await Cart.findOne({ userId: user.id }).populate(
       'items.productId'
     )
+
+    const now = new Date()
+    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
+
     let cartItems = []
 
     if (cart && Array.isArray(cart.items)) {
@@ -37,6 +46,8 @@ const cartLoad = async (req, res) => {
             stock: 0
           };
 
+          const offerPrice = getOfferPrice(product, variant.price, activeOffers)
+
           return {
             productId: product._id,
             variantId: item.variantId,
@@ -46,15 +57,29 @@ const cartLoad = async (req, res) => {
             status: product.status,
             categoryId : item.categoryId,
             image: variant.image?.[0] || '',
-            price: variant.price,
+            price: offerPrice,
+            originalPrice: variant.price,
             stock: variant.stock,
             color: variant.color || '',
-            total: item.total,
+            total: offerPrice * item.quantity,
             variantDeleted: false,
-            subtotal: variant.price * item.quantity
+            subtotal: offerPrice * item.quantity
           }
         })
         .filter(Boolean)
+    }
+
+    // Update db totals to match current offer logic silently
+    if (cart) {
+      let cartChanged = false;
+      cart.items.forEach((dbItem, index) => {
+         const matchingComputed = cartItems.find(ci => ci.productId.toString() === dbItem.productId._id.toString() && ci.variantId === dbItem.variantId)
+         if (matchingComputed && Number(dbItem.total) !== matchingComputed.total) {
+            dbItem.total = matchingComputed.total;
+            cartChanged = true;
+         }
+      })
+      if (cartChanged) await cart.save();
     }
 
     const grandTotal = cartItems.reduce((sum, item) => sum + item.subtotal, 0)
@@ -113,7 +138,11 @@ const addToCart = async (req, res) => {
       }
     }
 
-    let total = variant.price * qty
+    const now = new Date()
+    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
+    const offerPrice = getOfferPrice(product, variant.price, activeOffers)
+
+    let total = offerPrice * qty
 
     let cart = await Cart.findOne({ userId: sessionUser.id })
 
@@ -283,6 +312,10 @@ const updateCartQuantity = async (req, res) => {
       })
     }
 
+    const now = new Date()
+    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
+    const offerPrice = getOfferPrice(product, variant.price, activeOffers)
+
     if (action === 'increase') {
       if (cartItem.quantity >= variant.stock) {
         return res.status(400).json({
@@ -292,7 +325,7 @@ const updateCartQuantity = async (req, res) => {
       }
 
       cartItem.quantity += 1
-      cartItem.total += variant.price
+      cartItem.total = Number(cartItem.total) + offerPrice
     } else if (action === 'decrease') {
       if (cartItem.quantity <= 1) {
         return res.status(400).json({
@@ -302,7 +335,7 @@ const updateCartQuantity = async (req, res) => {
       }
 
       cartItem.quantity -= 1
-      cartItem.total -= variant.price
+      cartItem.total = Number(cartItem.total) - offerPrice
     } else {
       return res.status(400).json({
         success: false,

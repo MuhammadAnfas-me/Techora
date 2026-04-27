@@ -194,7 +194,7 @@ async function payNow(amt){
                 window.location.href=`/checkout/payment/success?orderId=${placeRes.data.orderId}`
             }, 300);
         }else{
-            showToast("Failed to place order","error")
+            showToast(placeRes.data.message||"Failed to place order","error")
         }
       
         } else {

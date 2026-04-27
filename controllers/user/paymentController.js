@@ -307,6 +307,7 @@ export const placeOrder = async (req, res) => {
       }
 
       const itemTotal = variant.price * item.quantity
+
       subtotal += itemTotal
 
       orderItems.push({
@@ -360,8 +361,8 @@ export const placeOrder = async (req, res) => {
           couponData = {
             couponId: coupon._id,
             code: coupon.couponCode,
-            discountType : coupon.discountType,
-            discountValue : coupon.discountValue,
+            discountType: coupon.discountType,
+            discountValue: coupon.discountValue,
             discount
           }
 
@@ -405,7 +406,30 @@ export const placeOrder = async (req, res) => {
       }
     }
 
-    const totalAmount = subtotal - discount
+    const totalAmount = Math.round(subtotal - discount)
+    let remainingDiscount = discount
+
+    orderItems = orderItems.map((item, index) => {
+      const itemTotal = item.total
+
+      let itemDiscount = 0
+
+      if (discount > 0) {
+        if (index === orderItems.length - 1) {
+          itemDiscount = remainingDiscount
+        } else {
+          const itemShare = itemTotal / subtotal
+          itemDiscount = Math.round(discount * itemShare)
+          remainingDiscount -= itemDiscount
+        }
+      }
+
+      return {
+        ...item,
+        discount: itemDiscount,
+        finalTotal: itemTotal - itemDiscount
+      }
+    })
 
     // ======================
     // ORDER CREATE

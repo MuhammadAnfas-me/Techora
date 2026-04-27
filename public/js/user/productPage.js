@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
       category: getCheckedValues('category'),
       brand: getCheckedValues('brand'),
       compatibility: getCheckedValues('compatibility'),
-      minPrice: minRange ? minRange.value : 0,
-      maxPrice: maxRange ? maxRange.value : 50000,
+      minPrice: (minRange && Number(minRange.value) > 0) ? minRange.value : '',
+      maxPrice: (maxRange && Number(maxRange.value) < 50000) ? maxRange.value : '',
       search: searchInput ? searchInput.value.trim() : '',
       sort: sortSelect ? sortSelect.value : '',
       page
@@ -110,9 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateProductsCount (totalProducts) {
-    const productsCount = document.getElementById('productsCount')
-    if (productsCount) {
-      productsCount.textContent = totalProducts ?? 0
+    const countElement = document.getElementById('productCount')
+    if (countElement) {
+      countElement.textContent = totalProducts ?? 0
     }
   }
 
@@ -132,7 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstVariant = product.variants?.[0] || {}
         const firstImage =
           firstVariant.image?.[0] || '/images/fallback-product.png'
-        const price = firstVariant.price ?? 0
+        const offerPrice = firstVariant.offerPrice ?? firstVariant.price ?? 0;
+        const originalPrice = firstVariant.originalPrice ?? firstVariant.price ?? 0;
         const variantId = firstVariant.varientId || ''
 
         const createdAt = new Date(product.createdAt)
@@ -180,7 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
 
               <div class="card-footer">
-                <span class="price">₹${price}</span>
+                ${offerPrice < originalPrice ? 
+                  `<div>
+                  <span class="price">₹${offerPrice}</span>
+                   <span class="original-price" style="text-decoration: line-through; color: #888; font-size: 0.9em; margin-left: 0.5rem;">₹${originalPrice}</span>
+                   </div>` : 
+                  `<span class="price">₹${offerPrice}</span>`
+                }
                 <button
                   type="button"
                   class="add-btn"
@@ -214,12 +221,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let html = `<nav class="pagination">`
 
-    if (currentPage > 1) {
+    if (Number(currentPage) > 1) {
       html += `
       <button
         type="button"
         class="page-link page-link-nav"
-        data-page="${currentPage - 1}"
+        data-page="${Number(currentPage) - 1}"
       >
         <div class="h-4 w-4">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,12 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
     `
     }
 
-    if (currentPage < totalPages) {
+    if (Number(currentPage) < Number(totalPages)) {
       html += `
       <button
         type="button"
         class="page-link page-link-nav"
-        data-page="${currentPage + 1}"
+        data-page="${Number(currentPage) + 1}"
       >
         Next
         <div class="h-4 w-4">

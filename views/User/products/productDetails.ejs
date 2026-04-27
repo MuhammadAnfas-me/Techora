@@ -52,18 +52,41 @@
                 </div>
 
                 <div class="pricing">
-                  <% if (product.variants[0].offerPrice < product.variants[0].originalPrice) { %>
-                    <span class="current-price">₹<span  id="currentPrice"><%= formatINR(product.variants[0].offerPrice) %></span></span>
-                    <span class="old-price" id="oldPrice"><%=  formatINR(product.variants[0].price)  %></span>
-                    <% } else { %>
-                      <span class="old-price" id="oldPrice"><%=  formatINR(product.variants[0].price)  %></span>
-                    <% } %>
-                    <span class="discount-badge">Save 50%</span>
+                  <% 
+                    const variant = product.variants[0];
+                    const original = variant.originalPrice;
+                    const offerPrice = variant.offerPrice;
+                  %>
+
+                  <% if (offerPrice < original) { %>
+                  
+                    <span class="current-price">
+                      ₹<span id="currentPrice"><%= formatINR(offerPrice) %></span>
+                    </span>
+                  
+                    <span class="old-price" id="oldPrice">
+                      ₹<%= formatINR(original) %>
+                    </span>
+                  
+                    <% const saved = original - offerPrice; %>
+                    <span class="discount-badge" id="save">
+                      Save <%= formatINR(saved) %>
+                    </span>
+                  
+                  <% } else { %>
+                  
+                    <span class="current-price">
+                      ₹<span id="currentPrice"><%= formatINR(original) %></span>
+                    </span>
+                  
+                  <% } %>
                 </div>
 
+                <% if (product.offer) { %>
                 <div class="promo-banner">
-                    <i class="fas fa-tag"></i> Limited time offer: Free shipping 
+                    <i class="fas fa-tag"></i> Limited time offer: <%= product.offer.name %> (<%= product.offer.type === "flat" ? "₹"+product.offer.value+" "+"OFF" : product.offer.value+"%" %>) 
                 </div>
+                <% } %>
 
                 <% const stock = product.variants[0]?.stock || 0; %>
 
@@ -265,6 +288,7 @@
     const selectedVariantId = document.getElementById("selectedVariantId");
     const currentPrice = document.getElementById("currentPrice");
     const oldPrice = document.getElementById("oldPrice")
+    const save = document.getElementById("save")
     const mainImage = document.getElementById("mainImage");
     const thumbnailList = document.querySelector(".thumbnail-list");
     const zoomPreview = document.getElementById("zoomPreview");
@@ -450,11 +474,15 @@ function moveLens(e) {
     }
 
     if(oldPrice){
-      oldPrice.textContent = variant.orginalPrice
+      oldPrice.textContent = variant.originalPrice
     }
 
     if (mainImage && variant.image?.length) {
       mainImage.src = variant.image[0];
+    }
+
+    if(save){
+      save.textContent = `SAVE ₹${variant.originalPrice - variant.offerPrice}`
     }
      updateWishlistButton(variant);
     if (thumbnailList) {

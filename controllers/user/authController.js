@@ -7,7 +7,15 @@ import { Wallet } from '../../models/walletModel.js'
 import generateUserId from '../../utils/generateUserId.js'
 import crypto from 'crypto'
 import Product from '../../models/productModel.js'
+import { Offers } from '../../models/offerModel.js'
 const SALT_ROUND = 10
+
+function getDiscountAmount (offer, price) {
+  if (offer.type === 'flat') {
+    return offer.value
+  }
+  return (price * offer.value) / 100
+}
 
 const getErrorMessage = msg => {
   switch (msg) {
@@ -244,7 +252,52 @@ const forgotPassword = async (req, res) => {
 const homeLoad = async (req, res) => {
 
   try {
-    const products = await Product.find().sort({createdAt : -1}).limit(4)
+    let products = await Product.find({ status: 'active', 'variants.stock': { $gte: 0 } }).populate('categoryId').sort({createdAt : -1}).limit(4).lean()
+    
+    const now = new Date()
+    const offers = await Offers.find({
+      isActive: true,
+      start: { $lte: now },
+      end: { $gte: now }
+    }).lean()
+
+    products.forEach(product => {
+      if (!product.variants || product.variants.length === 0) return
+
+      const variant = product.variants[0]
+
+      let bestOffer = null
+      let maxDiscount = 0
+
+      for (let offer of offers) {
+        if (!offer.isActive) continue;
+        if (
+          (offer.scope === 'product' &&
+            offer.product?.toString() === product._id.toString()) ||
+          (offer.scope === 'category' &&
+            offer.category?.toString() === (product.categoryId?._id || product.categoryId)?.toString())
+        ) {
+          const discount = getDiscountAmount(offer, variant.price)
+
+          if (discount > maxDiscount) {
+            maxDiscount = discount
+            bestOffer = offer
+          }
+        }
+      }
+
+      let discountAmount = 0
+      if (bestOffer) {
+        discountAmount = getDiscountAmount(bestOffer, variant.price)
+        discountAmount = Math.min(discountAmount, variant.price)
+      }
+
+      const finalPrice = variant.price - discountAmount
+      variant.originalPrice = variant.price
+      variant.offerPrice = Math.max(1, Math.round(finalPrice))
+      product.offer = bestOffer
+    })
+
     res.render('User/home',{products})
   } catch (error) {
     console.log("Error from Home page :",error)

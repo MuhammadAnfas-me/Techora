@@ -45,7 +45,7 @@
                 <span class="cr-item-qty">Qty: <%= item.quantity %></span>
               </div>
             </div>
-            <div class="cr-item-price"><%= formatINR(item.price) %></div>
+            <div class="cr-item-price"><%= formatINR(item.finalTotal) %></div>
           </div>
           <% }) %>
           <% }else{ %>
@@ -59,7 +59,7 @@
                    <span class="cr-item-qty">Qty: <%= item.quantity %></span>
                  </div>
                </div>
-               <div class="cr-item-price"><%= formatINR(item.price) %></div>
+               <div class="cr-item-price"><%= formatINR(item.finalTotal) %></div>
              </div>
 
           <% } %>
@@ -73,7 +73,7 @@
             <span class="cr-refund-note">Final refund will be confirmed after review</span>
           </div>
           <% if(item){ %>
-          <div class="cr-refund-amount"><%= formatINR(item.total) %></div>
+          <div class="cr-refund-amount"><%= formatINR(item.finalTotal) %></div>
           <% }else{ %>
             <div class="cr-refund-amount"><%= formatINR(order.totalAmount) %></div>
           <% } %>

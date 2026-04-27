@@ -40,7 +40,9 @@ const orderSchema = new mongoose.Schema(
           reason: String,
           comment: String,
           requestedAt: Date
-        }
+        },
+        discount : Number,
+        finalTotal : Number
       }
     ],
     address: {
