@@ -104,6 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
       ;(fullNameError.textContent = '• Please enter your name'),
         (isValid = false)
     }
+
+    if(!/^[A-Za-z ]+$/.test(fullName)){
+      fullNameError.textContent = '• Name should contain only letters (no numbers or symbols)'
+      isValid = false      
+    }
+
     if (fullName.length <= 3) {
       fullNameError.textContent = '• Name must be more than 3 letters'
       isValid = false

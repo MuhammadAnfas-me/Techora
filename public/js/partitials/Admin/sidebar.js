@@ -126,11 +126,64 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+window.addEventListener('load', function() {
+  hideLoader();
+});
 
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) {
+      hideLoader();
+  }
+});
 
+function showLoader() {
+  document.getElementById("loaderOverlay").style.display = "flex";
+}
 
+function hideLoader() {
+  document.getElementById("loaderOverlay").style.display = "none";
+}
 
-// Initialize collapsed state on desktop if needed
-// Uncomment the lines below to start with collapsed sidebar on desktop
-// document.body.classList.add('sidebar-collapsed');
-// sidebar.classList.add('collapsed');
+function setButtonLoading(button, isLoading) {
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = "Loading...";
+  } else {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText;
+  }
+}
+
+function loadDashboard(){
+  showLoader()
+  window.location.href="/admin/dashboard"
+}
+function loadOrders(){
+  showLoader()
+  window.location.href="/admin/orders"
+}
+function loadProducts(){
+  showLoader()
+  window.location.href="/admin/products"
+}
+function loadcategories(){
+  showLoader()
+  window.location.href="/admin/category"
+}
+function loadUsers(){
+  showLoader()
+  window.location.href="/admin/users"
+}
+function loadOffers(){
+  showLoader()
+  window.location.href="/admin/offers"
+}
+function loadCoupons(){
+  showLoader()
+  window.location.href="/admin/coupons"
+}
+function loadReport(){
+  showLoader()
+  window.location.href="/admin/report" 
+}

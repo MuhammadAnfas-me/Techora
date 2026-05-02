@@ -10,6 +10,7 @@ export const reportLoad = async (req, res) => {
       populate: { path: 'categoryId' }
     }).lean();
 
+
     // 2. Setup initial variables
     const totalOrders = allOrders.length;
     let totalRevenue = 0;
@@ -51,7 +52,7 @@ export const reportLoad = async (req, res) => {
           const categoryName = product?.categoryId?.name || 'Uncategorized';
           const productName = product?.name || item.name || 'Unknown Item';
           const img = product?.variants?.[0]?.image?.[0] || item.image || '';
-          
+
           const qty = item.quantity || 1;
           const rev = item.total || 0;
 

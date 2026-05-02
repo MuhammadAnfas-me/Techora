@@ -1,13 +1,16 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import { User } from '../../models/userModel.js'
 import { verifyOtp } from '../../services/authService/emailVerify.js'
 import { sendOtp } from '../../utils/sendOtpMail.js'
 import { Wallet } from '../../models/walletModel.js'
-import generateUserId from '../../utils/generateUserId.js'
-import crypto from 'crypto'
-import Product from '../../models/productModel.js'
 import { Offers } from '../../models/offerModel.js'
+import Product from '../../models/productModel.js'
+import generateUserId from '../../utils/generateUserId.js'
+import generateReferralCode from '../../utils/referral.js'
+import { generateTxnId } from '../../utils/generateTxnId.js'
+
 const SALT_ROUND = 10
 
 function getDiscountAmount (offer, price) {
@@ -41,15 +44,18 @@ const getErrorMessage = msg => {
 
 //Login Section
 const loginLoad = (req, res) => {
-  const errorMessage = req.session?.errorMessage;
-  delete req.session.errorMessage;
-  res.render('User/login', { message: errorMessage || null ,blocked : req.query.blocked || false})
+  const errorMessage = req.session?.errorMessage
+  delete req.session.errorMessage
+  res.render('User/login', {
+    message: errorMessage || null,
+    blocked: req.query.blocked || false
+  })
 }
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body
-    const user = await User.findOne({ email,role : "Customer"})
+    const user = await User.findOne({ email, role: 'Customer' })
     if (!user || !user.password) {
       throw new Error('USER_NOT_EXISTS')
     }
@@ -57,15 +63,17 @@ const login = async (req, res) => {
     if (!isMatch) {
       throw new Error('PASSWORD_NOT_MATCH')
     }
-    if(user.isBlocked){
-      return res.status(400).json({success : false , message : "You have been blocked"})
+    if (user.isBlocked) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'You have been blocked' })
     }
     if (!user.isVerified) {
-     await sendOtp({
+      await sendOtp({
         model: User,
         email,
         expiryTime: 1,
-        name : user?.fullName       
+        name: user?.fullName
       })
       return res.status(403).json({
         success: false,
@@ -74,7 +82,12 @@ const login = async (req, res) => {
         email
       })
     }
-    req.session.user = {email : user.email , name : user.fullName , userId : user.userId , id : user._id}
+    req.session.user = {
+      email: user.email,
+      name: user.fullName,
+      userId: user.userId,
+      id: user._id
+    }
     res.status(200).json({
       success: true,
       message: 'Logined Succesfully'
@@ -89,50 +102,131 @@ const login = async (req, res) => {
 
 //-------------------------------Sign up----------------------------------------------
 const signupLoad = (req, res) => {
-  res.render('User/signup.ejs', { error: null })
+  const code = req.query.code
+
+  if (code) {
+    req.session.referralCode = code // ✅ store
+  }
+
+  res.render('User/signup.ejs', { error: null, code: code || null })
 }
 const signUp = async (req, res) => {
   try {
     const { name, email, password } = req.body
 
-    const user = await User.findOne({ email })
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUND)
-    if (user) {
-      if (user.isVerified) {
-        return res.render('User/signup', { error: 'User already exists' })
+    // ✅ Get referral code (from query OR form)
+    const code = req.query.code || req.body.codee
+
+    let referredUser = null
+
+    // ✅ Validate referral code
+    if (code) {
+      referredUser = await User.findOne({ referralCode: code })
+
+      if (!referredUser) {
+        return res.render('User/signup', {
+          error: 'Invalid referral code',
+          code: null
+        })
       }
     }
-    if (!user) {
-      const userId = generateUserId()
-      const newUser = new User({
-        userId,
-        fullName: name,
-        email,
-        password: hashedPassword,
-        profileImage : process.env.DEFAULT_IMAGE,
-        isVerified: false,
-        role : "Customer"
-      })
-      await newUser.save()
 
-      const newWallet = Wallet({
-          userId : newUser._id,
-          balance : 0,
-      })
+    // ✅ Check existing user
+    const user = await User.findOne({ email })
 
-      await newWallet.save()
+    if (user && user.isVerified) {
+      return res.render('User/signup', {
+        error: 'User already exists',
+        code: code || null
+      })
     }
 
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUND)
+
+    // ✅ Create new user
+    const userId = generateUserId()
+    const referralCode = generateReferralCode()
+
+    const newUser = new User({
+      userId,
+      fullName: name,
+      email,
+      password: hashedPassword,
+      profileImage: process.env.DEFAULT_IMAGE,
+      isVerified: false,
+      role: 'Customer',
+      referralCode
+    })
+
+    await newUser.save()
+
+    // ✅ Create wallet for new user
+    let newWallet = new Wallet({
+      userId: newUser._id,
+      balance: 0,
+      transaction: []
+    })
+
+    // 🎁 If referral exists → give rewards
+    if (referredUser) {
+      // New user reward
+      newWallet.balance = 50
+      newWallet.transaction.push({
+        txnId: generateTxnId(),
+        type: 'credit',
+        description: 'Referral reward',
+        amount: 50,
+        date: new Date()
+      })
+
+      // Referrer wallet
+      let wallet = await Wallet.findOne({ userId: referredUser._id })
+
+      if (!wallet) {
+        wallet = new Wallet({
+          userId: referredUser._id,
+          balance: 0,
+          transaction: []
+        })
+      }
+
+      wallet.balance += 100
+      wallet.transaction.push({
+        txnId: generateTxnId(),
+        type: 'credit',
+        description: `Referral reward by ${name}`,
+        amount: 100,
+        date: new Date()
+      })
+
+      referredUser.totalReference += 1
+
+      await wallet.save()
+      await referredUser.save()
+    }
+
+    // ✅ Save new user wallet
+    await newWallet.save()
+
+    // ✅ Send OTP
     sendOtp({
       model: User,
       email,
       expiryTime: 1,
       name
     })
-    res.render('User/otpPage', { email, purpose: 'EMAIL_VERIFICATION' })
+
+    // ✅ Go to OTP page
+    res.render('User/otpPage', {
+      email,
+      purpose: 'EMAIL_VERIFICATION'
+    })
   } catch (er) {
-    console.log(`Error from Signup, ${er}`)
-    res.render('User/signup', { error: 'Something Wrong' })
+    console.log(`Error from Signup: ${er}`)
+    res.render('User/signup', {
+      error: 'Something went wrong',
+      code: null
+    })
   }
 }
 
@@ -250,10 +344,16 @@ const forgotPassword = async (req, res) => {
 }
 
 const homeLoad = async (req, res) => {
-
   try {
-    let products = await Product.find({ status: 'active', 'variants.stock': { $gte: 0 } }).populate('categoryId').sort({createdAt : -1}).limit(4).lean()
-    
+    let products = await Product.find({
+      status: 'active',
+      'variants.stock': { $gte: 0 }
+    })
+      .populate('categoryId')
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .lean()
+
     const now = new Date()
     const offers = await Offers.find({
       isActive: true,
@@ -270,12 +370,13 @@ const homeLoad = async (req, res) => {
       let maxDiscount = 0
 
       for (let offer of offers) {
-        if (!offer.isActive) continue;
+        if (!offer.isActive) continue
         if (
           (offer.scope === 'product' &&
             offer.product?.toString() === product._id.toString()) ||
           (offer.scope === 'category' &&
-            offer.category?.toString() === (product.categoryId?._id || product.categoryId)?.toString())
+            offer.category?.toString() ===
+              (product.categoryId?._id || product.categoryId)?.toString())
         ) {
           const discount = getDiscountAmount(offer, variant.price)
 
@@ -298,10 +399,10 @@ const homeLoad = async (req, res) => {
       product.offer = bestOffer
     })
 
-    res.render('User/home',{products})
+    res.render('User/home', { products })
   } catch (error) {
-    console.log("Error from Home page :",error)
-    return res.status(500).json({success : false , message : "Server error"})
+    console.log('Error from Home page :', error)
+    return res.status(500).json({ success: false, message: 'Server error' })
   }
 }
 

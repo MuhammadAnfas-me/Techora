@@ -1,0 +1,176 @@
+<%- include("../partitials/user/header.ejs",{tittle : "Techora | Contact"})  %>
+
+<!-- Hero Banner -->
+<div style="background-color: #1a3a5c; padding: 48px 20px; text-align: center; color: white;">
+    <h1 style="font-size: 2rem; font-weight: 700; margin: 0 0 10px 0;">Get in Touch With Us</h1>
+    <p style="margin: 0; font-size: 0.95rem; color: #cdd8e3;">We're here to help with your orders, products, and support queries.</p>
+</div>
+
+<!-- Main Content -->
+<div style="background-color: #f0f2f5; padding: 40px 20px;">
+    <div style="max-width: 960px; margin: 0 auto; display: flex; gap: 24px; flex-wrap: wrap;">
+
+        <!-- Left: Contact Form -->
+        <div style="flex: 1; min-width: 300px; background: #fff; border-radius: 8px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0 0 6px 0; color: #1a1a2e;">Send Us a Message</h2>
+            <p style="font-size: 0.82rem; color: #666; margin: 0 0 20px 0;">Fill out the form below and we'll get back to you as soon as possible.</p>
+
+            <form id="contactForm">
+                <!-- Row 1: Full Name + Email Address -->
+                <div style="display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 120px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 5px;">Full Name</label>
+                        <input type="text" placeholder="John Doe" name="name"
+                            style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.82rem; color: #aaa; box-sizing: border-box; outline: none;">
+                    </div>
+                    <div style="flex: 1; min-width: 120px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 5px;">Email Address</label>
+                        <input type="email" placeholder="john@example.com" name="email"
+                            style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.82rem; color: #aaa; box-sizing: border-box; outline: none;">
+                    </div>
+                </div>
+
+                <!-- Row 2: Phone Number + Subject -->
+                <div style="display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 120px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 5px;">Phone Number</label>
+                        <input type="text" placeholder="+1 (555) 000-0000" name="phone"
+                            style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.82rem; color: #aaa; box-sizing: border-box; outline: none;">
+                    </div>
+                    <div style="flex: 1; min-width: 120px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 5px;">Subject</label>
+                        <select name="subject" style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.82rem; color: #aaa; box-sizing: border-box; outline: none; background: #fff; appearance: auto;">
+                            <option value="" disabled selected>Select a subject</option>
+                            <option>Order Inquiry</option>
+                            <option>Product Support</option>
+                            <option>Returns</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Message -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 5px;">Message</label>
+                    <textarea placeholder="Tell us how we can help you..." name="message"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.82rem; color: #aaa; box-sizing: border-box; outline: none; resize: none; height: 110px; font-family: inherit;"></textarea>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit"
+                    style="width: 100%; padding: 11px; background-color: #1a3a5c; color: white; border: none; border-radius: 5px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 1rem;">✉</span> Send Message
+                </button>
+            </form>
+        </div>
+
+        <!-- Right: Info Cards -->
+        <div style="display: flex; flex-direction: column; gap: 14px; width: 245px; min-width: 200px;">
+
+            <!-- Address -->
+            <div style="background: #fff; border-radius: 8px; padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);">
+                <div style="background: #e8edf3; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <span style="font-size: 1rem;">📍</span>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">Address</div>
+                    <div style="font-size: 0.78rem; color: #555; line-height: 1.5;">123 Commerce Street<br>New York, NY 10001<br>United States</div>
+                </div>
+            </div>
+
+            <!-- Support Email -->
+            <div style="background: #fff; border-radius: 8px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);">
+                <div style="background: #e8edf3; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <span style="font-size: 1rem;">✉️</span>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">Support Email</div>
+                    <div style="font-size: 0.78rem; color: #555;">support@mobilesmart.com</div>
+                </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div style="background: #fff; border-radius: 8px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);">
+                <div style="background: #e8edf3; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <span style="font-size: 1rem;">📞</span>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">Phone Number</div>
+                    <div style="font-size: 0.78rem; color: #555;">+1 (555) 123-4567<br>Toll-free: 1-800-MOBILE</div>
+                </div>
+            </div>
+
+            <!-- Support Hours -->
+            <div style="background: #fff; border-radius: 8px; padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);">
+                <div style="background: #e8edf3; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <span style="font-size: 1rem;">🖥️</span>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">Support Hours</div>
+                    <div style="font-size: 0.78rem; color: #555; line-height: 1.5;">Monday - Friday: 9am – 6pm EST<br>Saturday: 10am – 4pm EST<br>Sunday: Closed</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Visit Our Store -->
+<div style="background-color: #f0f2f5; padding: 10px 20px 40px 20px;">
+    <div style="max-width: 960px; margin: 0 auto;">
+        <h2 style="text-align: center; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Visit Our Store</h2>
+        <div style="background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            <!-- Map placeholder -->
+            <div style="height: 280px; background: #e8edf3; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #5a7a9a;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#5a7a9a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                    <line x1="9" y1="3" x2="9" y2="18"/>
+                    <line x1="15" y1="6" x2="15" y2="21"/>
+                </svg>
+                <div style="font-size: 0.95rem; font-weight: 600; margin-top: 12px; color: #3d5a7a;">Map View</div>
+                <div style="font-size: 0.8rem; color: #7a90a8; margin-top: 4px;">123 Commerce Street, New York, NY 10001</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include("../partitials/user/footer.ejs") %>
+
+<script>
+    document.getElementById("contactForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  const data = {
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    subject: formData.get("subject"),
+    message: formData.get("message"),
+  };
+
+  const btn = form.querySelector("button");
+  btn.innerText = "Sending...";
+  btn.disabled = true;
+
+  try {
+    const res = await axios.post("/contact", {data});
+
+    const result =  res.data
+
+
+    if (result.success) {
+      showToast( res.data.message || "Message sent successfully!")
+      form.reset();
+    } 
+  } catch (err) {
+    console.log(err.response?.data);
+    showToast(err.response?.data?.message || "Something went wrong","error")
+  }
+
+  btn.innerText = "Send Message";
+  btn.disabled = false;
+});
+</script>

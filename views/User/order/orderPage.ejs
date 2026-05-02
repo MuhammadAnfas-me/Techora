@@ -41,7 +41,7 @@
             <button class="tab-btn " data-tab="profile" onclick="window.location.href='/profile'">Profile</button>
             <button class="tab-btn active" data-tab="orders" onclick="window.location.href='/profile-orders'">My Orders</button>
             <button class="tab-btn" data-tab="wallet" onclick="window.location.href='/profile-wallet'">Wallet</button>
-            <button class="tab-btn" data-tab="referrals">Referrals</button>
+            <button class="tab-btn" data-tab="referrals" onclick="window.location.href='/profile-referral'">Referrals</button>
         </div>
     </div>
 
@@ -172,12 +172,19 @@
                 
                
             });
-
-            function editProfile(){
-                window.location.href = `/profile/edit`
+           function editProfile(){
+                showLoader()
+                setTimeout(()=>{
+                    window.location.href = `/profile/edit`
+                    hideLoader()
+                },500)
             }
             function changePass(){
-                window.location.href = "/profile/password"
+                showLoader()
+                setTimeout(()=>{
+                    window.location.href = "/profile/password"
+                    hideLoader()
+                },500)
             }
         </script>
         </body>

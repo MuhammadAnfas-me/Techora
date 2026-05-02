@@ -155,14 +155,14 @@ export const addCoupon = async (req, res) => {
       })
     }
 
-    if (discountType === 'Flat' && discountValue > minOrderValue) {
+    if (discountType === 'Flat' && Number(discountValue) > Number(minOrderValue)) {
       return res.status(400).json({
         success: false,
         message: 'Discount cannot be greater than minimum order value'
       })
     }
     if (discountType === 'Percentage') {
-      if (discountValue <= 0 || discountValue > 80) {
+      if (Number(discountValue) <= 0 || Number(discountValue) > 80) {
         return res.status(400).json({
           success: false,
           message: 'Percentage discount must be between 1 and 80'
@@ -229,7 +229,8 @@ export const editCoupon = async (req, res) => {
       isActive,
       internalNotes
     } = req.body
-
+    minOrder = Number(minOrder)
+    discountValue = Number(discountValue)
     couponCode = couponCode?.trim()
     // 🔹 Field validations
     if (validate(couponCode, res, 'Coupon is required')) return
@@ -241,7 +242,7 @@ export const editCoupon = async (req, res) => {
     if (validate(expiryDate, res, 'Please select expiry date')) return
 
     // 🔹 Usage limit validation
-    if (usageLimit !== null && usageLimit !== '' && usageLimit <= 0) {
+    if (usageLimit !== null && usageLimit !== '' && Number(usageLimit) <= 0) {
       return res.status(400).json({
         success: false,
         message: 'Usage limit must be greater than 0'
@@ -278,7 +279,7 @@ export const editCoupon = async (req, res) => {
       })
     }
 
-    if (discountType === 'Flat' && discountValue > minOrderValue) {
+    if (discountType === 'Flat' && minOrder <= discountValue) {
       return res.status(400).json({
         success: false,
         message: 'Discount cannot be greater than minimum order value'

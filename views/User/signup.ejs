@@ -8,18 +8,34 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="/styles/user/signup.css" />
     <link rel="stylesheet" href="/styles/user/popup.css" />
     <script defer src="/js/popup.js"></script>
   </head>
   <body>
-    <div id="toast" class="toast"></div>
+<div class="toast toast-banner" id="toast" style="top: 20px; right: 20px;">
+    <div class="tb-icon" id="toastIcon"></div>
+    <div class="tb-text">
+        <div class="tb-title" id="toastTitle"></div>
+        <div class="tb-sub"   id="toastSub"></div>
+    </div>
+    <div class="tb-close" onclick="removeToast()">&#10005;</div>
+</div>
+
+<div id="loaderOverlay" class="loader-overlay">
+  <div class="spinner"></div>
+</div>
+
+
     <div class="card">
       <h2>Create Account</h2>
       <% if(error){ %>
       <small style="color: red"><%= error %></small>
       <% } %>
       <form id="regForm" action="/signup" method="post" novalidate>
+        <input type="hidden" name="code" value="<%= code || '' %>">
         <div class="form-group">
           <label>Full Name</label>
           <input
@@ -78,13 +94,13 @@
         <div class="referral-row">
           <input
             type="text"
-            id="code"
-            name="code"
+            id="codee"
+            name="codee"
             placeholder="Referral code"
           />
-          <button type="button" class="apply-btn">Apply</button>
-          <small id="codeError" style="color: red"></small>
+          <button type="button" class="apply-btn" onclick="applyCode(this)">Apply</button>
         </div>
+        <small id="codeError" style="color: red"></small>
 
         <button type="submit" class="submit-btn">Create Account</button>
 
@@ -130,11 +146,41 @@
     <script>
       //Form Validation
 
+function showLoader() {
+  document.getElementById("loaderOverlay").style.display = "flex";
+}
+
+function hideLoader() {
+  document.getElementById("loaderOverlay").style.display = "none";
+}
+
+function setButtonLoading(button, isLoading) {
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = "Loading...";
+  } else {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText;
+  }
+}
+
+
       document.addEventListener('DOMContentLoaded', function () {
         document
           .getElementById('regForm')
           .addEventListener('submit', formValidation)
       })
+
+      window.addEventListener('load', function() {
+        hideLoader();
+      });
+
+      window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            hideLoader();
+        }
+      });
       function formValidation(e) {
         e.preventDefault()
 
@@ -223,8 +269,52 @@
       })
 
       function googleAuth(){
-        window.location.href = "/auth/google"
+        const code = document.getElementById("codee").value;
+        showLoader()
+        window.location.href = "/auth/google?code="+encodeURIComponent(code) 
       }
+
+      async function applyCode(btn) {
+        const code = document.getElementById("codee");
+        setButtonLoading(btn,true)
+
+        const res = await axios.post("/check-referral", {code : code.value });
+      
+        const data =  res.data;
+      
+        const msg = document.getElementById("codeError");
+      setTimeout(()=>{
+
+        if (data.valid) {
+          code.value = "✅ Code applied! You’ll get ₹50";
+          code.style.color = "green";
+        } else {
+          code.value = "❌ Invalid referral code";
+          code.style.color = "red";
+        }
+        setButtonLoading(btn,false)
+      },1000)
+      }
+      document.getElementById("codee").addEventListener("input",()=>{
+        document.getElementById("codee").style.color = "black"
+      })
+
+      document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const refCode = params.get("code");
+
+  if (refCode) {
+    const input = document.getElementById("codee");
+
+    if (input) {
+      input.value = refCode;   // auto-fill input
+      input.readOnly = true;   // optional: prevent editing
+    }
+
+    // OPTIONAL: auto apply visually
+    applyCode();
+  }
+});
     </script>
   </body>
 </html>

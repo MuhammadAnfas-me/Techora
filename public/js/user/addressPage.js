@@ -102,6 +102,7 @@ addressForm.addEventListener('submit', async e => {
     }
 
     try {
+      showLoader()
       if (id) {
         const res = await axios.patch(`/profile/address/${id}`, addressData)
         showToast(res.data?.message || 'Address edited successfully')
@@ -114,6 +115,7 @@ addressForm.addEventListener('submit', async e => {
     } catch (err) {
       showToast(err.response?.data?.message || 'Something went wrong', 'error')
     }
+    hideLoader()
   }
 })
 

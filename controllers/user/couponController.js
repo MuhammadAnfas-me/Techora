@@ -1,5 +1,7 @@
 import { Coupon } from '../../models/couponModel.js'
 import { Cart } from '../../models/cartModel.js'
+import { Offers } from '../../models/offerModel.js'
+import { getOfferPrice } from '../../utils/offer.js'
 
 export const getAvailableCoupons = async (req, res) => {
   try {
@@ -120,6 +122,8 @@ export const applyCoupon = async (req, res) => {
       })
     }
 
+    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
+
     // 💰 Calculate subtotal (from DB, not trusting frontend)
     let subtotal = 0
 
@@ -133,8 +137,8 @@ export const applyCoupon = async (req, res) => {
       )
 
       if (!variant) continue
-
-      subtotal += variant.price * item.quantity
+      const offerPrice = getOfferPrice(product, variant.price, activeOffers)
+      subtotal += offerPrice * item.quantity
     }
 
     // ❌ Minimum order check

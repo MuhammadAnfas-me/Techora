@@ -42,7 +42,7 @@
             <button class="tab-btn " data-tab="profile" onclick="window.location.href='/profile'">Profile</button>
             <button class="tab-btn " data-tab="orders" onclick="window.location.href='/profile-orders'">My Orders</button>
             <button class="tab-btn active" data-tab="wallet" onclick="window.location.href='/profile-wallet'">Wallet</button>
-            <button class="tab-btn" data-tab="referrals">Referrals</button>
+            <button class="tab-btn" data-tab="referrals"  onclick="window.location.href='/profile-referral'">Referrals</button>
         </div>
     </div>
 
@@ -51,8 +51,10 @@
     <div class="tab-content" id="wallet">
     <div class="orders-layout-grid">
         
-        <div class="orders-list-container">
-            <h2 class="section-title">Wallet Transactions</h2>
+        <div class="orders-list-container THEAD">
+            <div class="mobTitle">
+                <h2 class="section-title mob">Wallet Transactions</h2>
+            </div>
             
             <div class="order-items-wrapper">
                 <div class="table-responsive">
@@ -65,33 +67,61 @@
                                 <th style="width: 20%;">Amount</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <% const transactions = wallet?.transaction.sort((a, b) => new Date(b.date) - new Date(a.date)); %>
-                            <% transactions.forEach(trns => { %>
-                            <tr>
-                                <td class="text-muted"><%= new Date(trns.date).toLocaleDateString("en-US", { month: "long" ,
-                                            day: "numeric" , year: "numeric" }) %></td>
-                                <td>
-                                    <div class="txn-title"><%= trns.description %></div>
-                                    <div class="txn-id">ID: <%= trns.txnId ? trns.txnId : "TXN-982341"%></div>
-                                </td>
-                                <td><span class="badge badge-credit <%= trns.type === "credit" ? "badge-credit" : "badge-debit" %>"><%= trns.type === "credit" ? "CREDIT" : "DEBIT" %></span></td>
-                                <% if(trns.type === "credit"){ %>
-                                    <td class="amount text-success">+<%= formatINR(trns.amount) %></td>
-                                <% }else{ %>
-                                    <td class="amount text-danger">-<%= formatINR(trns.amount) %></td>
-                                <% } %>
-                            </tr>
-                        
-                           <% }) %>
-                        </tbody>
+                       <tbody>
+  <% if (!wallet?.transaction || wallet.transaction.length === 0) { %>
+    
+    <!-- EMPTY STATE ROW -->
+    <tr>
+      <td colspan="4" class="text-center">
+        <div class="empty-wallet">
+          <p>No transactions yet</p>
+          <small>Your wallet activity will appear here</small>
+        </div>
+      </td>
+    </tr>
+
+  <% } else { %>
+
+    <% const transactions = wallet.transaction.sort((a, b) => new Date(b.date) - new Date(a.date)); %>
+
+    <% transactions.forEach(trns => { %>
+      <tr>
+        <td class="text-muted">
+          <%= new Date(trns.date).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+          }) %>
+        </td>
+
+        <td>
+          <div class="txn-title"><%= trns.description %></div>
+          <div class="txn-id">ID: <%= trns.txnId || "TXN-982341" %></div>
+        </td>
+
+        <td>
+          <span class="badge <%= trns.type === "credit" ? "badge-credit" : "badge-debit" %>">
+            <%= trns.type === "credit" ? "CREDIT" : "DEBIT" %>
+          </span>
+        </td>
+
+        <td class="amount <%= trns.type === "credit" ? "text-success" : "text-danger" %>">
+          <%= trns.type === "credit" ? "+" : "-" %><%= formatINR(trns.amount) %>
+        </td>
+      </tr>
+    <% }) %>
+
+  <% } %>
+</tbody>
                     </table>
                 </div>
             </div>
         </div>
 
         <div class="order-summary-container">
+            <div class="mobTitle">
             <h2 class="section-title">Wallet Summary</h2>
+            </div>
             
             <div class="balance-box">
                 <span class="balance-label">Available Balance</span>
@@ -209,9 +239,13 @@
                         amount
                     })
                     if (verifyRes.data.success) {
+                        showLoader()
                         showToast("Money added to wallet")
                         closeModal()
-                        location.reload()
+                        setTimeout(()=>{
+                            location.reload()
+                            hideLoader()
+                        },800)
                     }else{
                         showToast("Failed to add money","error")
                     }
@@ -229,6 +263,7 @@
             // ✅ Handle failure properly
             rzp.on('payment.failed', function (response) {
                 closeModal()     // your custom UI close
+                showToast(response.error.description)
             })
         
             rzp.open()

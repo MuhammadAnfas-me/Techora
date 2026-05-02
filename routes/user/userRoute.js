@@ -12,6 +12,7 @@ import * as paymentController from '../../controllers/user/paymentController.js'
 import * as orderController from '../../controllers/user/orderController.js'
 import * as walletController from '../../controllers/user/walletController.js'
 import * as couponController from "../../controllers/user/couponController.js"
+import * as referelController from "../../controllers/user/referrelController.js"
 
 import * as middlewares from '../../middlewares/user/auth.js'
 import upload from '../../middlewares/cloudinary/upload.js'
@@ -30,6 +31,8 @@ router
   .get(middlewares.isLogged, userController.signupLoad)
   .post(userController.signUp)
 
+ router
+  .route('/check-referral').post(referelController.checkReferral) 
 router
   .route('/otp-verify')
   .get(userController.otpLoad)
@@ -223,7 +226,17 @@ router
 router
   .route('/remove-coupon').post(couponController.removeCoupon)
 
+// ------------------------------------- Referrel Section --------------------------------------
+// ------------------------------------- Referrel Section --------------------------------------
+// ------------------------------------- Referrel Section --------------------------------------
 
+router
+  .route("/profile-referral")
+  .get(referelController.referralLoad)
+
+
+
+router.route("/contact").get(profileController.contactLoad).post(profileController.contactMail)
 router.route('/logout').get(userController.logout)
 
 export default router

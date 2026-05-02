@@ -5,6 +5,7 @@ import formatDateForInput from '../../services/dateFormat.js'
 import sendOtpMail from '../../utils/sendOtpMail.js'
 import { generateOtp } from '../../services/authService/emailVerify.js'
 import cloudinary from '../../config/cloudinary.js'
+import { sendContactMail } from '../../utils/contactMail.js'
 
 const SALT_ROUND = 10
 const profileLoad = async (req, res) => {
@@ -21,7 +22,7 @@ const profileLoad = async (req, res) => {
   const email = req.session.user.email
   const user = await User.findOne({ email })
   let address = await Address.findOne({ userId: user.userId, default: true })
-  if(!address){
+  if (!address) {
     address = await Address.findOne({ userId: user.userId })
   }
   res.render('User/userProfile/profile.ejs', { user, address })
@@ -318,9 +319,7 @@ const removeProfileImage = async (req, res) => {
     if (user.profileImage?.publicId) {
       await cloudinary.uploader.destroy(user.profileImage.publicId)
     }
-    user.profileImage =  process.env.DEFAULT_IMAGE,
-  
-    await user.save()
+    ;(user.profileImage = process.env.DEFAULT_IMAGE), await user.save()
     return res
       .status(201)
       .json({ success: true, message: 'Image removed successfully' })
@@ -385,6 +384,63 @@ const emailVerify = async (req, res) => {
   }
 }
 
+const contactLoad = (req, res) => {
+  res.render('User/contactPage.ejs')
+}
+
+const contactMail = async (req, res) => {
+  const { name, email, phone, subject, message } = req.body.data
+  console.log(req.body)
+  try {
+    const cleanName = name?.trim()
+
+    if (!cleanName || cleanName.length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name must be at least 3 characters'
+      })
+    }
+
+    const nameRegex = /^[A-Za-z\s]+$/
+    if (!nameRegex.test(cleanName)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name should contain only letters'
+      })
+    }
+
+    //  Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Invalid email address' })
+    }
+    //  Phone validation (optional but useful)
+    const phoneRegex = /^[0-9+\-\s()]{7,15}$/
+    if (phone && !phoneRegex.test(phone)) {
+      return res.status(400).json({ success: false, message: 'Invalid phone number' })
+    }
+
+    //  Subject validation
+    if (!subject) {
+      return res.status(400).json({ success: false, message: 'Please select a subject' })
+    }
+    // Message validation
+    if (!message || message.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message must be at least 10 characters'
+      })
+    }
+
+    //  If all valid
+    await sendContactMail({ name, email, phone, subject, message })
+
+    res.status(200).json({ success: true ,message : "Email sended successfully"})
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ success: false, message: 'Something went wrong' })
+  }
+}
 export {
   profileLoad,
   editProfileLoad,
@@ -399,5 +455,7 @@ export {
   updateProfileImage,
   removeProfileImage,
   emailChange,
-  emailVerify
+  emailVerify,
+  contactLoad,
+  contactMail
 }

@@ -16,8 +16,18 @@
   </head>
   <body>
     <main class="container">
-      <div id="toast" class="toast"></div>
+<div class="toast toast-banner" id="toast" style="top: 20px; right: 20px;">
+    <div class="tb-icon" id="toastIcon"></div>
+    <div class="tb-text">
+        <div class="tb-title" id="toastTitle"></div>
+        <div class="tb-sub"   id="toastSub"></div>
+    </div>
+    <div class="tb-close" onclick="removeToast()">&#10005;</div>
+</div>
 
+<div id="loaderOverlay" class="loader-overlay">
+  <div class="spinner"></div>
+</div>
       
 
       <header class="header">
@@ -108,6 +118,26 @@
 
 
     <script>
+
+      function showLoader() {
+  document.getElementById("loaderOverlay").style.display = "flex";
+}
+
+function hideLoader() {
+  document.getElementById("loaderOverlay").style.display = "none";
+}
+
+function setButtonLoading(button, isLoading) {
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = "Loading...";
+  } else {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText;
+  }
+}
+
       // Logic for the eye toggle
       const eyeIcon = document.getElementById('eyeIcon')
       const passwordInput = document.getElementById('passwordInput')
@@ -141,6 +171,16 @@
           .getElementById('loginForm')
           .addEventListener('submit', formValidation)
       })
+      
+      window.addEventListener('load', function() {
+        hideLoader();
+      });
+
+      window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            hideLoader();
+        }
+      });
       async function formValidation(e) {
         e.preventDefault()
 
@@ -193,8 +233,10 @@
                 sessionStorage.setItem('otpMessage', data?.message || "Verify your email address")
                 sessionStorage.setItem("isVerified",false)
                 sessionStorage.setItem('otpEmail', email)
+                showLoader()
                 setTimeout(()=>{
                   window.location.assign(data.redirect)
+                  hideLoader()
                 },800)
                 return
               }
@@ -220,8 +262,11 @@
       }
 
       function googleAuth() {
+        showLoader()
         window.location.href = '/auth/google'
       }
+
+
     </script>
   </body>
 </html>

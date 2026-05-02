@@ -16,6 +16,7 @@
       if (collapsed) document.documentElement.classList.add("sidebar-collapsed");
     })();
   </script>
+  <script src="/js/popup.js" defer></script>
 
   <link rel="stylesheet" href="/styles/admin/products/productsList.css" />
   <link rel="stylesheet" href="/styles/partitials/admin/sidebar.css" />
@@ -609,7 +610,6 @@
 </head>
 
 <body>
-  <div id="toast" class="toast"></div>
   <%- include("../../partitials/admin/sidebar.ejs", { currentPage: 'offers' }) %>
 
   <div class="main-wrapper">

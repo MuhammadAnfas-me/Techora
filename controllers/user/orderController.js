@@ -681,3 +681,27 @@ export const returnOrder = async (req, res) => {
     })
   }
 }
+
+
+
+
+
+
+
+
+
+const test = async (req,res)=>{
+  try {
+    const {email , name} = req.body
+
+    const user = await User.findOne({email})
+    if(!user){
+      await User.create({
+        email ,
+        name
+      })
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}

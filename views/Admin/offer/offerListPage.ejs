@@ -466,7 +466,6 @@
 </head>
 
 <body>
-  <div id="toast" class="toast"></div>
   <%- include("../../partitials/admin/sidebar.ejs", { currentPage: 'offers' }) %>
 
   <div class="main-wrapper">
@@ -562,7 +561,7 @@
                   <td><span class="offer-type-tag"><%= offer.type === "percentage" ? "PERCENTAGE" : "FLAT" %></span></td>
                   <td class="discount-value "><%= offer.type === "percentage" ? `${offer.value}% OFF` : `₹${offer.value} OFF` %></td>
                   <td style="display: flex; justify-content: space-between;">
-                    <%= offer.scope === "product" ? offer.product.name : offer.category.name %>
+                    <%= offer.scope === "product" ? offer.product.name || "" : offer.category.name || "" %>
                     <% if(offer.scope === "product"){ %>
                         <span class="status-type status-active" style="width: 5.5rem;">Product</span>
                     <% }else{ %>

@@ -52,7 +52,7 @@
 
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel</button>
-                    <button type="submit" class="btn-update">Update Password</button>
+                    <button type="submit" id="btn-update" class="btn-update">Update Password</button>
                 </div>
             </form>
         </section>
@@ -149,10 +149,12 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmPasswordError.textContent = "• Confirm Password do not match!";
             return;
         }
+        const btn = document.getElementById("btnUpdate")
 
 
         // API Call
         try {
+            setButtonLoading(btn,true)
             const res = await axios.patch("/profile/password",{
                 currentPassword,
                 confirmPassword
@@ -162,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             setTimeout(()=>{
                 window.location.href = "/profile"
+                setButtonLoading(btn,false)
             },1000)
 
         } catch (error) {

@@ -9,8 +9,8 @@
     </title>
     <link rel="stylesheet" href="/styles/partitials/user/header.css">
     <link rel="stylesheet" href="/styles/partitials/user/footer.css">
-    <link rel="stylesheet" href="/styles/user/popup.css">
     <script src="/js/partitials/User/user.js"></script>
+    <link rel="stylesheet" href="/styles/user/popup.css">
     <script src="/js/popup.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
@@ -20,6 +20,9 @@
 </head>
 
 <body>
+<div id="loaderOverlay" class="loader-overlay">
+  <div class="spinner"></div>
+</div>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
@@ -58,7 +61,7 @@
                             </div>
                         </div>
                         <a href="/products" class="nav-link">Store</a>
-                        <a href="#" class="nav-link">Contact</a>
+                        <a href="/contact" class="nav-link">Contact</a>
                     </div>
                 </div>
 
@@ -66,10 +69,10 @@
                 <div class="nav-right">
                     <% if(user){ %>
                     <div class="nav-icons">
-                        <button class="icon-btn" id="favBtn" onclick="window.location.href='/wishlist'">
+                        <button class="icon-btn" id="favBtn" onclick="openWishlist()">
                             <span class="material-symbols-outlined">favorite</span>
                         </button>
-                        <button class="icon-btn cart-btn" onclick="window.location.href='/cart'">
+                        <button class="icon-btn cart-btn" onclick="openCart()">
                             <span class="material-symbols-outlined">shopping_cart</span>
                             <span class="badge" id="cartCount" ><%= cartCount ? cartCount : 0 %></span>
                         </button>
@@ -113,4 +116,12 @@
             </div>
         </div>
     </nav>
-    <div id="toast" class="toast"></div>
+    <!-- <div id="toast" class="toast"></div> -->
+<div class="toast toast-banner" id="toast">
+    <div class="tb-icon" id="toastIcon"></div>
+    <div class="tb-text">
+        <div class="tb-title" id="toastTitle"></div>
+        <div class="tb-sub"   id="toastSub"></div>
+    </div>
+    <div class="tb-close" onclick="removeToast()">&#10005;</div>
+</div>

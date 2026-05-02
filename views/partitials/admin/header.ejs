@@ -15,4 +15,14 @@
         </button>
     </div>
 </header>
-<div id="toast" class="toast"></div>
+<div class="toast toast-banner" id="toast" >
+    <div class="tb-icon" id="toastIcon"></div>
+    <div class="tb-text">
+        <div class="tb-title" id="toastTitle"></div>
+        <div class="tb-sub"   id="toastSub"></div>
+    </div>
+    <div class="tb-close" onclick="removeToast()">&#10005;</div>
+</div>
+<div id="loaderOverlay" class="loader-overlay">
+  <div class="spinner"></div>
+</div>

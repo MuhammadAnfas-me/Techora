@@ -39,7 +39,11 @@
     const loginBtn = document.getElementById('loginBtn');
 
     loginBtn.addEventListener('click', () => {
+        setTimeout(()=>{
+            showLoader()
+        },300)
         window.location.href = '/login'; 
+        hideLoader()
     });
 });
     </script>

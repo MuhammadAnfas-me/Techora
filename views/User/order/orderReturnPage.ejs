@@ -136,10 +136,12 @@
             })
 
             if(res.data.success){
+                showLoader()
                 showToast(res.data.message || "Request sended successfully")
                 setTimeout(()=>{
                   window.location.href=`/orders/${id}`
-                },800)
+                  hideLoader()
+                },500)
             }
         } catch (error) {
             console.log(error)
@@ -157,10 +159,12 @@
             })
 
             if(res.data.success){
+              showLoader()
                 showToast(res.data.message || "Request sended successfully")
                 setTimeout(()=>{
                   window.location.href=`/orders/${id}`
-                },800)
+                  hideLoader()
+                },500)
             }
         } catch (error) {
             console.log(error)

@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadFilteredProducts (page = 1,scroll = true) {
     try {
+      showLoader()
       const params = buildParams(page)
       const productsSection = document.getElementById('productsSection')
       const productsContainer = document.getElementById('productsContainer')
@@ -104,6 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       }
       toggleClearBtn()
+      setTimeout(()=>{
+        hideLoader()
+      },300)
     } catch (error) {
       console.error('loadFilteredProducts error:', error)
     }
@@ -481,3 +485,5 @@ async function addToWishlist(e, productId, variantId, isLogged,btn) {
 function openProductPage (productId) {
   window.location.href = `/products/${productId}`
 }
+
+window.scrollTo({ top: 0, behavior: "smooth" })

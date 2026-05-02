@@ -82,7 +82,7 @@
         <% } %>
       </div>
 
-      <span class="item-price" id="itemTotal"><%= formatINR(item.total) %></span>
+      <span class="item-price" id="itemTotal"><%= formatINR(item.price) %></span>
     </div>
 
   </div>
@@ -217,10 +217,8 @@
         const itemTotal = cartItem.querySelector(".item-price")
 
         if(qtyInput) qtyInput.value = res.data.quantity
-        if(itemTotal) itemTotal.innerHTML = formatINR(res.data.itemTotal)
       }
-      updateCartSummary(res.data);     
-      showToast?.(res.data.message || "Quantity updated", "success");      
+      updateCartSummary(res.data);        
       
     } catch (error) {
       console.error("updateCartQuantity error:", error);
@@ -265,11 +263,15 @@
 
   async function validateCart(){
     try {
+      showLoader()
       const res = await axios.post("/checkout")
 
       const data = res.data
 
-      window.location.href =data.redirect
+      setTimeout(()=>{
+        hideLoader()
+        window.location.href =data.redirect
+      },300)
       
     } catch (error) {
       console.log(error)

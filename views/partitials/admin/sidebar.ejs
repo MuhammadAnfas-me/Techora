@@ -1,3 +1,4 @@
+
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar" id="sidebar">
@@ -19,42 +20,42 @@
     </div>
 
     <nav class="sidebar-nav">
-        <a href="/admin/dashboard" class="nav-item <%= currentPage === "dashboard" ? 'active' : '' %>" title="Dashboard">
+        <a onclick="loadDashboard()" class="nav-item <%= currentPage === "dashboard" ? 'active' : '' %>" title="Dashboard">
             <span class="material-symbols-outlined">grid_view</span>
             <span class="hide-on-collapse">Dashboard</span>
         </a>
         
-        <a href="/admin/orders" class="nav-item <%= currentPage === "orders" ? 'active' : '' %>" title="Orders">
+        <a onclick="loadOrders()" class="nav-item <%= currentPage === "orders" ? 'active' : '' %>" title="Orders">
             <span class="material-symbols-outlined">shopping_bag</span>
             <span class="hide-on-collapse">Orders</span>
         </a>
 
-        <a href="/admin/products" class="nav-item <%= currentPage === "products" ? "active" : '' %>" title="Products">
+        <a onclick="loadProducts()" class="nav-item <%= currentPage === "products" ? "active" : '' %>" title="Products">
             <span class="material-symbols-outlined">inventory_2</span>
             <span class="hide-on-collapse">Products</span>
         </a>
 
-        <a href="/admin/category" class="nav-item <%= currentPage === "category" ? 'active' : '' %>" title="Categories">
+        <a onclick="loadcategories()" class="nav-item <%= currentPage === "category" ? 'active' : '' %>" title="Categories">
             <span class="material-symbols-outlined">category</span>
             <span class="hide-on-collapse">Categories</span>
         </a>
 
-        <a href="/admin/users" class="nav-item <%= currentPage === "users" ? 'active' : '' %>" title="Users">
+        <a onclick="loadUsers()" class="nav-item <%= currentPage === "users" ? 'active' : '' %>" title="Users">
             <span class="material-symbols-outlined">group</span>
             <span class="hide-on-collapse">Users</span>
         </a>
 
-        <a href="/admin/offers" class="nav-item <%= currentPage === "offers" ? "active" : '' %>" title="Offers">
+        <a onclick="loadOffers()" class="nav-item <%= currentPage === "offers" ? "active" : '' %>" title="Offers">
             <span class="material-symbols-outlined">local_offer</span>
             <span class="hide-on-collapse">Offers</span>
         </a>
 
-        <a href="/admin/coupons" class="nav-item <%= currentPage === 'coupons' ? 'active' : '' %>" title="Coupons">
+        <a onclick="loadCoupons()" class="nav-item <%= currentPage === 'coupons' ? 'active' : '' %>" title="Coupons">
             <span class="material-symbols-outlined">confirmation_number</span>
             <span class="hide-on-collapse">Coupons</span>
         </a>
 
-        <a href="/admin/report" class="nav-item <%= currentPage === 'reports' ? 'active' : '' %>" title="Reports">
+        <a onclick="loadReport()" class="nav-item <%= currentPage === 'reports' ? 'active' : '' %>" title="Reports">
             <span class="material-symbols-outlined">bar_chart</span>
             <span class="hide-on-collapse">Reports</span>
         </a>

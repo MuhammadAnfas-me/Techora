@@ -289,7 +289,6 @@
 </head>
 
 <body>
-  <div id="toast" class="toast"></div>
   <%- include("../../partitials/admin/sidebar.ejs",{ currentPage: 'orders' }) %>
 
     <div class="main-wrapper">
@@ -305,7 +304,7 @@
               </div>
               <div class="page-header-actions">
                 <button class="btn-secondary" type="button"
-                  onclick="window.location.href='/admin/orders/export-pdf?search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>'">
+                  onclick="download('<%= search %>','<%= status %>','<%= dateSort %>')">
                   <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
                   Export Orders
                 </button>
@@ -384,7 +383,7 @@
               <select class="filter-select" name="status" id="orderStatusSelect">
                 <option value="">All</option>
                 <option value="Delivered" <%=status==='Delivered' ? 'selected' : '' %>>Delivered</option>
-                <option value="Pending" <%=status==='Pending' ? 'selected' : '' %>>Pending</option>
+                <option value="Placed" <%=status==='Placed' ? 'selected' : '' %>>Pending</option>
                 <option value="Cancelled" <%=status==='Cancelled' ? 'selected' : '' %>>Cancelled</option>
               </select>
 
@@ -467,7 +466,7 @@
                                   </td>
                                   <td>
                                     <button class="action-btn" type="button" title="Edit"
-                                      onclick="window.location.href='/admin/orders/<%= item.orderId %>'">
+                                      onclick="updateOrder('<%= item.orderId %>')">
                                       <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
                                     </button>
                                   </td>
@@ -574,6 +573,22 @@ async function updateReturnStatus(id,type,status) {
   } catch (error) {
     console.log(error)
   }
+}
+
+function download(search, status, dateSort){
+  showLoader()
+  setTimeout(()=>{
+    window.location.href = '/admin/orders/export-pdf?search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>'
+    hideLoader()
+  },200)
+}
+
+function updateOrder(id){
+  showLoader()
+  setTimeout(()=>{
+    hideLoader()
+    window.location.href=`/admin/orders/${id}`
+  },300)
 }
 </script>
 

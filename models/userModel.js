@@ -43,11 +43,13 @@ const userSchema = new mongoose.Schema(
     country: {
       type: String
     },
-    reffrelCode: {
-      type: String
+    referralCode: {
+      type: String,
+      unique : true
     },
-    totalReferce: {
-      type: Number
+    totalReference: {
+      type: Number,
+      default : 0
     },
     succesFullReference: {
       type: Number

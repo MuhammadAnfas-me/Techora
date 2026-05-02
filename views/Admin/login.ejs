@@ -17,7 +17,14 @@
 <body>
 
 
-    <div id="toast" class="toast"></div>
+<div class="toast toast-banner" id="toast" style="top: 20px; right: 20px;">
+    <div class="tb-icon" id="toastIcon"></div>
+    <div class="tb-text">
+        <div class="tb-title" id="toastTitle"></div>
+        <div class="tb-sub"   id="toastSub"></div>
+    </div>
+    <div class="tb-close" onclick="removeToast()">&#10005;</div>
+</div>
     <div class="background-decor">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>

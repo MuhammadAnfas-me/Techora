@@ -131,9 +131,11 @@
             })
 
             if(res.data.success){
+                showLoader()
                 showToast(res.data.message || "Request sended successfully")
                 setTimeout(()=>{
                   window.location.href=`/orders/${id}`
+                  hideLoader()
                 },800)
             }
         } catch (error) {
@@ -152,9 +154,11 @@
             })
 
             if(res.data.success){
+                showLoader()
                 showToast(res.data.message || "Request sended successfully")
                 setTimeout(()=>{
                   window.location.href=`/orders/${id}`
+                  hideLoader()
                 },800)
             }
         } catch (error) {

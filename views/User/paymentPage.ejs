@@ -190,9 +190,10 @@ async function payNow(amt){
             paymentId : verifyRes.data.paymentId
         })
         if(placeRes.data.success){
-            setTimeout(() => {
+            showLoader()
+            setTimeout(()=>{
                 window.location.href=`/checkout/payment/success?orderId=${placeRes.data.orderId}`
-            }, 300);
+            },300)
         }else{
             showToast(placeRes.data.message||"Failed to place order","error")
         }

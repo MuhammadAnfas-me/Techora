@@ -3,7 +3,7 @@ export function getOfferPrice(product, variantPrice, offers) {
   let maxDiscount = 0
 
   for (let offer of offers) {
-    if (!offer.isActive) continue;
+    if (!isOfferValid(offer)) continue;
     if (
       (offer.scope === 'product' && offer.product?.toString() === product._id.toString()) ||
       (offer.scope === 'category' && offer.category?.toString() === (product.categoryId?._id || product.categoryId)?.toString())
@@ -26,4 +26,14 @@ export function getOfferPrice(product, variantPrice, offers) {
 export function getDiscountAmount (offer, price) {
   if (offer.type === 'flat') return offer.value
   return (price * offer.value) / 100
+}
+
+export function isOfferValid(offer) {
+  const now = new Date()
+
+  return (
+    offer.isActive &&
+    (!offer.startDate || now >= new Date(offer.startDate)) &&
+    (!offer.endDate || now <= new Date(offer.endDate))
+  )
 }

@@ -21,6 +21,9 @@
     --white: #ffffff;
 }
 
+body{
+  background-color: #E3E3E3;
+}
 /* --- Layout Container --- */
 .container {
     max-width: 1152px;

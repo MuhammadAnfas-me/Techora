@@ -52,3 +52,41 @@
                 });
             }
         });
+
+window.addEventListener('load', function() {
+    hideLoader();
+});
+
+window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+        hideLoader();
+    }
+});
+function showLoader() {
+  document.getElementById("loaderOverlay").style.display = "flex";
+}
+
+function hideLoader() {
+  document.getElementById("loaderOverlay").style.display = "none";
+}
+
+function setButtonLoading(button, isLoading) {
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = "Loading...";
+  } else {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText;
+  }
+}
+
+function openCart(){
+    showLoader()
+    window.location.href = '/cart'
+}
+
+function openWishlist(){
+    showLoader()
+    window.location.href = '/wishlist'
+}

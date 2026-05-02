@@ -1,8 +1,8 @@
-.toast {
+/* .toast {
   position: fixed;
   top: 20px;
   right: 20px;
-  background: #22c55e; /* success green */
+  background: #22c55e; 
   color: #fff;
   padding: 14px 18px;
   border-radius: 8px;
@@ -27,4 +27,206 @@
 
 .toast.warning {
   background: #f59e0b;
+} */
+
+/*  */
+
+   /* .referral-toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #111827;
+        color: #fff;
+        padding: 11px 22px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 99999;
+        white-space: nowrap;
+    }
+
+    .referral-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    } */
+
+/* 
+.toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #111827;
+    color: #fff;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 9999;
+    white-space: nowrap;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.toast-success {
+    background: #fff;
+    color: #22c55e;
+}
+
+.toast.toast-error {
+    background: #fff;
+    color: #dc2626;
+} */
+.toast {
+    position: fixed;
+    /* bottom: 28px; */
+    top: 12%;
+    right: 20px;
+    transform:  translateY(-20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+    white-space: nowrap;
+    will-change: transform, opacity;
+}
+
+.toast.show {
+    opacity: 1;
+    transform:  translateY(0);
+    pointer-events: auto;
+    animation: toastPopDesktop 0.4s ease forwards
+}
+.toast-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
+    background: rgba(255, 255, 255, 0.72);
+    color: #1c1c1e;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 0.5px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.09),
+                0 1px 3px rgba(0,0,0,0.06),
+                inset 0 0.5px 0 rgba(255,255,255,0.8);
+    min-width: 260px;
+    max-width: 320px; 
+    white-space: normal;      /* ❌ remove nowrap */
+    word-break: break-word;   /* ✅ wrap text */
+}
+
+.toast-banner .tb-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    background: #f0f0f5;
+}
+
+.toast-banner.toast-success .tb-icon { background: #e8f9ed; }
+.toast-banner.toast-error   .tb-icon { background: #fff0f0; }
+
+.toast-banner .tb-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+}
+
+.toast-banner .tb-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1c1c1e;
+}
+
+.toast-banner .tb-sub {
+    font-size: 12px;
+    color: #8e8e93;
+    font-weight: 400;
+}
+
+.toast-banner .tb-close {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #8e8e93;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+
+
+
+@keyframes toastPopMobile {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px) scale(0.95);
+    }
+    60% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px) scale(1.02);
+    }
+    100% {
+        transform: translateX(-50%) translateY(0) scale(1); /* ✅ KEEP X */
+    }
+}
+
+@keyframes toastPopMobile {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px) scale(0.95);
+    }
+    60% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px) scale(1.02);
+    }
+    100% {
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .toast {
+        top: 10%;
+        left: 50%;
+        right: auto;
+
+        /* 🔥 FIX: remove desktop transform completely */
+        transform: translateX(-50%) translateY(-20px);
+
+        width: 100%;
+        max-width: 90%;
+    }
+
+    .toast.show {
+        animation: toastPopMobile 0.4s ease forwards;
+    }
+
+    .toast-banner {
+        max-width: 80%;
+        width: 80%;
+    }
 }

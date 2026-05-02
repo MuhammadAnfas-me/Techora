@@ -11,6 +11,10 @@
     --white: #ffffff;
 }
 
+body{
+  background-color: #E3E3E3;
+}
+
 /* Base utility overrides for this section */
 .font-semibold { font-weight: 600; }
 .text-success { color: var(--success); }

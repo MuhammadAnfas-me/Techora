@@ -1,0 +1,574 @@
+<link rel="stylesheet" href="/styles/user/orders/orderPage.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* ── Referral tab content ── */
+    .referral-layout-grid {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* Left panel */
+    .referral-main-container {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 28px;
+    }
+
+    .referral-main-container h2.section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .referral-desc {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+
+    /* Code box */
+    .referral-code-box {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 28px;
+    }
+
+    .referral-code-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 10px;
+    }
+
+    .referral-code-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .referral-code-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 10px 18px;
+        letter-spacing: 0.08em;
+        flex: 1;
+    }
+
+    .btn-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        cursor: pointer;
+        transition: background 0.18s, border-color 0.18s;
+        white-space: nowrap;
+    }
+
+    .btn-copy:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .btn-copy.copied {
+        color: #16a34a;
+        border-color: #86efac;
+        background: #f0fdf4;
+    }
+
+    /* How it works */
+    .how-it-works-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 16px;
+    }
+
+    .steps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .step-number {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 50%;
+        background: #1e3a5f;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+    }
+
+    .step-text h4 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 3px 0;
+    }
+
+    .step-text p {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    /* Right panel — stats */
+    .referral-stats-container {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .referral-stats-container h2.section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 20px;
+    }
+
+    .stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 20px;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 13px 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 0.875rem;
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-weight: 400;
+    }
+
+    .stat-value {
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .stat-value.success {
+        color: #16a34a;
+    }
+
+    .btn-share {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: #1e3a5f;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.18s;
+        text-align: center;
+    }
+
+    .btn-share:hover {
+        background: #16304f;
+    }
+
+    /* Mail icon at bottom of stats card */
+    .stats-mail-icon {
+        display: flex;
+        justify-content: center;
+        margin-top: 16px;
+        color: #9ca3af;
+        font-size: 1.3rem;
+    }
+
+    /* Toast notification */
+    .referral-toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #111827;
+        color: #fff;
+        padding: 11px 22px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 9999;
+        white-space: nowrap;
+    }
+
+    .referral-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    /* Share modal */
+    .share-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .share-modal-overlay.open {
+        display: flex;
+    }
+
+    .share-modal {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .share-modal h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+        color: #111827;
+    }
+
+    .share-modal p {
+        font-size: 0.82rem;
+        color: #6b7280;
+        margin: 0 0 20px 0;
+    }
+
+    .share-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .share-option-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        background: #f9fafb;
+        color: #374151;
+        transition: background 0.15s;
+    }
+
+    .share-option-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .share-option-btn i {
+        font-size: 1rem;
+    }
+
+    .btn-close-modal {
+        width: 100%;
+        padding: 11px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        color: #374151;
+        transition: background 0.15s;
+    }
+
+    .btn-close-modal:hover {
+        background: #f3f4f6;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .referral-layout-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .referral-code-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-copy {
+            justify-content: center;
+        }
+
+        .share-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<%- include("../../partitials/user/header.ejs",{tittle : "Techora | Profile"}) %>
+
+<main class="main-content">
+    <div class="container">
+
+        <!-- Profile Header Card -->
+        <section class="profile-header-card">
+            <div class="profile-info">
+                <div class="profile-avatar-large">
+                    <img src="<%= user.profileImage %>" alt="<%= user.fullName %>">
+                </div>
+                <div class="profile-details">
+                    <h1><%= user.fullName %></h1>
+                    <div class="profile-meta">
+                        <span><i class="fas fa-envelope"></i> <%= user.email %></span>
+                        <span><i class="fas fa-phone-alt"></i> <%= user.number ? user.number : "---" %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button onclick="editProfile()" class="btn btn-primary">Edit Profile</button>
+                <% if(!user.googleId){ %>
+                <button onclick="changePass()" class="btn btn-secondary">Change Password</button>
+                <% } %>
+            </div>
+        </section>
+
+        <!-- Tabs + Content -->
+        <section class="details-container">
+            <div class="tabs-wrapper">
+                <div class="tabs">
+                    <button class="tab-btn" data-tab="profile"  onclick="window.location.href='/profile'">Profile</button>
+                    <button class="tab-btn" data-tab="orders"   onclick="window.location.href='/profile-orders'">My Orders</button>
+                    <button class="tab-btn" data-tab="wallet"   onclick="window.location.href='/profile-wallet'">Wallet</button>
+                    <button class="tab-btn active" data-tab="referrals" onclick="window.location.href='/profile-referral'">Referrals</button>
+                </div>
+            </div>
+
+            <!-- Referral Tab Content -->
+            <div class="tab-content" id="referrals">
+                <div class="referral-layout-grid">
+
+                    <!-- Left: Invite & Earn -->
+                    <div class="referral-main-container">
+                        <h2 class="section-title">Invite &amp; Earn</h2>
+                        <p class="referral-desc">
+                            Invite your friends using your referral code and earn rewards instantly. When they sign up, they get ₹50 in their wallet and you receive ₹100!
+                        </p>
+
+                        <!-- Code box -->
+                        <div class="referral-code-box">
+                            <div class="referral-code-label">Your Referral Code</div>
+                            <div class="referral-code-row">
+                                <span class="referral-code-value" id="referralCode"><%= code ? code : ""  %></span>
+                                <button class="btn-copy" id="copyBtn" onclick="copyCode()">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- How it works -->
+                        <div class="how-it-works-title">How it works:</div>
+                        <div class="steps-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-text">
+                                    <h4>Share your referral code</h4>
+                                    <p>Invite your friends by sharing your unique referral code.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-text">
+                                    <h4>Friend signs up</h4>
+                                    <p>Your friend creates an account using your referral code and gets ₹50 in their wallet.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-text">
+                                    <h4>Both earn rewards</h4>
+                                    <p>Once your friend signs up, you get ₹100 credit and your friend gets ₹50 to their wallet.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Referral Stats -->
+                    <div class="referral-stats-container">
+                        <h2 class="section-title">Referral Stats</h2>
+
+                        <div class="stats-list">
+                            <div class="stat-row">
+                                <span class="stat-label">Total Referrals</span>
+                                <span class="stat-value"><%= totalReferrals || 0 %></span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Successful Referrals</span>
+                                <span class="stat-value success"><%= successfulReferrals || 0 %></span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Total Rewards Earned</span>
+                                <span class="stat-value"><%= formatINR ? formatINR(totalRewards || 0) : "$" + (totalRewards || 0) %></span>
+                            </div>
+                        </div>
+
+                        <button class="btn-share" onclick="openShareModal()">Share Referral Code</button>
+
+                        <div class="stats-mail-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- /Referral Tab Content -->
+
+        </section>
+    </div>
+</main>
+
+<%- include("../../partitials/user/footer.ejs") %>
+
+<!-- Toast -->
+<div class="toast" id="toast">Referral code copied!</div>
+
+<!-- Share Modal -->
+<div class="share-modal-overlay" id="shareModalOverlay" onclick="closeShareModalOnOverlay(event)">
+    <div class="share-modal">
+        <h3>Share Your Referral Code</h3>
+        <p>Choose a platform to share your code with friends</p>
+
+        <div class="share-options">
+            <button class="share-option-btn" onclick="shareVia('whatsapp')">
+                <i class="fab fa-whatsapp" style="color:#25d366"></i> WhatsApp
+            </button>
+            <button class="share-option-btn" onclick="shareVia('twitter')">
+                <i class="fab fa-x-twitter" style="color:#000"></i> X / Twitter
+            </button>
+            <button class="share-option-btn" onclick="shareVia('facebook')">
+                <i class="fab fa-facebook" style="color:#1877f2"></i> Facebook
+            </button>
+            <button class="share-option-btn" onclick="shareVia('email')">
+                <i class="fas fa-envelope" style="color:#6b7280"></i> Email
+            </button>
+        </div>
+
+        <button class="btn-close-modal" onclick="closeShareModal()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    // ── Tab active state (passive — only updates button UI) ──
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    });
+
+    // ── Profile nav ──
+    function editProfile()  { window.location.href = '/profile/edit'; }
+    function changePass()   { window.location.href = '/profile/password'; }
+
+    // ── Copy code ──
+    function copyCode() {
+        const code = document.getElementById('referralCode').textContent.trim();
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.classList.add('copied');
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            showToast('Referral code copied!',"default");
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+            }, 2500);
+        }).catch(() => {
+            // Fallback for older browsers
+            const el = document.createElement('textarea');
+            el.value = code;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('Referral code copied!',"default");
+        });
+    }
+
+    // ── Toast ──
+    // function showToast(msg) {
+    //     const toast = document.getElementById('referralToast');
+    //     toast.textContent = msg;
+    //     toast.classList.add('show');
+    //     setTimeout(() => toast.classList.remove('show'), 2500);
+    // }
+
+    // ── Share modal ──
+    function openShareModal()  { document.getElementById('shareModalOverlay').classList.add('open'); }
+    function closeShareModal() { document.getElementById('shareModalOverlay').classList.remove('open'); }
+    function closeShareModalOnOverlay(e) {
+        if (e.target === document.getElementById('shareModalOverlay')) closeShareModal();
+    }
+
+    function shareVia(platform) {
+        const code = document.getElementById('referralCode').textContent.trim();
+        const text = encodeURIComponent(`Use my referral code ${code} on Techora and get credit ₹50 to your wallet!`);
+        const url  = encodeURIComponent(window.location.origin + `/signup?code=${code}`);
+        const urls = {
+            whatsapp : `https://wa.me/?text=${text}%20${url}`,
+            twitter  : `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+            facebook : `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`,
+            email    : `mailto:?subject=Join%20Techora%20with%20my%20referral%20code&body=${text}%20${url}`
+        };
+        if (urls[platform]) window.open(urls[platform], '_blank');
+        closeShareModal();
+    }
+</script>

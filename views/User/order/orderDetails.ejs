@@ -128,7 +128,7 @@
                         <div class="prod-actions">
                             <% if(item.status === "Delivered"){ %>
                                 <button class="btn-sm">Write Review</button>
-                            <button class="btn-sm return-btn" onclick="window.location.href=`/orders/<%=order.orderId%>/return/<%= item._id %>`">Return Item</button>
+                            <button class="btn-sm return-btn" onclick="returnItem('<%= order.orderId %>', '<%= item._id %>')">Return Item</button>
                             <% }else if(!["Delivered","Shipped","Cancelled","Return Requested","Return Rejected","Return Approved","Returned"].includes(item.status)){ %>
                             <button class="btn-sm cancel-btn" <%= order.orderStatus === "Cancelled" ? "hidden" : "" %> onclick="cancelItem('<%= order.orderId %>' , '<%= item._id %>')">Cancel Item</button>
                             <% } %>
@@ -255,9 +255,9 @@
                     <% const delivered = order.items.every(item => item.status === "Delivered") %>
                     <% const capable = order.items.every(item => item.status === "Placed" || item.status === "Confirmed") %>
                     <% if([ "Placed", "Confirmed"].includes(order.orderStatus) && capable){ %>
-                        <button class="action-btn btn-cancel" onclick="window.location.href=`/orders/<%=order.orderId%>/cancel`" <%= allCancelled ? "Disabled" : ""  %>><i class="fas fa-circle-xmark"></i>Cancel Order</button>
+                        <button class="action-btn btn-cancel" onclick="cancelOrder('<%= order.orderId %>')" <%= allCancelled ? "Disabled" : ""  %>><i class="fas fa-circle-xmark"></i>Cancel Order</button>
                     <% }else if(order.orderStatus === "Delivered" && delivered){%>
-                        <button class="action-btn" onclick="window.location.href=`/orders/<%=order.orderId%>/return`"><i class="fas fa-rotate-left" ></i> Return Items</button>
+                        <button class="action-btn" onclick="returnOrder('<%= order.orderId %>')"><i class="fas fa-rotate-left" ></i> Return Items</button>
                     <% }else{ %>
                     <% } %>
                 <div class="support-link">
@@ -276,7 +276,34 @@
 <%- include("../../partitials/user/footer.ejs") %>
 <script>
     async function cancelItem(orderId,itemId){
-       window.location.href = `/orders/${orderId}/cancel/${itemId}`;
+       showLoader()
+       setTimeout(()=>{
+          window.location.href = `/orders/${orderId}/cancel/${itemId}`;
+          hideLoader()
+       },500)
     }
+    async function cancelOrder(orderId,itemId){
+       showLoader()
+       setTimeout(()=>{
+          window.location.href = `/orders/${orderId}/cancel`;
+          hideLoader()
+       },500)
+    }
+    async function returnOrder(orderId){
+       showLoader()
+       setTimeout(()=>{
+          window.location.href = `/orders/${orderId}/return`;
+          hideLoader()
+       },500)
+    }
+    async function returnItem(orderId,itemId){
+       showLoader()
+       setTimeout(()=>{
+          window.location.href = `/orders/${orderId}/return/${item._id}`;
+          hideLoader()
+       },500)
+    }
+
+
 
 </script>

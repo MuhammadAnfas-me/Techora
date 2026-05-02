@@ -81,7 +81,7 @@
                                             day: "numeric" , year: "numeric" })  %> by user request.
         </div>
         <% } %>
-        <button class="btn-view-details" onclick="window.location.href='/orders/<%=order.orderId%>'">View Details</button>
+        <button class="btn-view-details" onclick="openOrderDetails(`<%= order.orderId %>`)">View Details</button>
       </div>
     </div>
   </div>
@@ -106,12 +106,20 @@
 <%- include("../../partitials/user/footer.ejs") %>
 
 <script>
+function openOrderDetails(orderId){
+  showLoader()
+  setTimeout(()=>{
+    window.location.href=`/orders/${orderId}`
+    hideLoader()
+  },500)
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   loadOrders()
 })
 
 async function loadOrders(page = 1) {
+  showLoader()
   const search = document.getElementById("searchInput")?.value || ""
   const status = document.getElementById("statusFilter")?.value || "all"
 
@@ -122,6 +130,9 @@ async function loadOrders(page = 1) {
   const data = await res.json()
   renderOrders(data.orders)
   renderPagination(data.currentPage, data.totalPages)
+  setTimeout(()=>{
+    hideLoader()
+  },500)
 }
 
 function formatStatus(status) {
@@ -227,7 +238,7 @@ function renderOrders(orders) {
                          }
                        </p>`
                 }
-            <button class="btn-view-details" onclick="window.location.href='/orders/${order.orderId}'">
+            <button class="btn-view-details" onclick="openOrderDetails('${order.orderId}')">
               View Details
             </button>
           </div>
@@ -266,6 +277,14 @@ function debounceLoad() {
   clearTimeout(timeout)
   timeout = setTimeout(() => loadOrders(), 400)
 }
+
+// function openOrderDetails(orderId){
+//   showLoader()
+//   setTimeout(()=>{
+//     window.location.href=`/orders/${orderId}`
+//     hideLoader()
+//   },500)
+// }
 
 // scroller Smooth
 window.scrollTo({ top: 0, behavior: "smooth" })

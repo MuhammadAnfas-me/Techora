@@ -26,7 +26,6 @@
   </head>
 
   <body>
-    <div id="toast" class="toast"></div>
     <%- include("../../partitials/admin/sidebar.ejs",{ currentPage }) %>
 
     <div class="main-wrapper">
@@ -40,7 +39,7 @@
               <h1 class="page-title">Products Management</h1>
               <p class="page-subtitle">Manage mobile phones and accessories</p>
             </div>
-            <button class="btn-primary" type="button" onclick="window.location.href='/admin/products/add'">
+            <button class="btn-primary" type="button" onclick="addProduct()">
               <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
               Add New Product
             </button>
@@ -137,7 +136,7 @@
                       </td>
                     <td>
                       <div class="action-icons">
-                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" onclick="window.location.href='/admin/products/<%= product._id %>'" style="font-size: 20px;">edit</span></button>
+                        <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" onclick="updateProduct('<%= product._id %>')" style="font-size: 20px;">edit</span></button>
                         <button class="action-btn" type="button" title="<%= product.status == "inactive" ? 'Block' : 'Unblock' %>" onclick="toggleCategoryStatus('<%= product._id %>')">
                           <span class="material-symbols-outlined" style="font-size:20px;">
                             <%= product.status == "inactive" ? "block" : "check_circle" %>
@@ -230,6 +229,14 @@
   const pageInfo = document.getElementById("pageInfo");
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");
+
+  function updateProduct(id){
+  showLoader()
+  setTimeout(()=>{
+    hideLoader()
+    window.location.href=`/admin/products/${id}`
+  },300)
+}
 
   function updateClearButton() {
     clearBtn.style.display = searchInput.value.trim() ? "inline-block" : "none";
@@ -337,5 +344,13 @@
     showToast(error.response?.data?.message || "Failed to update status", "error");
   }
 }
+function addProduct(){
+  showLoader()
+  setTimeout(()=>{
+    hideLoader()
+    window.location.href='/admin/products/add'
+  },300)
+}
+
 </script>
 </html>

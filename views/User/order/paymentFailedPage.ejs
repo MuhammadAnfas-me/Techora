@@ -83,10 +83,12 @@
               paymentId: verifyRes.data.paymentId
             })
             if (placeRes.data.success) {
+              showLoader()
               showToast(placeRes.data.message)
               setTimeout(() => {
                 window.location.href = `/checkout/payment/success?orderId=${placeRes.data.orderId}`
-              }, 1500)
+                hideLoader()
+              }, 1400)
             }
           } else {
             showToast('Payment Verification Failed', 'error')
@@ -110,8 +112,12 @@
       rzp.open()
       rzp.on('payment.failed', function (response) {
         // showToast(response.error.description || 'Payment Failed', 'error')
-        sessionStorage.setItem("paymentError",response.error.description)
-        window.location.href = `/checkout/payment/failed?addressId=${addressId}?message=${response.error.description}`
+        showLoader()
+        setTimeout(()=>{
+          sessionStorage.setItem("paymentError",response.error.description)
+          window.location.href = `/checkout/payment/failed?addressId=${addressId}?message=${response.error.description}`
+          hideLoader
+        },1200)
       })
 
       options.modal = {

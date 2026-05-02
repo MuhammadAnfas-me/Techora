@@ -2,6 +2,8 @@ import Address from '../../models/addressModel.js'
 import {Cart} from '../../models/cartModel.js'
 import { Wishlist } from '../../models/wishListModel.js'
 import { resetPassword } from './authController.js'
+import { Offers } from '../../models/offerModel.js'
+import { getOfferPrice } from '../../utils/offer.js'
 
 
 export const checkOutLoad = async (req, res) => {
@@ -17,6 +19,9 @@ export const checkOutLoad = async (req, res) => {
     const cart = await Cart.findOne({ userId: user.id }).populate(
       'items.productId'
     )
+
+    const now = new Date()
+    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
 
     let cartItems = []
     let hasInvalidItems = false   // ⭐ important
@@ -63,6 +68,7 @@ export const checkOutLoad = async (req, res) => {
         }
 
         if (!isValid) hasInvalidItems = true
+        const offerPrice = getOfferPrice(product, variant.price, activeOffers)
 
         return {
           productId: product._id,
@@ -71,11 +77,11 @@ export const checkOutLoad = async (req, res) => {
           name: product.name,
           brand: product.brand,
           image: variant.image?.[0] || '',
-          price: variant.price,
+          price: offerPrice,
           stock: variant.stock,
         //   total: item.total,
           color : variant.color,
-          subtotal: variant.price * item.quantity,
+          subtotal: offerPrice * item.quantity,
           //  validation fields
           isValid,
           message

@@ -263,7 +263,9 @@
         return
       }
 
+      setButtonLoading(submitBtn,true)
       submitBtn.disabled = true
+
 
       try {
         const res = await fetch('/otp-verify', {
@@ -296,6 +298,7 @@
       } catch (err) {
         showError('Server error. Please try again.')
       } finally {
+        setButtonLoading(submitBtn,false)
         submitBtn.disabled = false
       }
     })
@@ -308,6 +311,7 @@
 
     resendBtn.addEventListener('click', async () => {
       try {
+        setButtonLoading(resendBtn,true)
         disableResend()
         clearError()
 
@@ -334,6 +338,7 @@
         showError(err.message)
         enableResend()
       }
+      setButtonLoading(resendBtn,false)
     })
   })
 </script>

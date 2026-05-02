@@ -7,6 +7,8 @@ import Product from '../../models/productModel.js'
 import { razorpayInstance } from '../../config/razorpay.js'
 import crypto from 'crypto'
 import { Coupon } from '../../models/couponModel.js'
+import { Offers } from '../../models/offerModel.js'
+import { getOfferPrice } from '../../utils/offer.js'
 
 export const paymentPageLoad = async (req, res) => {
   try {
@@ -18,6 +20,9 @@ export const paymentPageLoad = async (req, res) => {
     const cart = await Cart.findOne({ userId: user.id }).populate(
       'items.productId'
     )
+
+    const now = new Date()
+    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
 
     let cartItems = []
     let hasInvalidItems = false // ⭐ important
@@ -64,17 +69,18 @@ export const paymentPageLoad = async (req, res) => {
         }
 
         if (!isValid) hasInvalidItems = true
+        const offerPrice = getOfferPrice(product, variant.price, activeOffers)
 
-        return {
+      return {
           productId: product._id,
           variantId: item.variantId,
           quantity: item.quantity,
           name: product.name,
           brand: product.brand,
           image: variant.image?.[0] || '',
-          price: variant.price,
+          price: offerPrice,
           stock: variant.stock,
-          subtotal: item.total,
+          subtotal: offerPrice * item.quantity,
           //  validation fields
           isValid,
           message
@@ -260,6 +266,8 @@ export const placeOrder = async (req, res) => {
     const cart = await Cart.findOne({ userId: user.id }).populate(
       'items.productId'
     )
+    const now = new Date()
+    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
@@ -306,7 +314,8 @@ export const placeOrder = async (req, res) => {
         })
       }
 
-      const itemTotal = variant.price * item.quantity
+      const offerPrice = getOfferPrice(product, variant.price, activeOffers)
+      const itemTotal = offerPrice * item.quantity
 
       subtotal += itemTotal
 
@@ -317,7 +326,7 @@ export const placeOrder = async (req, res) => {
         variantId: item.variantId,
         color: variant.color,
         quantity: item.quantity,
-        price: variant.price,
+        price: offerPrice,
         total: itemTotal,
         image: variant.image?.[0] || ''
       })
