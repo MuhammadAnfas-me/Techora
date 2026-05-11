@@ -95,9 +95,9 @@
           <input
             type="text"
             id="codee"
-            name="codee"
             placeholder="Referral code"
           />
+          <input type="hidden" name="codee" id="actualReferralCode" />
           <button type="button" class="apply-btn" onclick="applyCode(this)">Apply</button>
         </div>
         <small id="codeError" style="color: red"></small>
@@ -154,16 +154,7 @@ function hideLoader() {
   document.getElementById("loaderOverlay").style.display = "none";
 }
 
-function setButtonLoading(button, isLoading) {
-  if (isLoading) {
-    button.disabled = true;
-    button.dataset.originalText = button.innerHTML;
-    button.innerHTML = "Loading...";
-  } else {
-    button.disabled = false;
-    button.innerHTML = button.dataset.originalText;
-  }
-}
+
 
 
       document.addEventListener('DOMContentLoaded', function () {
@@ -275,46 +266,62 @@ function setButtonLoading(button, isLoading) {
       }
 
       async function applyCode(btn) {
-        const code = document.getElementById("codee");
-        setButtonLoading(btn,true)
-
-        const res = await axios.post("/check-referral", {code : code.value });
-      
-        const data =  res.data;
-      
+        const codeInput = document.getElementById("codee");
+        const actualCodeInput = document.getElementById("actualReferralCode");
         const msg = document.getElementById("codeError");
-      setTimeout(()=>{
+        
+        const codeValue = codeInput.value.trim();
+        if(!codeValue) return;
 
-        if (data.valid) {
-          code.value = "✅ Code applied! You’ll get ₹50";
-          code.style.color = "green";
-        } else {
-          code.value = "❌ Invalid referral code";
-          code.style.color = "red";
+        setButtonLoading(btn,true)
+        msg.textContent = "";
+
+        try {
+          const res = await axios.post("/check-referral", { code: codeValue });
+          const data = res.data;
+        
+          setTimeout(() => {
+            if (data.valid) {
+              msg.textContent = "✅ Referral code applied! You'll get ₹50";
+              msg.style.color = "green";
+              actualCodeInput.value = codeValue;
+              codeInput.readOnly = true;
+            } else {
+              msg.textContent = "❌ Invalid referral code";
+              msg.style.color = "red";
+              actualCodeInput.value = "";
+            }
+            setButtonLoading(btn,false)
+          }, 800)
+        } catch (err) {
+          msg.textContent = "❌ Error checking code";
+          msg.style.color = "red";
+          setButtonLoading(btn,false)
         }
-        setButtonLoading(btn,false)
-      },1000)
       }
-      document.getElementById("codee").addEventListener("input",()=>{
-        document.getElementById("codee").style.color = "black"
+
+      document.getElementById("codee").addEventListener("input", () => {
+        document.getElementById("codeError").textContent = "";
       })
 
       document.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(window.location.search);
-  const refCode = params.get("code");
+        const params = new URLSearchParams(window.location.search);
+        const refCode = params.get("code");
 
-  if (refCode) {
-    const input = document.getElementById("codee");
+        if (refCode) {
+          const input = document.getElementById("codee");
+          const actualInput = document.getElementById("actualReferralCode");
 
-    if (input) {
-      input.value = refCode;   // auto-fill input
-      input.readOnly = true;   // optional: prevent editing
-    }
-
-    // OPTIONAL: auto apply visually
-    applyCode();
-  }
-});
+          if (input) {
+            input.value = refCode;
+            actualInput.value = refCode;
+            input.readOnly = true;
+            // Optionally auto-apply
+            const applyBtn = document.querySelector('.apply-btn');
+            if(applyBtn) applyCode(applyBtn);
+          }
+        }
+      });
     </script>
   </body>
 </html>

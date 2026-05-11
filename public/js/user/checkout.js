@@ -22,22 +22,41 @@ let selectedAddressId = null
 const formatINR = function (amount) {
   return '₹' + Number(amount).toLocaleString('en-IN')
 }
-document.querySelector('.proceed').addEventListener('click', function (e) {
-  // Basic interaction for the "Place Order" button
-  let originalText = this.textContent
-  this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'
-  this.disabled = true
+document
+  .querySelector('.proceed')
+  .addEventListener('click', async function (e) {
+    // Basic interaction for the "Place Order" button
+    let originalText = this.textContent
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'
+    this.disabled = true
+    try {
+      await axios.post('/checkout')
+    } catch (error) {
+      const data = error.response?.data;
+      
+      if (data?.errors) {
+        showToast('Your cart has some issues. Redirecting to cart...', 'error')
+        setTimeout(() => {
+          window.location.href = '/cart'
+        }, 1500)
+      } else {
+        showToast(data?.message || 'Cart validation failed. Please check your cart.', 'error')
+        this.textContent = originalText
+        this.disabled = false
+      }
+      return
+    }
 
-  // Simulate backend call
-  if (!selectedAddressId) {
-    showToast('Add your delivery address', 'error')
-    this.textContent = originalText
-  } else {
-    setTimeout(() => {
-      window.location.href = `/checkout/payment?addressId=${selectedAddressId}` // Target for Step 4
-    }, 1000)
-  }
-})
+    if (!selectedAddressId) {
+      showToast('Add your delivery address', 'error')
+      this.textContent = originalText
+      this.disabled = false
+    } else {
+      setTimeout(() => {
+        window.location.href = `/checkout/payment?addressId=${selectedAddressId}`
+      }, 1000)
+    }
+  })
 
 let selectedAddressIndex = 0
 
@@ -84,7 +103,7 @@ function confirmAddress () {
     <p class="address-phone">+91 ${selectedAddress.phone} </p>
     <p class="address-line"> ${selectedAddress.addressLine1}  </p>
     <p class="address-line">${selectedAddress.city} , ${selectedAddress.state}  -  ${selectedAddress.zipCode}</p>
-    </div>
+  </div>
   `
 
   // close modal
@@ -345,7 +364,7 @@ async function openCouponModal () {
       <div class="text-center py-4">
         <div class="spinner"></div>
       </div>
-    `;
+    `
 
     if (!data.coupons || data.coupons.length === 0) {
       container.innerHTML = `
@@ -354,6 +373,7 @@ async function openCouponModal () {
     </div>
   `
     } else {
+      container.innerHTML = ''
       data.coupons.forEach(coupon => {
         container.innerHTML += `
        <div class="coupon-item">

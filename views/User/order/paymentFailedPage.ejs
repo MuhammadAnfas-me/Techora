@@ -65,36 +65,38 @@
         order_id: res.data.order.id,
 
         handler: async function (response) {
-          const verifyRes = await axios.post('/verify-payment', {
-            ...response // ✅ send properly
-          })
-
-          if (verifyRes.data.success) {
-            const addressId = new URLSearchParams(window.location.search).get(
-              'addressId'
-            )
-            const paymentMethod = document.querySelector(
-              'input[name="payment_method"]:checked'
-            )?.value
-
-            const placeRes = await axios.post('/place-order', {
-              addressId,
-              paymentMethod : "RAZORPAY",
-              paymentId: verifyRes.data.paymentId
+          try {
+            const verifyRes = await axios.post('/verify-payment', {
+              ...response
             })
-            if (placeRes.data.success) {
-              showLoader()
-              showToast(placeRes.data.message)
+
+            if (verifyRes.data.success) {
+              // use outer addressId from EJS - no need to re-read from URL
+              const placeRes = await axios.post('/place-order', {
+                addressId,
+                paymentMethod : "RAZORPAY",
+                paymentId: verifyRes.data.paymentId
+              })
+
+              if (placeRes.data.success) {
+                showToast(placeRes.data.message)
+                showLoader()
+                setTimeout(() => {
+                  window.location.href = `/checkout/payment/success?orderId=${placeRes.data.orderId}`
+                }, 1400)
+              } else {
+                showToast(placeRes.data.message || 'Failed to place order', 'error')
+              }
+
+            } else {
+              showToast('Payment Verification Failed', 'error')
               setTimeout(() => {
-                window.location.href = `/checkout/payment/success?orderId=${placeRes.data.orderId}`
-                hideLoader()
-              }, 1400)
+                window.location.href = verifyRes.data.redirect || '/checkout/payment/failed'
+              }, 1000)
             }
-          } else {
-            showToast('Payment Verification Failed', 'error')
-            setTimeout(() => {
-              window.location.href = verifyRes.data.redirect
-            }, 1000)
+          } catch (err) {
+            console.log('Handler error:', err)
+            showToast(err.response?.data?.message || 'Something went wrong', 'error')
           }
         },
 
@@ -116,7 +118,7 @@
         setTimeout(()=>{
           sessionStorage.setItem("paymentError",response.error.description)
           window.location.href = `/checkout/payment/failed?addressId=${addressId}?message=${response.error.description}`
-          hideLoader
+          hideLoader()
         },1200)
       })
 

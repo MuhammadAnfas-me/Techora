@@ -69,12 +69,13 @@
                 <div class="nav-right">
                     <% if(user){ %>
                     <div class="nav-icons">
-                        <button class="icon-btn" id="favBtn" onclick="openWishlist()">
+                        <button class="icon-btn wish-btn" id="favBtn" onclick="openWishlist()">
                             <span class="material-symbols-outlined">favorite</span>
+                            <span class="badgeCount" id="wishCount" ><%= wishCount ? wishCount : 0 %></span>
                         </button>
                         <button class="icon-btn cart-btn" onclick="openCart()">
                             <span class="material-symbols-outlined">shopping_cart</span>
-                            <span class="badge" id="cartCount" ><%= cartCount ? cartCount : 0 %></span>
+                            <span class="badgeCount" id="cartCount" ><%= cartCount ? cartCount : 0 %></span>
                         </button>
                         <div class="profile-wrapper">
                             <button class="avatar">

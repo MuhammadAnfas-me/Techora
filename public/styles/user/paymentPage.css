@@ -137,3 +137,42 @@ body{
 
 .secure-badge { text-align: center; font-size: 0.75rem; color: var(--gray-500); margin-top: 1rem; }
 .success-icon { color: var(--success); margin-right: 0.25rem; }
+
+/* --- Validation Alert Styles --- */
+.item-unavailable-alert {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #991b1b;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.item-unavailable-alert i {
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.stock-warning {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  color: #92400e;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.stock-warning i {
+  color: #d97706;
+  font-size: 13px;
+}

@@ -144,18 +144,21 @@ router
   .patch(offerController.updateOffer)
 
   router
-    .route('/offer/:id').delete(offerController.deleteCoupon)
+    .route('/offer/:id').delete(middleWares.checkAdminAuth, offerController.deleteCoupon)
 
   router
-    .route("/offer/toggle").patch(offerController.toggleStatus)
+    .route("/offer/toggle").patch(middleWares.checkAdminAuth, offerController.toggleStatus)
 
 
 router
-  .route('/dashboard').get(dashboardController.dashboardLoad)
+  .route('/dashboard').get(middleWares.checkAdminAuth, dashboardController.dashboardLoad)
 
 
 router
-  .route('/report').get(reportController.reportLoad)
+  .route('/report').get(middleWares.checkAdminAuth, reportController.reportLoad)
+router.route('/report/pdf').get(middleWares.checkAdminAuth, reportController.downloadSalesReportPDF)
+router.route('/report/excel').get(middleWares.checkAdminAuth, reportController.downloadSalesReportExcel)
+
 
 router.route('/logout').get(authController.logout)
 export default router

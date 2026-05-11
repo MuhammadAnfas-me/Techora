@@ -248,6 +248,33 @@
       }
       .btn-full { width: 100%; justify-content: center; }
 
+      .adjustment-title {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 16px;
+        margin-bottom: 12px;
+        padding-top: 16px;
+        border-top: 1px dashed #e5e7eb;
+      }
+      .refund-text {
+        color: #ef4444;
+        font-weight: 500;
+      }
+      .effective-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding: 12px;
+        background-color: #f9fafb;
+        border-radius: 6px;
+        font-weight: 600;
+        color: #111827;
+      }
+
       /* Order History Timeline */
       .timeline {
         position: relative;
@@ -578,6 +605,20 @@
               
               <div class="card">
                 <div class="card-header">Order Total</div>
+                <% 
+                    let totalRefund = 0;
+                    let hasRefund = false;
+                    
+                    order.items.forEach(item => {
+                        if (["Cancelled", "Returned", "Return Approved"].includes(item.status)) {
+                            totalRefund += (item.finalTotal || item.total);
+                            hasRefund = true;
+                        }
+                    });
+                    
+                    const originalTotal = order.subtotal - (order.coupon.discount || 0);
+                    const effectivePaid = originalTotal - totalRefund;
+                %>
                 <div class="totals-row">
                   <span>Subtotal</span>
                   <span><%= formatINR(order.subtotal) %></span>
@@ -591,13 +632,29 @@
                   <span style="color : #22c55e">Free</span>
                 </div>
                 <div class="totals-divider"></div>
-                <div class="totals-grand">
-                  <span>Total</span>
-                  <span><%= formatINR(order.totalAmount) %></span>
+                <div class="totals-row" style="font-weight: 500; color: #374151;">
+                  <span>Original Total</span>
+                  <span><%= formatINR(originalTotal) %></span>
                 </div>
-                <button class="btn btn-primary btn-full" onclick="window.location.href='/orders/<%= order.orderId %>/invoice'">
-                  Download Invoice
-                </button>
+
+                <% if(hasRefund) { %>
+                    <span class="adjustment-title">Adjustments</span>
+                    <div class="totals-row">
+                        <span>Cancelled/Returned Items</span>
+                        <span class="refund-text">-<%= formatINR(totalRefund) %></span>
+                    </div>
+                <% } %>
+
+                <div class="effective-row">
+                    <span>Effective Paid</span>
+                    <span><%= formatINR(effectivePaid) %></span>
+                </div>
+
+                <div style="margin-top: 20px;">
+                  <button class="btn btn-primary btn-full" onclick="window.location.href='/admin/orders/<%= order.orderId %>/invoice'">
+                    Download Invoice
+                  </button>
+                </div>
               </div>
 
               <div class="card">

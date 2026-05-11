@@ -1,5 +1,5 @@
    :root {
-       --bg-color: #f1f4f9;
+       --bg-color: #E3E3E3;
        --card-bg: #ffffff;
        --text-main: #1e293b;
        --text-muted: #64748b;
@@ -263,13 +263,55 @@
        margin-bottom: 8px;
    }
 
-   .total-row {
-       border-top: 1px solid var(--border-color);
-       padding-top: 15px;
-       margin-top: 15px;
-       font-weight: 700;
-       font-size: 16px;
-   }
+    .total-row {
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px;
+        margin-top: 15px;
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    .adjustment-section {
+        border-top: 1px dashed var(--border-color);
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+
+    .adjustment-title {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 12px;
+        color: var(--text-main);
+        display: block;
+    }
+
+    .effective-row {
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px;
+        margin-top: 15px;
+        font-weight: 800;
+        font-size: 18px;
+        color: var(--text-main);
+    }
+
+    .refund-text {
+        color: var(--danger);
+        font-weight: 600;
+    }
+
+    .refund-badge {
+        color: var(--danger);
+        font-size: 11px;
+        font-weight: 700;
+        border: 1px solid #fecaca;
+        background: #fee2e2;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .summary-label {
+        color: var(--text-muted);
+    }
 
    .payment-status {
        background: #f8fafc;

@@ -228,8 +228,92 @@
           </div>
         </div>
 
+        <!-- ── Top performance sections ── -->
+        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 24px;">
+          <!-- Top Products -->
+          <div class="section-card" style="margin-bottom: 0;">
+            <h2 class="section-title">Top 10 Products</h2>
+            <div class="table-scroll">
+              <table class="recent-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Sold</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% topProducts.forEach(p => { %>
+                  <tr>
+                    <td style="display: flex; align-items: center; gap: 10px;">
+                      <img src="<%= p.image %>" alt="" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;">
+                      <span style="font-weight: 500;"><%= p.name %></span>
+                    </td>
+                    <td style="font-weight: 600;"><%= p.totalSold %></td>
+                  </tr>
+                  <% }) %>
+                  <% if (topProducts.length === 0) { %>
+                    <tr><td colspan="2" style="text-align: center; color: #9ca3af;">No data available</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Top Categories -->
+          <div class="section-card" style="margin-bottom: 0;">
+            <h2 class="section-title">Top 10 Categories</h2>
+            <div class="table-scroll">
+              <table class="recent-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Sold</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% topCategories.forEach(c => { %>
+                  <tr>
+                    <td style="font-weight: 500;"><%= c.name %></td>
+                    <td style="font-weight: 600;"><%= c.totalSold %></td>
+                  </tr>
+                  <% }) %>
+                  <% if (topCategories.length === 0) { %>
+                    <tr><td colspan="2" style="text-align: center; color: #9ca3af;">No data available</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Top Brands -->
+          <div class="section-card" style="margin-bottom: 0;">
+            <h2 class="section-title">Top 10 Brands</h2>
+            <div class="table-scroll">
+              <table class="recent-table">
+                <thead>
+                  <tr>
+                    <th>Brand</th>
+                    <th>Sold</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% topBrands.forEach(b => { %>
+                  <tr>
+                    <td style="font-weight: 500;"><%= b._id %></td>
+                    <td style="font-weight: 600;"><%= b.totalSold %></td>
+                  </tr>
+                  <% }) %>
+                  <% if (topBrands.length === 0) { %>
+                    <tr><td colspan="2" style="text-align: center; color: #9ca3af;">No data available</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- ── Recent Orders Table ── -->
-        <div class="section-card">
+        <div class="section-card" style="margin-top: 24px;">
           <h2 class="section-title">Recent Orders</h2>
           <div class="table-scroll">
             <table class="recent-table">
@@ -266,7 +350,7 @@
         </div>
 
         <!-- ── Footer ── -->
-        <p class="dashboard-footer">© 2024 MobileMart Admin. All rights reserved.</p>
+        <p class="dashboard-footer">© 2024 Techora Admin. All rights reserved.</p>
 
       </div>
     </main>
@@ -311,9 +395,7 @@
           },
           y: {
             beginAtZero: true,
-            max: 8000,
             ticks: {
-              stepSize: 2000,
               font: { family: "Inter", size: 12 },
               color: "#6b7280",
               callback: (val) => val.toLocaleString()

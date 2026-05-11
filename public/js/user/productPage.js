@@ -120,6 +120,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function generateStars(rating = 0) {
+  const fullStars = Math.floor(rating);
+  const emptyStars = 5 - fullStars;
+
+  let starsHTML = '';
+
+  for (let i = 0; i < fullStars; i++) {
+    starsHTML += `
+      <div class="h-3 w-3 text-yellow-400">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+      </div>
+    `;
+  }
+
+  for (let i = 0; i < emptyStars; i++) {
+    starsHTML += `
+      <div class="h-3 w-3 text-gray-300">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+      </div>
+    `;
+  }
+
+  return starsHTML;
+}
+
   function renderProducts (products,wishListIds) {
     const container = document.getElementById('productsContainer')
     if (!container) return
@@ -134,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     container.innerHTML = products
       .map(product => {
         const firstVariant = product.variants?.[0] || {}
+           const variant = product.variants?.[0] || {}
         const firstImage =
           firstVariant.image?.[0] || '/images/fallback-product.png'
         const offerPrice = firstVariant.offerPrice ?? firstVariant.price ?? 0;
@@ -150,10 +180,10 @@ document.addEventListener('DOMContentLoaded', () => {
           item.productId === product._id.toString() &&
           item.variantId === currentVariantId
         );
+
+
         return `
-          <article class="product-card" onclick="openProductPage('${
-            product.name
-          }')">
+          <article class="product-card" onclick="openProductPage('${product.name}')">
             <div class="card-image-wrapper">
               <img src="${firstImage}" alt="${product.name}" class="card-img">
               ${isNew ? `<span class="badge-new">New</span>` : ''}
@@ -174,14 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <h3 class="card-title">${product.name || ''}</h3>
 
               <div class="rating-wrapper">
-                <div class="stars">
-                  <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
-                  <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
-                  <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
-                  <div class="h-3 w-3"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
-                  <div class="h-3 w-3 star-empty"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div>
-                </div>
-                <span class="review-count">(124)</span>
+                ${generateStars(product.avgRating)}
+                <span class="review-count">(${product.reviewCount || 0})</span>
               </div>
 
               <div class="card-footer">
@@ -194,17 +218,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 <button
                   type="button"
-                  class="add-btn"
-                  onclick="addToCart(event, '${
-                    product._id
-                  }', '${variantId}', ${loggedIn})"
+                  class="add-btn ${variant.stock < 1 ? 'out-stock-btn' : ''}"
+                  onclick="${
+                    variant.stock > 0 ?
+                     `addToCart(event, '${product._id}', '${variantId}', ${loggedIn})`
+                      : ''
+                  }"
+                  ${variant.stock < 1 ? 'disabled' : ''}
                 >
-                  <div class="h-4 w-4">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                    </svg>
-                  </div>
-                  <span class="add-text">Add</span>
+                  ${
+                    variant.stock < 1 ?
+                     `<span class="add-text">Out of Stock</span>`
+                      : `<div class="h-4 w-4">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        </svg>
+                      </div>
+                      <span class="add-text">Add</span>`
+                  }
                 </button>
               </div>
             </div>
@@ -377,9 +408,13 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     const cartCountEl = document.getElementById('cartCount')
+    const wishCount = document.getElementById("wishCount")
     if (cartCountEl) {
       if (res.data.cartCount !== undefined) {
         cartCountEl.textContent = res.data.cartCount
+      }
+      if (res.data.wishCount !== undefined) {
+        wishCount.textContent = res.data.wishCount
       }
 
       cartCountEl.classList.add('cart-bounce')
@@ -464,8 +499,10 @@ async function addToWishlist(e, productId, variantId, isLogged,btn) {
     })
 
     const favBtn = document.getElementById('favBtn')
-    if (favBtn) {
+    const wishCount = document.getElementById("wishCount")
+    if (favBtn && wishCount) {
       favBtn.classList.add('cart-bounce')
+      wishCount.textContent = res.data.wishCount
       setTimeout(() => {
         favBtn.classList.remove('cart-bounce')
       }, 300)

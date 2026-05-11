@@ -89,3 +89,14 @@ function closeToast() {
         toast.classList.remove('hide');
     }, 250);
 }
+
+function setButtonLoading(button, isLoading) {
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = "Loading...";
+  } else {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText || button.innerHTML;
+  }
+}

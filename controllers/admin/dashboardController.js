@@ -25,7 +25,11 @@ export const dashboardLoad = async (req, res) => {
       if (['Placed', 'Confirmed', 'Pending'].includes(order.orderStatus)) {
         pendingOrdersCount++;
       }
-      if (!['Cancelled', 'Returned', 'Return Approved'].includes(order.orderStatus)) {
+      
+      if (
+        order.paymentStatus === 'Paid' &&
+        ['Delivered', 'Shipped', 'Confirmed', 'Placed'].includes(order.orderStatus)
+      ) {
         totalRevenue += order.totalAmount || 0;
         
         const orderDate = new Date(order.createdAt);
@@ -48,6 +52,69 @@ export const dashboardLoad = async (req, res) => {
       };
     });
 
+    // Top 10 Best Selling Products
+    const topProducts = await Order.aggregate([
+      { $match: { paymentStatus: 'Paid' } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.productId',
+          name: { $first: '$items.name' },
+          image: { $first: '$items.image' },
+          totalSold: { $sum: '$items.quantity' }
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Top 10 Best Selling Categories
+    const topCategories = await Order.aggregate([
+      { $match: { paymentStatus: 'Paid' } },
+      { $unwind: '$items' },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'items.productId',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      { $unwind: '$product' },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'product.categoryId',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      { $unwind: '$category' },
+      {
+        $group: {
+          _id: '$category._id',
+          name: { $first: '$category.name' },
+          totalSold: { $sum: '$items.quantity' }
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Top 10 Best Selling Brands
+    const topBrands = await Order.aggregate([
+      { $match: { paymentStatus: 'Paid' } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.brand',
+          totalSold: { $sum: '$items.quantity' }
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 10 }
+    ]);
+
     res.render("Admin/dashboard.ejs", {
       totalOrders,
       totalRevenue,
@@ -55,7 +122,10 @@ export const dashboardLoad = async (req, res) => {
       pendingOrders: pendingOrdersCount,
       chartLabels: JSON.stringify(chartLabels),
       chartData: JSON.stringify(chartData),
-      recentOrders
+      recentOrders,
+      topProducts,
+      topCategories,
+      topBrands
     });
 
   } catch (error) {

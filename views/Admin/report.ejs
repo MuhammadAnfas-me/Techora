@@ -22,7 +22,6 @@
   <link rel="stylesheet" href="/styles/user/popup.css" />
 
   <!-- Chart.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
   <style>
 
@@ -384,20 +383,119 @@
       color: #9ca3af;
     }
 
+    .export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.export-btn {
+  background-color: #4f46e5;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+..export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Button */
+.export-btn {
+  background-color: #1f3b4d;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 🔥 Glass Dropdown */
+.dropdown-content {
+  position: absolute;
+  top: 115%;
+  right: 0;
+
+  width: 220px; /* 🔥 FIXED WIDTH */
+  border-radius: 14px;
+
+  background: rgba(31, 59, 77, 0.6);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+
+  padding: 8px 0;
+  display: none;
+  z-index: 99;
+}
+
+/* Items */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px 18px;
+  color: #e5e7eb;
+  font-size: 14.5px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  white-space: nowrap; /* 🔥 PREVENT TEXT BREAK */
+}
+
+/* Hover */
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Divider */
+.dropdown-item:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Show */
+.dropdown-content.show {
+  display: block;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Smooth animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
     /* responsive */
     @media (max-width: 640px) {
       .reports-header { flex-direction: column; align-items: flex-start; }
       .products-table th, .products-table td { padding: 12px 8px; font-size: 13px; }
     }
   </style>
-
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="/js/popup.js" defer></script>
+  <script src="/js/popup.js" defer></script>  
   <script src="/js/partitials/Admin/sidebar.js" defer></script>
 </head>
 
 <body>
-  <div id="toast" class="toast"></div>
+
   <%- include("../partitials/admin/sidebar.ejs", { currentPage: 'reports' }) %>
 
   <div class="main-wrapper">
@@ -414,14 +512,35 @@
             <p>Create, manage, and analyze business performance reports</p>
           </div>
           <div class="reports-header-right">
-            <div class="date-range-badge">
-              <i class="fas fa-calendar"></i>
-              Oct 01, 2023 - Oct 31, 2023
-            </div>
-            <button class="btn-export" type="button">
-              <span class="material-symbols-outlined" style="font-size:17px;">upload_file</span>
-              Export Report
-            </button>
+            <div class="date-range-badge" onclick="openDatePicker()">
+            <i class="fas fa-calendar"></i>
+            <span id="dateText">Select Date Range</span>
+          </div>
+
+
+        <input type="hidden" id="startDate">
+        <input type="hidden" id="endDate">
+        <!-- hidden actual picker -->
+        <input type="text" id="dateRangePicker" style="display:none;">
+
+<div class="export-dropdown">
+  <button class="export-btn" onclick="toggleDropdown(event)">
+    <i class="fas fa-file-export"></i> Export Report
+  </button>
+
+  <div id="dropdownMenu" class="dropdown-content">
+    <div class="dropdown-item" onclick="downloadPDF()">
+      <i class="fas fa-file-pdf"></i>
+      <span>Download PDF</span>
+    </div>
+
+    <div class="dropdown-item" onclick="downloadExcel()">
+      <i class="fas fa-file-excel"></i>
+      <span>Download Excel</span>
+    </div>
+  </div>
+</div>
+
           </div>
         </div>
 
@@ -537,6 +656,41 @@
 
         </div>
 
+        <!-- ── Top Categories ── -->
+<div class="products-card">
+  <div class="products-card-header">
+    <h2>Top Selling Categories</h2>
+  </div>
+  <div style="overflow-x: auto;">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Category Name</th>
+          <th>Total Items Sold</th>
+          <th>Total Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (locals.topCategories && topCategories.length > 0) { %>
+          <% topCategories.forEach(category => { %>
+          <tr>
+            <td>
+              <span class="product-name-text"><%= category._id || category.name %></span>
+            </td>
+            <td><%= category.totalUnitsSold %></td>
+            <td class="revenue-value">₹<%= category.totalRevenue.toLocaleString() %></td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="3" style="text-align: center; color: #6b7280;">No category data available</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
         <!-- ── Top Selling Products ── -->
         <div class="products-card">
           <div class="products-card-header">
@@ -611,7 +765,7 @@
           y: {
             beginAtZero: true,
             ticks: {
-              stepSize: 60,
+              // stepSize: 60,
               font: { family: "Inter", size: 12 },
               color: "#6b7280"
             },
@@ -667,6 +821,97 @@
         }
       }
     });
+
+    const picker = flatpickr("#dateRangePicker", {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      onClose: function(selectedDates) {
+        if (selectedDates.length === 2) {
+          const options = { day: '2-digit', month: 'short', year: 'numeric' };
+          const start = selectedDates[0].toLocaleDateString('en-IN', options);
+          const end = selectedDates[1].toLocaleDateString('en-IN', options);
+          // store values in standard Y-m-d format respecting local time
+          const formatDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          };
+          document.getElementById('startDate').value = formatDate(selectedDates[0]);
+          document.getElementById('endDate').value = formatDate(selectedDates[1]);
+        
+          // update UI display
+          document.getElementById('dateText').innerText =
+            `${start} - ${end}`;
+        }
+      }
+    });
+
+    function openDatePicker() {
+      picker.open();
+    }
+
+    function toggleDropdown() {
+      document.getElementById("dropdownMenu").classList.toggle("show");
+    }
+    async function downloadPDF() {
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+    
+      if (!start || !end) {
+        if (typeof showToast === 'function') showToast("Select date first", "error");
+        else alert("Please select a date first");
+        return;
+      }
+
+      // Find the button (first item in the dropdown)
+      const downloadBtn = document.querySelector('#dropdownMenu .dropdown-item:nth-child(1)');
+      const originalHtml = downloadBtn.innerHTML;
+      
+      try {
+        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Generating PDF...</span>';
+        downloadBtn.style.pointerEvents = 'none';
+
+        const response = await fetch(`/admin/report/pdf?startDate=${start}&endDate=${end}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) throw new Error('Failed to generate PDF');
+
+        const blob = await response.blob();
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Techora-Sales-Report-${start}-to-${end}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        
+        if (typeof showToast === 'function') showToast("PDF downloaded successfully!", "success");
+      } catch (error) {
+        console.error('Error:', error);
+        if (typeof showToast === 'function') showToast("Failed to download PDF. Please try again.", "error");
+        else alert("Failed to download PDF. Please try again.");
+      } finally {
+        downloadBtn.innerHTML = originalHtml;
+        downloadBtn.style.pointerEvents = 'auto';
+      }
+    }
+    
+    function downloadExcel() {
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+    
+      if (!start || !end) {
+        showToast("Select date first","error");
+        return;
+      }
+    
+      window.location.href = `/admin/report/excel?startDate=${start}&endDate=${end}`;
+    }
   </script>
 </body>
 <script>

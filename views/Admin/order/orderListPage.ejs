@@ -572,6 +572,7 @@ async function updateReturnStatus(id,type,status) {
     }
   } catch (error) {
     console.log(error)
+    showToast(error.response?.data?.message || "Something went wrong", "error")
   }
 }
 

@@ -38,7 +38,8 @@
                       <%= statusText %>
                     </span>
                 </div>
-                <div class="delivery-text">Estimated Delivery: <strong>Oct 28, 2023</strong></div>
+                <% const estDelivery = new Date(order.createdAt); estDelivery.setDate(estDelivery.getDate() + 7); %>
+                <div class="delivery-text">Estimated Delivery: <strong><%= estDelivery.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) %></strong></div>
                 
                 <div class="timeline">
                     <div class="step active">
@@ -100,7 +101,12 @@
                     <div class="product-info">
                         <div class="prod-header">
 
-                            <div class="prod-name"><%= item.name %></div>
+                            <div class="prod-name">
+                                <%= item.name %>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 400;">
+                                    Brand: <strong><%= item.brand.toUpperCase() %></strong> • Unit Price: <%= formatINR(item.price) %>
+                                </div>
+                            </div>
 
                             <div class="prod-right">
                             <% if(item.status === "Delivered"){ %>
@@ -117,17 +123,25 @@
                                <span class="item-status delivered">Returned</span>
                             <% } %>
                             <div class="prod-price">
-                                <span class="curr-price"><%= formatINR(item.total) %></span>
+                                <span class="curr-price"><%= formatINR(item.finalTotal || item.total) %></span>
+                                <% if (item.discount > 0) { %>
+                                    <span style="font-size: 11px; color: #94a3b8; text-decoration: line-through; display: block; margin-top: 2px; font-weight: 500;">
+                                        <%= formatINR(item.total) %>
+                                    </span>
+                                    <span style="font-size: 10px; color: #16a34a; font-weight: 600; display: block; margin-top: 2px;">
+                                        Coupon Saved: <%= formatINR(item.discount) %>
+                                    </span>
+                                <% } %>
                             </div>
                         </div>
                         </div>
                         <div class="prod-meta">
-                            <span class="meta-tag">Color:  <%= item.color %></span>
-                            <span class="meta-tag">Qty: <%= item.quantity %></span>
+                            <span class="meta-tag"><i class="fas fa-palette" style="font-size: 10px; margin-right: 4px;"></i> Color: <%= item.color %></span>
+                            <span class="meta-tag"><i class="fas fa-layer-group" style="font-size: 10px; margin-right: 4px;"></i> Qty: <%= item.quantity %></span>
                         </div>
                         <div class="prod-actions">
                             <% if(item.status === "Delivered"){ %>
-                                <button class="btn-sm">Write Review</button>
+                                <button class="btn-sm" onclick="window.location.href='/orders/<%= item._id %>/review  '">Write Review</button>
                             <button class="btn-sm return-btn" onclick="returnItem('<%= order.orderId %>', '<%= item._id %>')">Return Item</button>
                             <% }else if(!["Delivered","Shipped","Cancelled","Return Requested","Return Rejected","Return Approved","Returned"].includes(item.status)){ %>
                             <button class="btn-sm cancel-btn" <%= order.orderStatus === "Cancelled" ? "hidden" : "" %> onclick="cancelItem('<%= order.orderId %>' , '<%= item._id %>')">Cancel Item</button>
@@ -142,41 +156,81 @@
 
             <div class="card">
                 <div class="items-title">Payment Summary</div>
+                
+                <% 
+                    let totalRefund = 0;
+                    let hasRefund = false;
+                    let refundStatus = "";
+                    
+                    order.items.forEach(item => {
+                        if (["Cancelled", "Returned", "Return Approved"].includes(item.status)) {
+                            totalRefund += (item.finalTotal || item.total);
+                            hasRefund = true;
+                            if (item.refunds === "refunded") {
+                                refundStatus = "Refund Completed";
+                            } else if (!refundStatus) {
+                                refundStatus = "Refund Initiated";
+                            }
+                        }
+                    });
+                    
+                    const effectivePaid = order.totalAmount - totalRefund;
+                %>
+
                 <div class="summary-row">
-                    <span style="color: var(--text-muted);">Subtotal (<%= order.items.length %> items)</span>
+                    <span class="summary-label">Subtotal (<%= order.items.length %> items)</span>
                     <span><%= formatINR(order.subtotal) %></span>
                 </div>
                 <div class="summary-row">
-                    <span style="color: var(--text-muted);">Shipping Fee</span>
+                    <span class="summary-label">Shipping Fee</span>
                     <span style="color: var(--success);">Free</span>
                 </div>
                 <div class="summary-row">
-                    <span style="color: var(--text-muted);">Discount (<%= order.coupon?.code ? order.coupon?.code : "-" %>)</span>
+                    <span class="summary-label">Discount (<%= order.coupon?.code ? order.coupon?.code : "-" %>)</span>
                     <span style="color: var(--success);"><%= order.coupon?.discount ? formatINR(order.coupon?.discount) : '-₹00.00' %>  </span>
                 </div>
                 <div class="summary-row total-row">
                     <span>Order Total</span>
                     <span><%= formatINR(order.totalAmount) %></span>
                 </div>
-                <% if(order.paymentStatus === "Paid"){ %>
-                <div class="payment-status">
-                    <% if(order.paymentMethod === "RAZORPAY"){ %>
-                    <div class="visa-info">
-                        <i class="fab fa-cc-visa" style="color: #1a1f71; font-size: 20px;"></i>
-                        Paid through <strong>Razorpay</strong>
+
+                <% if(hasRefund) { %>
+                    <div class="adjustment-section">
+                        <span class="adjustment-title">Adjustments</span>
+                        <div class="summary-row">
+                            <span class="summary-label">Cancelled Items Refund</span>
+                            <span class="refund-text">-<%= formatINR(totalRefund) %></span>
+                        </div>
                     </div>
-                    <% }else if(order.paymentMethod === "COD"){ %>
-                        <div class="visa-info">
-                        <i class="fab fa-cod" style="color: #1a1f71; font-size: 20px;"></i>
-                            Paid on COD 
-                        </div>
-                    <% }else{ %>
-                        <div class="visa-info">
-                        <i class="fab fa-wallet" style="color: #1a1f71; font-size: 20px;"></i>
-                            Paid using WALLET 
-                        </div>
-                    <% } %>
-                    <span class="paid-badge">Paid</span>
+                <% } %>
+
+                <div class="summary-row effective-row">
+                    <span>Effective Paid Amount</span>
+                    <span><%= formatINR(effectivePaid) %></span>
+                </div>
+
+                <% if(order.paymentStatus === "Paid" || hasRefund){ %>
+                <div class="payment-status">
+                    <div class="visa-info">
+                        <% if(order.paymentMethod === "RAZORPAY"){ %>
+                            <i class="fab fa-cc-visa" style="color: #1a1f71; font-size: 20px;"></i>
+                            Paid through <strong>Razorpay</strong>
+                        <% }else if(order.paymentMethod === "COD"){ %>
+                            <i class="fas fa-money-bill-1" style="color: #16a34a; font-size: 20px;"></i>
+                            Paid on <strong>COD</strong>
+                        <% }else{ %>
+                            <i class="fas fa-wallet" style="color: #475569; font-size: 20px;"></i>
+                            Paid using <strong>Wallet</strong>
+                        <% } %>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <% if(order.paymentStatus === "Paid") { %>
+                            <span class="paid-badge">Paid</span>
+                        <% } %>
+                        <% if(hasRefund && refundStatus) { %>
+                            <span class="refund-badge"><%= refundStatus %></span>
+                        <% } %>
+                    </div>
                 </div>
                 <% } %>
             </div>
@@ -204,6 +258,13 @@
                                 day: "numeric"
                             }) %>
                         </strong>
+                    </div>
+                </div>
+                <div class="side-item">
+                    <i class="fas fa-credit-card side-icon"></i>
+                    <div class="side-content">
+                        <label>Payment Method</label>
+                        <strong><%= order.paymentMethod === 'RAZORPAY' ? 'Razorpay (Online)' : (order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Wallet') %></strong>
                     </div>
                 </div>
                 <div class="side-item">
@@ -237,26 +298,19 @@
                         <strong>+91 <%= order.address.phone %></strong>
                     </div>
                 </div>
-                <div class="sms-box">
-                    <i class="fas fa-circle-info"></i>
-                    Updates sent via Email
-                </div>
+     
             </div>
 
             <div class="card" style="background: #f8fafc;">
                 <% if(["Shipped", "Placed", "Confirmed"].includes(order.orderStatus) ){ %>
                     <span class="side-title">Actions</span>
                 <% } %>
-
-                    <% if(order.paymentStatus == "Paid"){ %>
-                        <button class="action-btn"><i class="fas fa-print"></i> Print Receipt</button>
-                    <% } %>
                     
                     <% const delivered = order.items.every(item => item.status === "Delivered") %>
                     <% const capable = order.items.every(item => item.status === "Placed" || item.status === "Confirmed") %>
-                    <% if([ "Placed", "Confirmed"].includes(order.orderStatus) && capable){ %>
+                    <% if([ "Placed", "Confirmed"].includes(order.orderStatus)){ %>
                         <button class="action-btn btn-cancel" onclick="cancelOrder('<%= order.orderId %>')" <%= allCancelled ? "Disabled" : ""  %>><i class="fas fa-circle-xmark"></i>Cancel Order</button>
-                    <% }else if(order.orderStatus === "Delivered" && delivered){%>
+                    <% }else if(order.orderStatus === "Delivered" ){%>
                         <button class="action-btn" onclick="returnOrder('<%= order.orderId %>')"><i class="fas fa-rotate-left" ></i> Return Items</button>
                     <% }else{ %>
                     <% } %>
@@ -299,7 +353,7 @@
     async function returnItem(orderId,itemId){
        showLoader()
        setTimeout(()=>{
-          window.location.href = `/orders/${orderId}/return/${item._id}`;
+          window.location.href = `/orders/${orderId}/return/${itemId}`;
           hideLoader()
        },500)
     }

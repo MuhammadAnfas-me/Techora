@@ -1,197 +1,126 @@
-import { Order } from '../../models/orderModel.js'
-import { formatDate } from '../../services/dateFormat.js'
-import puppeteer from 'puppeteer'
-import ejs from 'ejs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import Product from '../../models/productModel.js'
-import { resendOtp } from './authController.js'
-import { Wallet } from '../../models/walletModel.js'
+import {
+  getOrderDashboardData,
+  getOrderList,
+  getOrderDetails,
+  generateOrderInvoice,
+  cancelOrderItem,
+  getItemForCancelPage,
+  getOrderForCancelPage,
+  cancelWholeOrder,
+  getItemForReturnPage,
+  getOrderForReturnPage,
+  requestItemReturn,
+  requestWholeOrderReturn,
+  getReviewPageData,
+  submitReview
+} from '../../services/user/orderService.js'
 
-const getStatusText = status => {
-  switch (status) {
-    case 'Placed':
-      return 'Order Placed'
-    case 'Confirmed':
-      return 'Confirmed'
-    case 'Shipped':
-      return 'Shipped - In Transit'
-    case 'Delivered':
-      return 'Delivered'
-    case 'Cancelled':
-      return 'Cancelled'
-    default:
-      return status
-  }
-}
+// ─────────────────────────────────────────────
+// Order Dashboard
+// ─────────────────────────────────────────────
 
 export const OrderLoad = async (req, res) => {
   try {
     const user = req.session.user
-    if (!user) {
-      res.redirect('/')
-    }
-    const orders = await Order.find({ userId: user.id })
-      .sort({ createdAt: -1 })
-      .limit(4)
-    const totalOrders = await Order.countDocuments({ userId: user.id })
-    const delivered = await Order.countDocuments({
-      userId: user.id,
-      orderStatus: 'Delivered'
-    })
-    const shipped = await Order.countDocuments({
-      userId: user.id,
-      orderStatus: 'Shipped'
-    })
-    const cancelled = await Order.countDocuments({
-      userId: user.id,
-      orderStatus: 'Cancelled'
-    })
-    res.render('User/order/orderPage.ejs', {
-      orders,
-      totalOrders,
-      delivered,
-      shipped,
-      cancelled
-    })
+    if (!user) return res.redirect('/')
+
+    const data = await getOrderDashboardData(user.id)
+
+    res.render('User/order/orderPage.ejs', data)
   } catch (error) {
     console.log(error)
   }
 }
 
+// ─────────────────────────────────────────────
+// Order List
+// ─────────────────────────────────────────────
+
 export const orderListPage = async (req, res) => {
   try {
     const user = req.session.user
-    if (!user) {
-      res.redirect('/')
-    }
-    const search = req.query.search || ''
-    const status = req.query.status || ''
+    if (!user) return res.redirect('/')
 
-    const page = parseInt(req.query.page) || 1
-    const limit = 6
-    const skip = (page - 1) * limit
-
-    let query = { userId: user.id }
-
-    if (search) {
-      query.orderId = { $regex: search, $options: 'i' }
-    }
-    if (status && status !== 'all') {
-      query.orderStatus = status
-    }
-
-    const orders = await Order.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-    const totalOrders = await Order.countDocuments(query)
-
-    if (req.headers.accept.includes('json')) {
-      return res.json({
-        orders,
-        currentPage: page,
-        totalPages: Math.ceil(totalOrders / limit),
-        search,
-        status
-      })
-    }
-
-    res.render('User/order/orderListPage.ejs', {
-      orders,
-      currentPage: page,
-      totalPages: Math.ceil(totalOrders / limit),
-      search,
-      status
+    const data = await getOrderList(user.id, {
+      search: req.query.search || '',
+      status: req.query.status || '',
+      page: parseInt(req.query.page) || 1
     })
+
+    if (req.headers.accept?.includes('json')) {
+      return res.json(data)
+    }
+
+    res.render('User/order/orderListPage.ejs', data)
   } catch (error) {
     console.error('error from orderListPage:', error)
   }
 }
 
+// ─────────────────────────────────────────────
+// Order Details
+// ─────────────────────────────────────────────
+
 export const orderDetailsLoad = async (req, res) => {
   try {
-    const orderId = req.params.orderId
     const user = req.session.user
-    if (!user) {
-      return res.redirect('/')
-    }
+    if (!user) return res.redirect('/')
+
+    const orderId = req.params.orderId
     if (!orderId) {
       return res.status(404).render('404', { message: 'Order id not found' })
     }
 
-    const order = await Order.findOne({ orderId })
-    if (!order) {
-      return res.status(404).render('404', { message: 'Order not found' })
-    }
-    const allCancelled = order.items.every(i => i.status === 'Cancelled')
+    const data = await getOrderDetails(orderId)
 
-    res.render('User/order/orderDetails.ejs', {
-      order,
-      statusText: getStatusText(order.orderStatus),
-      formatDate,
-      allCancelled
-    })
+    res.render('User/order/orderDetails.ejs', data)
   } catch (error) {
-    console.error('Error from orderDetailsPage :', error)
+    if (error.status === 404) {
+      return res.status(404).render('404', { message: error.message })
+    }
+    console.error('Error from orderDetailsPage:', error)
   }
 }
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+// ─────────────────────────────────────────────
+// Invoice PDF
+// ─────────────────────────────────────────────
 
 export const generateInvoicePDF = async (req, res) => {
   try {
-    const orderId = req.params.id
+    const { pdf, orderId } = await generateOrderInvoice(req.params.id)
 
-    const order = await Order.findOne({
-      orderId
-    })
-
-    if (!order) {
-      return res.status(404).send('Order not found')
-    }
-
-    // ✅ Render EJS to HTML
-    const filePath = path.join('views/User/invoice.ejs')
-
-    const html = await ejs.renderFile(filePath, { order })
-
-    // 🚀 Launch Puppeteer
-    const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    })
-
-    const page = await browser.newPage()
-
-    await page.setContent(html, {
-      waitUntil: 'networkidle0'
-    })
-
-    // ✅ Generate PDF
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20px',
-        bottom: '20px',
-        left: '15px',
-        right: '15px'
-      }
-    })
-
-    await browser.close()
-
-    // 📥 Send as download
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename=invoice-${order.orderId}.pdf`
+      'Content-Disposition': `attachment; filename=invoice-${orderId}.pdf`
     })
 
     res.send(pdf)
   } catch (error) {
+    if (error.status === 404) return res.status(404).send(error.message)
     console.error('Puppeteer Error:', error)
     res.status(500).send('PDF generation failed')
+  }
+}
+
+// ─────────────────────────────────────────────
+// Cancel Item
+// ─────────────────────────────────────────────
+
+export const itemCancelLoad = async (req, res) => {
+  try {
+    const user = req.session.user
+    if (!user) return res.redirect('/')
+
+    const { orderId, itemId } = req.params
+    if (!orderId) {
+      return res.status(404).json({ success: false, message: 'Order not found' })
+    }
+
+    const data = await getItemForCancelPage(orderId, itemId)
+    res.render('User/order/orderCancelPage.ejs', data)
+  } catch (error) {
+    console.log('Error from orderCancelLoad:', error)
   }
 }
 
@@ -201,507 +130,210 @@ export const cancelItem = async (req, res) => {
     const { orderId, itemId } = req.params
     const { reason, comment } = req.body
 
-    const order = await Order.findOne({ orderId })
-
-    const item = order.items.id(itemId)
-    if (!item) {
-      return res.status(404).json({
-        success: false,
-        message: 'Item not Found'
-      })
-    }
-
-    if (item.status === 'Cancelled') {
-      return res.status(400).json({
-        success: false,
-        message: 'Already Cancelled'
-      })
-    }
-    const { productId, variantId, quantity } = item
-    const product = await Product.findOne({ _id: productId })
-    if (!product) {
-      return res.status(400).json({
-        success: false,
-        message: 'Product not found'
-      })
-    }
-
-    const variant = product.variants.find(
-      v => v.varientId.toString() === variantId.toString()
-    )
-
-    if (!reason) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please select a reason'
-      })
-    }
-    if (!variant) {
-      return res.status(400).json({
-        success: false,
-        message: 'Variant not found'
-      })
-    }
-    item.status = 'Cancelled'
-    item.cancellation = {
+    const { productName } = await cancelOrderItem(user.id, {
+      orderId,
+      itemId,
       reason,
-      comment,
-      cancelledAt: new Date()
-    }
-    variant.stock += quantity
-
-    const allCancelled = order.items.every(i => i.status === 'Cancelled')
-
-    if (allCancelled) {
-      order.orderStatus = 'Cancelled'
-      order.cancellation = {
-        reason,
-        comment,
-        cancelledAt: new Date()
-      }
-      order.timeline.cancelledAt = new Date()
-    }
-
-    const wallet = await Wallet.findOne({ userId: user.id })
-
-    if( ["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
-    wallet.balance += item.finalTotal
-    wallet.transaction.push({
-      type: 'credit',
-      amount: item.finalTotal,
-      description: 'Item cancellation amount refunded'
+      comment
     })
-    }
 
-    await order.save()
-    await product.save()
-    await wallet.save()
     return res.status(200).json({
       success: true,
-      message: `${product.name} cancelled successfully`
+      message: `${productName} cancelled successfully`
     })
   } catch (error) {
-    console.error('Error from cancelItem :', error)
+    console.error('Error from cancelItem:', error)
+    const status = error.status || 500
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'Server error'
+    })
   }
 }
 
-export const itemCancelLoad = async (req, res) => {
-  try {
-    const { orderId, itemId } = req.params
-    const user = req.session.user
-
-    if (!user) {
-      return res.redirect('/')
-    }
-
-    if (!orderId) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      })
-    }
-
-    const order = await Order.findOne({
-      orderId
-    })
-    const item = order.items.find(item => item._id.toString() === itemId)
-
-    res.render('User/order/orderCancelPage.ejs', {
-      order,
-      item
-    })
-  } catch (error) {
-    console.log('Error from orderCancelLoad :', error)
-  }
-}
+// ─────────────────────────────────────────────
+// Cancel Whole Order
+// ─────────────────────────────────────────────
 
 export const orderCancelLoad = async (req, res) => {
   try {
-    const orderId = req.params.id
     const user = req.session.user
+    if (!user) return res.redirect('/')
 
-    if (!user) {
-      res.redirect('/')
-    }
-
+    const orderId = req.params.id
     if (!orderId) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      })
+      return res.status(404).json({ success: false, message: 'Order not found' })
     }
 
-    const order = await Order.findOne({
-      orderId,
-      userId: user.id
-    })
-
-    res.render('User/order/orderCancelPage.ejs', {
-      order,
-      item: null
-    })
+    const data = await getOrderForCancelPage(orderId, user.id)
+    res.render('User/order/orderCancelPage.ejs', data)
   } catch (error) {
-    console.log('Error from orderCancelLoad :', error)
+    console.log('Error from orderCancelLoad:', error)
   }
 }
 
 export const orderCancel = async (req, res) => {
   try {
     const user = req.session.user
-    const orderId = req.params.id
-
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please login first'
-      })
+      return res.status(400).json({ success: false, message: 'Please login first' })
     }
 
+    const orderId = req.params.id
     if (!orderId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order id not found'
-      })
-    }
-    const order = await Order.findOne({
-      orderId,
-      userId: user.id
-    })
-
-    if (!order) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order not found'
-      })
+      return res.status(400).json({ success: false, message: 'Order id not found' })
     }
 
     const { reason, comment } = req.body
 
-    if (!reason) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please select an reason'
-      })
-    }
+    const result = await cancelWholeOrder(user.id, { orderId, reason, comment })
 
-    if (['Shipped', 'Delivered'].includes(order.orderStatus)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Your order already Shipped'
-      })
-    }
-    let allCancelled = order.items.every(i => i.status === 'Cancelled')
-
-    if (allCancelled) {
-      return res.json({
-        success: false,
-        message: 'You already Cancelled'
-      })
-    }
-
-    for (const item of order.items) {
-      if (item.status !== 'Cancelled') {
-        item.status = 'Cancelled'
-
-        item.cancellation = {
-          reason,
-          comment: comment?.trim() || '',
-          cancelledAt: new Date()
-        }
-        await Product.updateOne(
-          {
-            _id: item.productId,
-            'variants.varientId': item.variantId
-          },
-          {
-            $inc: { 'variants.$.stock': item.quantity }
-          }
-        )
-      }
-    }
-
-    order.orderStatus = 'Cancelled'
-
-    order.timeline.cancelledAt = new Date()
-    const wallet = await Wallet.findOne({ userId: order.userId })
-
-    if(["RAZORPAY" , "WALLET"].includes(order.paymentMethod)){
-    wallet.balance += order.totalAmount
-    wallet.transaction.push({
-      type: 'credit',
-      amount: order.totalAmount,
-      description: 'Order cancellation amount refunded'
-    })
-    }
-    await wallet.save()
-    await order.save()
     return res.status(200).json({
       success: true,
-      message: `${orderId} has Cancelled`
+      message: `${result.orderId} has Cancelled`
     })
   } catch (error) {
-    console.log('Error from orderCancel', error)
-    return res.status(500).json({
+    console.log('Error from orderCancel:', error)
+    const status = error.status || 500
+    return res.status(status).json({
       success: false,
-      message: 'Server error'
+      message: error.message || 'Server error'
     })
   }
 }
+
+// ─────────────────────────────────────────────
+// Return Item
+// ─────────────────────────────────────────────
 
 export const itemReturnLoad = async (req, res) => {
   try {
+    const user = req.session.user
+    if (!user) return res.redirect('/')
+
     const { orderId, itemId } = req.params
-    const user = req.session.user
-
-    if (!user) {
-      return res.redirect('/')
-    }
-
     if (!orderId) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      })
+      return res.status(404).json({ success: false, message: 'Order not found' })
     }
 
-    const order = await Order.findOne({
-      orderId
-    })
-
-    const item = order.items.find(item => item._id.toString() === itemId)
-    res.render('User/order/orderReturnPage.ejs', {
-      order,
-      item
-    })
+    const data = await getItemForReturnPage(orderId, itemId)
+    res.render('User/order/orderReturnPage.ejs', data)
   } catch (error) {
-    console.log('Error from orderCancelLoad :', error)
-  }
-}
-
-export const orderReturnLoad = async (req, res) => {
-  try {
-    const orderId = req.params.orderId
-    const user = req.session.user
-
-    if (!user) {
-      return res.redirect('/')
-    }
-
-    if (!orderId) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      })
-    }
-
-    const order = await Order.findOne({
-      orderId
-    })
-
-    res.render('User/order/orderReturnPage.ejs', {
-      order,
-      item: null
-    })
-  } catch (error) {
-    console.log('Error from orderCancelLoad :', error)
+    console.log('Error from orderCancelLoad:', error)
   }
 }
 
 export const returnOrderItem = async (req, res) => {
   try {
     const user = req.session.user
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Please login first' })
+    }
+
     const { orderId, itemId } = req.params
     const { reason, comment } = req.body
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please login first'
-      })
-    }
+    await requestItemReturn(user.id, { orderId, itemId, reason, comment })
 
-    if (!reason) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please select a reason'
-      })
-    }
-
-    const order = await Order.findOne({
-      orderId,
-      userId: user.id
-    })
-
-    if (!order) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order not found'
-      })
-    }
-
-    const item = order.items.id(itemId)
-
-    if (!item) {
-      return res.status(400).json({
-        success: false,
-        message: 'Item not found'
-      })
-    }
-
-    if (item.status !== 'Delivered') {
-      return res.status(400).json({
-        success: false,
-        message: 'Only delivered items can be returned'
-      })
-    }
-
-    if (item.status === 'Returned') {
-      return res.status(400).json({
-        success: false,
-        message: 'Item already returned'
-      })
-    }
-
-    item.status = 'Return Requested'
-    item.returnRequest = {
-      status: 'Pending',
-      reason,
-      comment: comment?.trim() || '',
-      returnedAt: new Date()
-    }
-
-    const allReturned = order.items.every(i => i.status === 'Return Requested')
-
-    if (allReturned) {
-      order.orderStatus = 'Return Requested'
-      order.returnRequest = {
-        status: 'Pending',
-        reason,
-        comment: comment?.trim() || ''
-      }
-      order.timeline.returnedAt = new Date()
-    }
-
-    await order.save()
-
-    return res.status(200).json({
-      success: true,
-      message: 'Item returned successfully'
-    })
+    return res.status(200).json({ success: true, message: 'Item return Request sented successfully' })
   } catch (error) {
     console.log('Error in returnOrderItem:', error)
-    return res.status(500).json({
+    const status = error.status || 500
+    return res.status(status).json({
       success: false,
-      message: 'Server error'
+      message: error.message || 'Server error'
     })
+  }
+}
+
+// ─────────────────────────────────────────────
+// Return Whole Order
+// ─────────────────────────────────────────────
+
+export const orderReturnLoad = async (req, res) => {
+  try {
+    const user = req.session.user
+    if (!user) return res.redirect('/')
+
+    const orderId = req.params.orderId
+    if (!orderId) {
+      return res.status(404).json({ success: false, message: 'Order not found' })
+    }
+
+    const data = await getOrderForReturnPage(orderId)
+    res.render('User/order/orderReturnPage.ejs', data)
+  } catch (error) {
+    console.log('Error from orderCancelLoad:', error)
   }
 }
 
 export const returnOrder = async (req, res) => {
   try {
     const user = req.session.user
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Please login first' })
+    }
+
     const orderId = req.params.orderId
     const { reason, comment } = req.body
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please login first'
-      })
-    }
-
-    if (!reason) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please select a reason'
-      })
-    }
-
-    const order = await Order.findOne({
+    const result = await requestWholeOrderReturn(user.id, {
       orderId,
-      userId: user.id
-    })
-
-    if (!order) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order not found'
-      })
-    }
-
-    if (order.orderStatus !== 'Delivered') {
-      return res.status(400).json({
-        success: false,
-        message: 'Only delivered orders can be returned'
-      })
-    }
-
-    if (order.orderStatus === 'Returned') {
-      return res.status(400).json({
-        success: false,
-        message: 'Order already returned'
-      })
-    }
-
-    const now = new Date()
-
-    for (const item of order.items) {
-      if (item.status === 'Returned') continue
-
-      item.status = 'Return Requested'
-
-      item.returnRequest = {
-        status: 'Pending',
-        reason,
-        comment: comment?.trim() || '',
-        returnedAt: now
-      }
-    }
-
-    order.orderStatus = 'Return Requested'
-
-    order.returnRequest = {
-      status: 'Pending',
       reason,
-      comment: comment?.trim() || '',
-      requestedAt: now
-    }
-
-    await order.save()
+      comment
+    })
 
     return res.status(200).json({
       success: true,
-      message: `${orderId} returned successfully`
+      message: `${result.orderId} return Request sented successfully`
     })
   } catch (error) {
     console.log('Error in returnOrder:', error)
-    return res.status(500).json({
+    const status = error.status || 500
+    return res.status(status).json({
       success: false,
-      message: 'Server error'
+      message: error.message || 'Server error'
     })
   }
 }
 
+// ─────────────────────────────────────────────
+// Review
+// ─────────────────────────────────────────────
 
-
-
-
-
-
-
-
-const test = async (req,res)=>{
+export const reviewLoad = async (req, res) => {
   try {
-    const {email , name} = req.body
+    const user = req.session.user
+    if (!user) return res.redirect('/login')
 
-    const user = await User.findOne({email})
-    if(!user){
-      await User.create({
-        email ,
-        name
-      })
-    }
+    const data = await getReviewPageData(req.params.itemId)
+    res.render('User/order/reviewPage.ejs', data)
   } catch (error) {
     console.log(error)
+    res.redirect('/')
+  }
+}
+
+export const addReview = async (req, res) => {
+  try {
+    const user = req.session.user
+    if (!user) return res.redirect('/login')
+
+    const { ratingValue, tittle, reviewDesc } = req.body
+
+    await submitReview(user.id, req.params.itemId, {
+      ratingValue,
+      tittle,
+      reviewDesc
+    })
+
+    res.status(200).json({ success: true, message: 'Review submited successfully' })
+  } catch (error) {
+    console.error(error)
+    const status = error.status || 500
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'Server error'
+    })
   }
 }

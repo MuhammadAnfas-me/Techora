@@ -34,7 +34,7 @@
           <% if(!item){ %>
             <% order.items.forEach(item=>{ %>
 
-           
+           <% if(item.status != "Cancelled"){ %>
           <div class="cr-item">
             <div class="cr-item-details">
               <div class="cr-item-image">
@@ -47,6 +47,7 @@
             </div>
             <div class="cr-item-price"><%= formatINR(item.finalTotal) %></div>
           </div>
+          <% } %>
           <% }) %>
           <% }else{ %>
              <div class="cr-item">

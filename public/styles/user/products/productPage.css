@@ -1374,3 +1374,15 @@ svg {
 .page-link.active {
     transform: scale(1.04);
 }
+
+.text-yellow-400 {
+  color: #facc15;
+}
+.text-gray-300 {
+  color: #d1d5db;
+}
+.out-stock-btn {
+    background: #ccc;
+    cursor: not-allowed;
+    color: #666;
+}

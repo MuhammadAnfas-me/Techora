@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="/styles/user/wishList.css">
 <%- include("../partitials/user/header.ejs",{tittle : "Techora | Wishlist"}) %>
+<link rel="stylesheet" href="/styles/user/wishList.css">
 <main class="wishlist-main">
   <div class="wishlist-container">
     <header class="wishlist-header">
@@ -123,6 +123,16 @@
           variantId
         }})
 
+    const favBtn = document.getElementById('favBtn')
+    const wishCount = document.getElementById("wishCount")
+    if (favBtn && wishCount) {
+      favBtn.classList.add('cart-bounce')
+      wishCount.textContent = res.data.wishCount
+      setTimeout(() => {
+        favBtn.classList.remove('cart-bounce')
+      }, 300)
+    }
+
       showToast(res.data?.message || "removed item")
       setTimeout(()=>{
         location.reload()
@@ -149,9 +159,13 @@
     })
     if(res.data.success){
     const cartCountEl = document.getElementById('cartCount')
+    const wishCount = document.getElementById("wishCount")
     if (cartCountEl) {
       if (res.data.cartCount !== undefined) {
         cartCountEl.textContent = res.data.cartCount
+      }
+       if (res.data.wishCount !== undefined) {
+        wishCount.textContent = res.data.wishCount
       }
 
       cartCountEl.classList.add('cart-bounce')

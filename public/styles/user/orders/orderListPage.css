@@ -276,16 +276,27 @@
     margin-top: 40px;
   }
 
-  .page-prev {
+  .page-prev, .page-next {
     font-size: 14px;
     font-weight: 500;
     color: #4b5563;
     text-decoration: none;
     display: flex;
     align-items: center;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+  
+  .page-prev {
     margin-right: 8px;
   }
-  .page-prev:hover {
+
+  .page-next {
+    margin-left: 8px;
+  }
+
+  .page-prev:hover, .page-next:hover {
     color: #111827;
   }
 

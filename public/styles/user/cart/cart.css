@@ -457,3 +457,50 @@
 .continue-shopping-btn:hover {
   background: #1b3268;
 }
+
+.item-error {
+  margin-top: 12px;
+}
+
+.item-unavailable-alert {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #991b1b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.item-unavailable-alert i {
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.stock-warning {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  color: #92400e;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.stock-warning i {
+  color: #d97706;
+  font-size: 14px;
+}
+
+.cart-item-unavailable {
+  border: 1px solid #fecaca;
+  background-color: #fffafb;
+}

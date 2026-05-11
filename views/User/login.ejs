@@ -127,16 +127,7 @@ function hideLoader() {
   document.getElementById("loaderOverlay").style.display = "none";
 }
 
-function setButtonLoading(button, isLoading) {
-  if (isLoading) {
-    button.disabled = true;
-    button.dataset.originalText = button.innerHTML;
-    button.innerHTML = "Loading...";
-  } else {
-    button.disabled = false;
-    button.innerHTML = button.dataset.originalText;
-  }
-}
+
 
       // Logic for the eye toggle
       const eyeIcon = document.getElementById('eyeIcon')

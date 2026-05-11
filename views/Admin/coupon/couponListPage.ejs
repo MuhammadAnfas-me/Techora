@@ -560,7 +560,7 @@
             <!-- Buttons -->
             <div class="filters-actions">
               <button type="submit" class="btn-search">Search</button>
-              <button type="button" class="btn-apply-filter">Apply Filter</button>
+              <button type="button" class="btn-apply-filter" onclick="window.location.href='/admin/coupons'">Clear Filter</button>
             </div>
 
           </div>
@@ -752,34 +752,7 @@
         select.form.submit();
       });
     });
-    // async function toggleCoupon(code, isActive) {
-    //   if (!e.target.classList.contains("toggleBtn")) return;
-
-    //   const checkbox = e.target;
-    //   const id = checkbox.dataset.id;  
-    //   const newValue = checkbox.checked;
-
-    //   // ✅ revert UI immediately (so cancel keeps original UI)
-    //   checkbox.checked = !newValue;
-    //   showConfirm("Are you sure to change status of this category?", async () => {
-    //       try {
-    //         heckbox.checked = newValue;
-    //         const res = await axios.patch('/admin/coupons/toggle', { code, isActive });
-    //         showToast(res.data?.message || "Status updated successfully");
-    //         if (res.data.success){
-    //           setTimeout(()=>{
-    //             window.location.reload();
-    //           },800)
-    //         }
-    //       } catch (error) {
-    //         // ✅ revert if API fails
-    //         checkbox.checked = !newValue;
-    //         console.error('Toggle error:', err);
-    //         showToast(error.response?.data?.message || "Failed to update status", "error");
-    //       }
-    //   });
-
-    // }
+   
 
 document.addEventListener("change", (e) => {
   if (!e.target.classList.contains("toggleBtn")) return;

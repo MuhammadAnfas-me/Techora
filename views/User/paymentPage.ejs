@@ -66,14 +66,22 @@
         <div class="summary-box">
             <h2 class="summary-title">Order Summary</h2>
             <% cartItems.forEach(item => { %>
-            <div class="item-row">
-                <div class="item-img">
-                    <img src="<%= item.image %>" alt="iPhone">
+            <div class="item-row" style="flex-direction: column;">
+                <div style="display: flex; gap: 1rem;">
+                    <div class="item-img">
+                        <img src="<%= item.image %>" alt="iPhone" style="opacity: 1;">
+                    </div>
+                    <div class="item-details">
+                        <p class="item-name"><%= item.name %></p>
+                        <p class="item-price"><%=formatINR(item.subtotal) %></p>
+                    </div>
                 </div>
-                <div class="item-details">
-                    <p class="item-name"><%= item.name %></p>
-                    <p class="item-price"><%=formatINR(item.subtotal) %></p>
-                </div>
+                <% if (!item.isValid) { %>
+                    <div class="<%= item.message.includes('left') ? 'stock-warning' : 'item-unavailable-alert' %>">
+                      <i class="fas <%= item.message === 'Out of stock' ? 'fa-box-open' : (item.message === 'Product unavailable' ? 'fa-ban' : (item.message.includes('left') ? 'fa-hourglass-half' : 'fa-exclamation-circle')) %>"></i>
+                      <span><%= item.message %></span>
+                    </div>
+                <% } %>
             </div>
             <% }) %>
 
@@ -87,7 +95,7 @@
                 <span class="total-amount"><%= finalAmount ? formatINR(finalAmount) : formatINR(grandTotal) %></span>
             </div>
 
-            <button class="pay-btn payment"  >Place Order</button>
+            <button class="pay-btn payment" <%= cartItems.some(i => !i.isValid) ? 'disabled' : '' %> >Place Order</button>
             
             <p class="secure-badge">
                 <span class="success-icon">✔</span> 100% Secure Payments
@@ -112,14 +120,32 @@
     const totalAmount = <%- finalAmount ? JSON.stringify(finalAmount) : JSON.stringify(grandTotal) %> ;
 
     document.querySelector('.payment').addEventListener('click',async function(e) {
-
-    const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
     // Basic interaction for the "Place Order" button
     const originalText = this.textContent
     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     this.disabled = true;
 
     try {
+        // ✅ Step 1: Validate Cart first
+        try {
+            await axios.post('/checkout');
+        } catch (error) {
+            const data = error.response?.data;
+            if (data?.errors) {
+                showToast('Your cart has some issues. Redirecting to cart...', 'error');
+                setTimeout(() => {
+                    window.location.href = '/cart';
+                }, 1500);
+            } else {
+                showToast(data?.message || 'Cart validation failed.', 'error');
+                this.textContent = originalText;
+                this.disabled = false;
+            }
+            return;
+        }
+
+        // ✅ Step 2: Proceed with Payment
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
         if(paymentMethod === "COD"){
 
         const addressId = new URLSearchParams(window.location.search).get("addressId")
@@ -199,10 +225,8 @@ async function payNow(amt){
         }
       
         } else {
-          showToast("Payment Verification Failed", "error");
-        //   setTimeout(()=>{
-        //     window.location.href=verifyRes.data.redirect
-        //   },1000)
+            console.log('Handler error:', err)
+            showToast(err.response?.data?.message || 'Something went wrong', 'error')
         }
         },
 
@@ -222,7 +246,7 @@ async function payNow(amt){
         //   showToast(response.error.descrition || "Payment Failed", "error");
         sessionStorage.setItem("paymentError",response.error.description)
         console.log(response.error.description)
-          window.location.href=`/checkout/payment/failed?addressId=${addressId}?message=${response.error.description}`
+          window.location.href=`/checkout/payment/failed?addressId=${addressId}&message=${response.error.description}`
         });
         
         options.modal = {

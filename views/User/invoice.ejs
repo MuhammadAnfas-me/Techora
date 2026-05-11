@@ -330,7 +330,7 @@
         <div class="meta-label">Payment Method</div>
         <div class="meta-value"><%= order.paymentMethod %></div>
       </div>
-      <% if (order.coupon.couponCode) { %>
+      <% if (order.coupon !== null && order.coupon.couponCode) { %>
       <div class="meta-cell">
         <div class="meta-label">Coupon Applied</div>
         <div class="meta-value"><%= order.coupon.couponCode %></div>
@@ -365,22 +365,36 @@
           <tr>
             <th>Product</th>
             <th>Variant</th>
+            <th>Status</th>
             <th>Qty</th>
             <th>Unit Price</th>
             <th>Total</th>
           </tr>
         </thead>
         <tbody>
+          <%
+            const validStatuses = ["Placed", "Confirmed", "Shipped", "Delivered"]
+          %>
+
           <% order.items.forEach(item => { %>
+             <tr style="<%= !validStatuses.includes(item.status) ? 'opacity:0.5;' : '' %>"></tr>
           <tr>
             <td>
               <div class="product-name"><%= item.name %></div>
               <div class="product-brand"><%= item.brand %></div>
             </td>
             <td><%= item.color || '–' %></td>
+            <td><%= item.status %></td>
             <td><%= item.quantity %></td>
             <td>&#8377;<%= item.price %></td>
-            <td>&#8377;<%= item.total %></td>
+                <td>
+                  <% if (validStatuses.includes(item.status)) { %>
+                    &#8377;<%= item.finalTotal %>
+                  <% } else { %>
+                    —
+                  <% } %>
+                </td>
+
           </tr>
           <% }) %>
         </tbody>
@@ -388,33 +402,46 @@
     </div>
 
     <!-- Totals -->
-    <div class="totals-wrap">
-      <div class="totals-box">
-        <div class="totals-row">
-          <span>Subtotal</span>
-          <span>&#8377;<%= order.subtotal %></span>
-        </div>
-        <% if (order.coupon.discount && order.coupon.discount > 0) { %>
-        <div class="totals-row discount">
-          <span>Discount</span>
-          <span>–&#8377;<%= order.coupon.discount %></span>
-        </div>
-        <% } %>
-        <div class="totals-row">
-          <span>Shipping</span>
-          <span style="color:#16a34a; font-weight:600;">FREE</span>
-        </div>
-        <div class="totals-row grand">
-          <span>Grand Total</span>
-          <span>&#8377;<%= order.finalAmount || order.totalAmount %></span>
-        </div>
-        <% if (order.coupon.discount && order.coupon.discount > 0) { %>
-        <div class="totals-row saved">
-          &#10003; You saved &#8377;<%= order.coupon.discount %> on this order
-        </div>
-        <% } %>
-      </div>
+   <div class="totals-wrap">
+  <div class="totals-box">
+
+    <div class="totals-row">
+      <span>Subtotal</span>
+      <span>&#8377;<%= order.subtotal %></span>
     </div>
+
+    <% if (order.discount && order.discount > 0) { %>
+    <div class="totals-row discount">
+      <span>Discount</span>
+      <span>–&#8377;<%= order.discount %></span>
+    </div>
+    <% } %>
+
+    <div class="totals-row">
+      <span>Shipping</span>
+      <span style="color:#16a34a; font-weight:600;">FREE</span>
+    </div>
+
+    <% if (order.refundedTotal > 0) { %>
+    <div class="totals-row" style="color:#dc2626;">
+      <span>Refunded</span>
+      <span>–&#8377;<%= order.refundedTotal %></span>
+    </div>
+    <% } %>
+
+    <div class="totals-row grand">
+      <span>Grand Total</span>
+      <span>&#8377;<%= order.finalAmount %></span>
+    </div>
+
+    <% if (order.discount && order.discount > 0) { %>
+    <div class="totals-row saved">
+      &#10003; You saved &#8377;<%= order.discount %> on this order
+    </div>
+    <% } %>
+
+  </div>
+</div>
 
   </div><!-- /body -->
 

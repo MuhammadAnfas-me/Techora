@@ -366,7 +366,7 @@
             },500)
             } catch (error) {
                 console.error(error)
-              showToast(er.response?.data?.message || "Something went wrong","error");
+                showToast(error.response?.data?.message || "Something went wrong", "error");
             }
         })
     }

@@ -179,11 +179,20 @@
             <div class="products-grid">
 
                 <% products.forEach(product=>{ %>
+                <%
+                  let isWishlisted = false;
+                  if (typeof wishListIds !== 'undefined' && wishListIds) {
+                    isWishlisted = wishListIds.some(item => 
+                      item.productId.toString() === product._id.toString() && 
+                      item.variantId.toString() === product.variants[0].varientId.toString()
+                    );
+                  }
+                %>
 
                 <div class="product-card" onclick="openProductPage('<%= product.name %>')">
                     <div class="product-badges">
                     </div>
-                    <button class="wishlist-btn">
+                    <button class="wishlist-btn <%= isWishlisted ? 'active' : '' %>" onclick="addToWishlist(event, '<%= product._id %>', '<%= product.variants[0].varientId %>', <%= user ? 'true' : 'false' %>, this)">
                         <span class="material-symbols-outlined">favorite</span>
                     </button>
                     <div class="product-image">
@@ -278,13 +287,17 @@
       });
 
     const cartCountEl = document.getElementById("cartCount");
+    const wishCount = document.getElementById("wishCount");
     if (cartCountEl && res.data.cartCount !== undefined) {
         cartCountEl.textContent = res.data.cartCount;
     }
-    cartCountEl.classList.add("cart-bounce");
+    if (wishCount && res.data.wishCount !== undefined) {
+        wishCount.textContent = res.data.wishCount;
+    }
+    cartCountEl?.classList.add("cart-bounce");
 
     setTimeout(()=>{
-      cartCountEl.classList.remove("cart-bounce");
+      cartCountEl?.classList.remove("cart-bounce");
     },300);
       showToast(res.data.message || "Added to cart");
     } catch (error) {
@@ -305,5 +318,29 @@ function highlightLoginButton() {
     loginBtn.classList.remove("shake-highlight");
     void loginBtn.offsetWidth;
     loginBtn.classList.add("shake-highlight");
+}
+
+async function addToWishlist(e, productId, variantId, isLogged, btn) {
+    e.stopPropagation();
+    if (!isLogged) {
+        highlightLoginButton();
+        return;
+    }
+    try {
+        const res = await axios.post("/wishlist/add", {
+            productId,
+            variantId
+        });
+        
+        const wishCount = document.getElementById("wishCount");
+        if(wishCount && res.data.wishCount !== undefined){
+            wishCount.textContent = res.data.wishCount;
+        }
+
+        btn.classList.toggle("active", res.data.added);
+    } catch (error) {
+        console.error(error);
+        showToast(error.response?.data?.message || "Failed to update wishlist", "error");
+    }
 }
 </script>

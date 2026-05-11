@@ -1,10 +1,12 @@
-import Address from '../../models/addressModel.js'
-import {Cart} from '../../models/cartModel.js'
-import { Wishlist } from '../../models/wishListModel.js'
-import { resetPassword } from './authController.js'
-import { Offers } from '../../models/offerModel.js'
-import { getOfferPrice } from '../../utils/offer.js'
+import {
+  getUserAddresses,
+  buildCheckoutCartData,
+  validateCartItems
+} from '../../services/user/checkoutService.js' 
 
+// ─────────────────────────────────────────────
+// Checkout Load
+// ─────────────────────────────────────────────
 
 export const checkOutLoad = async (req, res) => {
   const user = req.session.user
@@ -14,176 +16,49 @@ export const checkOutLoad = async (req, res) => {
       return res.redirect('/login')
     }
 
-    const address = await Address.find({ userId: user.userId })
-
-    const cart = await Cart.findOne({ userId: user.id }).populate(
-      'items.productId'
-    )
-
-    const now = new Date()
-    const activeOffers = await Offers.find({ isActive: true, start: { $lte: now }, end: { $gte: now } }).lean()
-
-    let cartItems = []
-    let hasInvalidItems = false   // ⭐ important
-
-    if (cart && Array.isArray(cart.items)) {
-      cartItems = cart.items.map(item => {
-        const product = item.productId
-
-        if (!product) {
-          hasInvalidItems = true
-          return {
-            name: "Product not found",
-            isValid: false,
-            message: "Product removed"
-          }
-        }
-
-        const variant = product.variants.find(
-          v => v.varientId === item.variantId
-        )
-
-        if (!variant) {
-          hasInvalidItems = true
-          return {
-            productId: product._id,
-            name: product.name,
-            isValid: false,
-            message: "Variant not available"
-          }
-        }
-
-        let isValid = true
-        let message = ""
-
-        if (product.status !== "active") {
-          isValid = false
-          message = "Product unavailable"
-        } else if (variant.stock === 0) {
-          isValid = false
-          message = "Out of stock"
-        } else if (item.quantity > variant.stock) {
-          isValid = false
-          message = `Only ${variant.stock} left`
-        }
-
-        if (!isValid) hasInvalidItems = true
-        const offerPrice = getOfferPrice(product, variant.price, activeOffers)
-
-        return {
-          productId: product._id,
-          variantId: item.variantId,
-          quantity: item.quantity,
-          name: product.name,
-          brand: product.brand,
-          image: variant.image?.[0] || '',
-          price: offerPrice,
-          stock: variant.stock,
-        //   total: item.total,
-          color : variant.color,
-          subtotal: offerPrice * item.quantity,
-          //  validation fields
-          isValid,
-          message
-        }
-      })
-    }
-    const grandTotal = cartItems.reduce((sum,item)=> sum + item.subtotal,0)
+    const [address, { cartItems, grandTotal, hasInvalidItems }] =
+      await Promise.all([
+        getUserAddresses(user.userId),
+        buildCheckoutCartData(user.id)
+      ])
 
     if (cartItems.length === 0) {
       return res.redirect('/cart')
     }
-    let coupon = null
-    if(req.session.coupon){
-       coupon = req.session.coupon?.code
-    }
-    res.render("User/checkOut.ejs", {
+
+    const coupon = req.session.coupon?.code ?? null
+
+    res.render('User/checkOut.ejs', {
       address,
       cartItems,
-      hasInvalidItems , 
-      grandTotal ,
-      coupon : coupon ? coupon : null
+      hasInvalidItems,
+      grandTotal,
+      coupon
     })
-
   } catch (error) {
-    console.log("Error from checkOutLoad", error)
-    return res.status(500).send("Failed to load")
+    console.log('Error from checkOutLoad', error)
+    return res.status(500).send('Failed to load')
   }
 }
 
+// ─────────────────────────────────────────────
+// Validate Cart
+// ─────────────────────────────────────────────
 
-export const validateCart = async (req,res)=>{
-    try {
-        const user = req.session.user
-        const cart = await Cart.findOne({userId : user.id}).populate('items.productId')
+export const validateCart = async (req, res) => {
+  try {
+    const user = req.session.user
 
-        if(!cart || cart.items.length === 0){
-            return res.status(400).json({
-                success : false,
-                message : "Cart is empty"
-            })
-        }
+    const { errors } = await validateCartItems(user.id)
 
-        for(let item of cart.items){
-            const product = item.productId
-
-            if(!product){
-                return res.status(400).json({
-                    success : false ,
-                    message : "Products not found"
-                })
-            }
-
-            const variant =  product.variants.find(
-                v=> v.varientId === item.variantId
-            )
-
-            if(!variant){
-                return res.status(400).json({
-                    success : false,
-                    message : `${product.name} variant not available`
-                })
-            }
-
-            if(product.status == "inactive"){
-                return res.status(400).json({
-                    success : false, 
-                    message : `${product.name} is unavailable`
-                })
-            }
-
-            if(variant.stock === 0){
-                return res.status(400).json({
-                    success : false ,
-                    message : `${product.name} is out of stock`
-                })
-            }
-
-            if(item.quantity > variant.stock){
-                return res.status(400).json({
-                    success : false,
-                    message : `Only ${variant.stock} ${product.name} is available`
-                })
-            }
-
-            const total = variant.price * item.quantity
-
-            if(item.total < total){
-                item.total = total
-            }
-        }
-        await cart.save()
-        return res.status(201).json({
-            success : true,
-            message : "Cart validated successfully",
-            redirect : "/checkout"
-        })
-    } catch (error) {
-        console.log("Error from validateCart :",error)
-        return res.status(500).json({
-            success : false,
-            message : "Server error"
-        })
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ success: false, errors })
     }
 
+    return res.status(200).json({ success: true, redirect: '/checkout' })
+  } catch (error) {
+    const status = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
+  }
 }

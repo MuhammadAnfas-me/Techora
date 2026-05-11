@@ -11,7 +11,7 @@ body {
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
     color: #111827;
-    /* background-color: #f0f2f5; */
+    background-color: #E3E3E3;
 }
 
 a {
@@ -212,11 +212,11 @@ button {
     color: #1F3A5F;
 }
 
-.cart-btn {
+.cart-btn, .wish-btn {
     position: relative;
 }
 
-.cart-btn .badge {
+.cart-btn .badgeCount {
     position: absolute;
     top: -4px;
     right: -4px;
@@ -230,6 +230,23 @@ button {
     justify-content: center;
     border-radius: 50%;
 }
+
+.wish-btn .badgeCount {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    background-color: #1F3A5F;
+    color: white;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+
 
 /* Profile Wrapper and Dropdown */
 .profile-wrapper {

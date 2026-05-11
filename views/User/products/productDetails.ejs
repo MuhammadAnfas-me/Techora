@@ -34,21 +34,33 @@
                     <div class="zoom-preview-modal" id="zoomPreview"></div>
                 
                     <div class="thumbnail-list">
-                        <% product.variants[0].image.forEach(img=>{ %>
+                        <% product?.variants[0].image.forEach(img=>{ %>
                         <div class="thumbnail <%= product.variants[0].image.indexOf(img) === 0 ? "active" : "" %>" onclick="changeImage(this)"><img src="<%= img %>" alt="Thumb 1"></div>
                         <% }) %>
                     </div>
             </div>
 
             <div class="product-details">
-                <span class="brand"><% product.brand %></span>
+                <span class="brand"><%= product.brand.toUpperCase() %></span>
                 <h1 class="product-title"><%= product.name %></h1>
                 
                 <div class="reviews">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <span class="review-count">4.3 (2,847 reviews)</span>
+                  <div class="stars">
+                    <% 
+                      const fullStars = Math.floor(product.avgRating || 0);
+                      const emptyStars = 5 - fullStars;
+                    %>
+
+                    <% for(let i = 0; i < fullStars; i++) { %>
+                      <i class="fas fa-star text-warning"></i>
+                    <% } %>
+                    
+                    <% for(let i = 0; i < emptyStars; i++) { %>
+                      <i class="far fa-star text-muted"></i>
+                    <% } %>
+                    
+                </div>
+                    <span class="review-count"><%= product.avgRating %> (<%= product.reviewCount %> reviews)</span>
                 </div>
 
                 <div class="pricing">
@@ -90,20 +102,25 @@
 
                 <% const stock = product.variants[0]?.stock || 0; %>
 
-<div 
-  id="stockStatus"
-  class="stock-status <% if (stock <= 5 && stock > 0) { %>low-stock<% } %> <% if (stock === 0) { %>out-of-stock<% } %>"
->
-  <% if (stock === 0) { %>
-    <span class="dot out"></span> Out of Stock
-  <% } else if (stock <= 5) { %>
-    <span class="dot low"></span> Only <%= stock %> left
-  <% } else if (stock < 15) { %>
-    <span class="dot"></span> In Stock - Only <%= stock %> left
-  <% } else { %>
-    <span class="dot"></span> In Stock
-  <% } %>
-</div>
+                <div 
+                  id="stockStatus"
+                  class="stock-status <% if (stock <= 5 && stock > 0) { %>low-stock<% } %> <% if (stock === 0) { %>out-of-stock<% } %>"
+                >
+                  <% if(product.status === "inactive"){ %>
+                    <div class="blocked-alert">
+                      <i class="fas fa-ban"></i>
+                      <span>This product is currently blocked and cannot be purchased.</span>
+                    </div>
+                <% } else if (stock === 0) { %>
+                    <span class="dot out"></span> Out of Stock
+                  <% } else if (stock <= 5) { %>
+                    <span class="dot low"></span> Only <%= stock %> left
+                  <% } else if (stock < 15) { %>
+                    <span class="dot"></span> In Stock - Only <%= stock %> left
+                  <% } else { %>
+                    <span class="dot"></span> In Stock
+                  <% } %>
+                </div>
 
                 <div class="color-selection">
                     <p >Color: <strong id="selectedColor"><%= product.variants[0].color ? product.variants[0].color : "" %></strong></p>
@@ -156,7 +173,7 @@
                 </div>
 
                 <div class="action-buttons" >
-                    <button class="btn-primary" id="cartAdd" >
+                    <button class="btn-primary" id="cartAdd" <%= (product.status || product.variant[0].stock < 1) === 'inactive' ? 'disabled' : '' %>>
                         <i class="fas fa-shopping-cart"></i> Add to Cart
                     </button>
                     <%
@@ -225,7 +242,42 @@
         </section>
         
         <section class="tab-content" id="desc"><small><%= product.fullDescription %></small></section>
-        <section class="tab-content" id="reviews"><p>Customer reviews go here.</p></section>
+<section class="tab-content" id="reviews">
+  <% if (reviews.length > 0) { %>
+    <div class="reviews-container">
+      <% reviews.forEach((review,index) => { %>
+        <div class="review-card  <%= index >= 3 ? 'hidden-review' : '' %>">
+          
+          <div class="review-header">
+            <div class="avatar">
+              <img src="<%= review.userId.profileImage %>" alt="">
+            </div>
+            <div>
+              <h4><%= review.userId.fullName %></h4>
+              <div class="stars">
+                <% for(let i=1;i<=5;i++){ %>
+                  <span class="<%= i <= review.rating ? 'filled' : '' %>">★</span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <p class="review-text"><%= review.description %></p>
+
+          <div class="review-footer">
+            <span><%= new Date(review.createdAt).toDateString() %></span>
+          </div>
+
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="no-reviews">No reviews yet.</p>
+  <% } %>
+    <% if (reviews.length > 3) { %>
+    <button id="showMoreBtn">Show More</button>
+  <% } %>
+</section>
 
         <section class="related-products">
             <div class="section-header">
@@ -251,14 +303,33 @@
                         <img src="<%= items.variants[0].image[0] %>" alt="iPhone 15">
                     </div>
                     <div class="card-info">
-                        <div class="card-stars">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> <span>(234)</span>
-                        </div>
+                       <div class="card-stars">
+  <% 
+    const fullStars = Math.floor(items.avgRating || 0);
+    const emptyStars = 5 - fullStars;
+  %>
+
+  <% for(let i = 0; i < fullStars; i++) { %>
+    <i class="fas fa-star text-warning"></i>
+  <% } %>
+
+  <% for(let i = 0; i < emptyStars; i++) { %>
+    <i class="far fa-star text-muted"></i>
+  <% } %>
+
+  <span>(<%= items.reviewCount || 0 %>)</span>
+</div>
                         <h3><%= items.name %></h3>
                         <div class="card-price">₹<%= items.variants[0].price %></div>
-                        <button class="btn-add-cart" id="i" onclick="addToCart(event,'<%= items._id %>', '<%= items.variants[0].varientId %>',<%= user ? 'true' : 'false' %>)">
-                            <i class="fas fa-shopping-cart"></i>Add to Cart
+                        <%if(items.variants[0].stock < 1){ %>
+                        <button class="btn-add-cart" id="i" onclick="addToCart(event,'<%= items._id %>', '<%= items.variants[0].varientId %>',<%= user ? 'true' : 'false' %>)" style="background-color: grey;" disabled>
+                            <%= items.variants[0].stock < 1 ? "Out of stock" : "Add to Cart" %>  
                         </button>
+                        <% }else{ %>
+                        <button class="btn-add-cart" id="i" onclick="addToCart(event,'<%= items._id %>', '<%= items.variants[0].varientId %>',<%= user ? 'true' : 'false' %>)">
+                            <i class="fas fa-shopping-cart"></i><%= items.variants[0].stock < 1 ? "Out of stock" : "Add to Cart" %>  
+                        </button>
+                        <% } %>
                     </div>
                 </div>
                 <% }) %>
@@ -270,13 +341,19 @@
 
     <script >
 
-        document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   if (selectedVariant) {
     updateVariantUI(selectedVariant);
   }
+  if(sessionStorage.getItem("variantId")){
+    const variantId = sessionStorage.getItem("variantId")
+    sessionStorage.removeItem("variantId")
+    selectVariant(variantId)
+   }
 });
 
     const variants = <%- JSON.stringify(product.variants) %>;
+    const productStatus = <%- JSON.stringify(product.status) %>;
     let selectedVariant = variants[0];
     let productId = <%- JSON.stringify(product._id) %>;
     const currentUser = <%- JSON.stringify(user || null) %>;
@@ -428,10 +505,14 @@ function moveLens(e) {
             quantity: qty
           });
           const cartCountEl = document.getElementById("cartCount");
+          const wishCount = document.getElementById("wishCount");
         if (cartCountEl && res.data.cartCount !== undefined) {
             cartCountEl.textContent = res.data.cartCount;
         }
         cartCountEl.classList.add("cart-bounce");
+         if (res.data.wishCount !== undefined) {
+          wishCount.textContent = res.data.wishCount
+        }
     
         setTimeout(()=>{
           cartCountEl.classList.remove("cart-bounce");
@@ -448,7 +529,7 @@ function moveLens(e) {
 
 // Color variant selecting 
 
- function selectVariant(variantId) {
+  function selectVariant(variantId) {
     const variant = variants.find(v => v.varientId === variantId);
     if (!variant) return;
 
@@ -495,11 +576,24 @@ function moveLens(e) {
 
       if (stockStatus) {
     qtyAddBtn.disabled = false;
+    qtyLessBtn.disabled = false;
+    cartAdd.disabled = false;
 
-    if (variant.stock <= alreadyInCartQty || variant.stock === 0) {
+    if(productStatus === "inactive"){
+      stockStatus.className = "stock-status blocked";
+      stockStatus.innerHTML = `
+      <div class="blocked-alert">
+        <i class="fas fa-ban"></i>
+        <span>This product is currently blocked and cannot be purchased.</span>
+      </div>`;
+      qtyAddBtn.disabled = true;
+      qtyLessBtn.disabled = true;
+      cartAdd.disabled = true;
+    }else if (variant.stock <= alreadyInCartQty || variant.stock === 0) {
       stockStatus.className = "stock-status out-of-stock";
       stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
       qtyAddBtn.disabled = true;
+      cartAdd.disabled = true
     } else if (variant.stock <= 5) {
       stockStatus.className = "stock-status low-stock";
       stockStatus.innerHTML = `<span class="dot low"></span> Only ${variant.stock - alreadyInCartQty} left`;
@@ -536,7 +630,7 @@ function moveLens(e) {
   })
 
   wishBtn.addEventListener("click",()=>{
-    addToWishlist(event , productId , selectedVariant.varientId, currentUser ? 'true' : 'false',wishBtn)
+    addToWishlist(event , productId , selectedVariant.varientId, currentUser ? true : false,wishBtn)
   })
 
   qtyAddBtn.addEventListener("click",()=>{
@@ -546,15 +640,6 @@ function moveLens(e) {
   qtyLessBtn.addEventListener("click",()=>{
     updateQty(-1,selectedVariant.price)
   })
-
-  document.addEventListener("DOMContentLoaded",()=>{
-    if(sessionStorage.getItem("variantId")){
-    const variantId = sessionStorage.getItem("variantId")
-    sessionStorage.removeItem("variantId")
-    selectVariant(variantId)
-    }
-  })
-
   async function addToWishlist(e, productId, variantId, isLogged,btn) {
   e.stopPropagation()
   e.preventDefault()
@@ -570,15 +655,17 @@ function moveLens(e) {
     })
 
     const favBtn = document.getElementById('favBtn')
+    const wishCount = document.getElementById("wishCount")
     if (favBtn) {
       favBtn.classList.add('cart-bounce')
+      wishCount.textContent = res.data.wishCount
       setTimeout(() => {
         favBtn.classList.remove('cart-bounce')
       }, 300)
     }
 
     if (res.data.success) {
-      btn.classList.toggle("active", res.data.inWishlist);
+      btn.classList.toggle("active", res.data.added);
     } else {
       showToast(res.data.message || "Failed to update wishlist");
     }
@@ -602,6 +689,19 @@ function updateWishlistButton(variant) {
 
   wishBtn.classList.toggle("active", isWishlisted);
 }        
+
+  const btn = document.getElementById('showMoreBtn');
+
+  if (btn) {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.hidden-review')
+        .forEach(el => el.style.display = 'block');
+
+      btn.style.display = 'none';
+    });
+  }
+
+
     </script>
 </body>
 </html>

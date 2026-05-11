@@ -16,7 +16,6 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
-        // ✅ Now you can access session
         const code = req.session.referralCode;
         let referredUser = null;
 
@@ -101,11 +100,17 @@ passport.use(
           await newWallet.save();
         } else {
           // Existing user update
+          if(user.isBlocked){
+            return done(null, false ,{
+              message : "You have been blocked"
+            })
+          }
           if (!user.googleId) user.googleId = profile.id;
           if (!user.isVerified) user.isVerified = true;
           if (!user.profileImage) {
             user.profileImage = process.env.DEFAULT_IMAGE;
           }
+
 
           await user.save();
         }

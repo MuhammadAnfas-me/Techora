@@ -107,16 +107,16 @@ router
   .patch(upload.single('profileImage'), profileController.updateProfileImage)
   .delete(profileController.removeProfileImage)
 
-router.route('/profile/edit/email').post(profileController.emailChange)
+router.route('/profile/edit/email').post(middlewares.isBlocked, profileController.emailChange)
 
-router.route('/profile/edit/email-verify').post(profileController.emailVerify)
+router.route('/profile/edit/email-verify').post(middlewares.isBlocked, profileController.emailVerify)
 
 /*---------------------------------Product section---------------------------------------- */
 /*---------------------------------Product section---------------------------------------- */
 /*---------------------------------Product section---------------------------------------- */
 
-router.route('/products').get(productController.productsList)
-router.route('/products/:productId').get(productController.productPage)
+router.route('/products').get(middlewares.isBlocked, productController.productsList)
+router.route('/products/:productId').get(middlewares.isBlocked, productController.productPage)
 
 // --------------------------------Cart section ------------------------------------------
 // --------------------------------Cart section ------------------------------------------
@@ -124,13 +124,14 @@ router.route('/products/:productId').get(productController.productPage)
 
 router
   .route('/cart')
-  .get(middlewares.isBlocked, middlewares.checkAuth, cartController.cartLoad)
+  .get(middlewares.isBlocked, middlewares.isBlocked, middlewares.checkAuth, cartController.cartLoad)
 router
   .route('/cart/add')
-  .post(middlewares.isBlocked, middlewares.checkAuth, cartController.addToCart)
+  .post(middlewares.isBlocked, middlewares.isBlocked, middlewares.checkAuth, cartController.addToCart)
 router
   .route('/cart/delete')
   .delete(
+    middlewares.isBlocked,
     middlewares.isBlocked,
     middlewares.checkAuth,
     cartController.deleteCartItem
@@ -147,71 +148,78 @@ router
 // ---------------------------------------- Wish List section -------------------------------
 // ---------------------------------------- Wish List section -------------------------------
 
-router.route('/wishlist').get(wishListController.wishListLoad)
-router.post('/wishlist/add', wishListController.toggleItem)
+router.route('/wishlist').get(middlewares.isBlocked, wishListController.wishListLoad)
+router.post('/wishlist/add',middlewares.isBlocked, wishListController.toggleItem)
 router.delete('/wishlist/remove', wishListController.removeProduct)
 
 //----------------------------------------- checkout page------------------------------------
 //----------------------------------------- checkout page------------------------------------
 //----------------------------------------- checkout page------------------------------------
 
-router.get('/checkout', checkOutController.checkOutLoad)
-router.route('/checkout').post(checkOutController.validateCart)
+router
+  .route('/checkout')
+  .get(middlewares.isBlocked, checkOutController.checkOutLoad)
+  .post(middlewares.isBlocked, checkOutController.validateCart)
 
 // --------------------------- Payment section ----------------------------------------------
 // --------------------------- Payment section ----------------------------------------------
 // --------------------------- Payment section ----------------------------------------------
 
-router.get('/checkout/payment', paymentController.paymentPageLoad)
-router.get('/checkout/payment/success', paymentController.orderSuccess)
+router.get('/checkout/payment',middlewares.isBlocked,  paymentController.paymentPageLoad)
+router.get('/checkout/payment/success',middlewares.isBlocked, paymentController.orderSuccess)
 
-router.post('/place-order', paymentController.placeOrder)
-router.get('/order-details', paymentController.fetchOrderDetails)
+router.post('/place-order',middlewares.isBlocked, paymentController.placeOrder)
+router.get('/order-details',middlewares.isBlocked, paymentController.fetchOrderDetails)
 
 // -------------------------------Order section---------------------------------------------
 // -------------------------------Order section---------------------------------------------
 // -------------------------------Order section---------------------------------------------
-router.get('/profile-orders', orderController.OrderLoad)
-router.get('/orders', orderController.orderListPage)
-router.get('/orders/:orderId', orderController.orderDetailsLoad)
+router.get('/profile-orders',middlewares.isBlocked, orderController.OrderLoad)
+router.get('/orders',middlewares.isBlocked, orderController.orderListPage)
+router.get('/orders/:orderId',middlewares.isBlocked, orderController.orderDetailsLoad)
 
-router.get('/orders/:id/invoice', orderController.generateInvoicePDF)
+router.get('/orders/:id/invoice',middlewares.isBlocked, orderController.generateInvoicePDF)
 
 router
   .route('/orders/:id/cancel')
-  .get(orderController.orderCancelLoad)
-  .patch(orderController.orderCancel)
+  .get(middlewares.isBlocked, orderController.orderCancelLoad)
+  .patch(middlewares.isBlocked, orderController.orderCancel)
 
 router
   .route('/orders/:orderId/cancel/:itemId')
-  .get(orderController.itemCancelLoad)
-  .patch(orderController.cancelItem)
+  .get(middlewares.isBlocked, orderController.itemCancelLoad)
+  .patch(middlewares.isBlocked, orderController.cancelItem)
 
 router
   .route('/orders/:orderId/return')
-  .get(orderController.orderReturnLoad)
-  .patch(orderController.returnOrder)
+  .get(middlewares.isBlocked, orderController.orderReturnLoad)
+  .patch(middlewares.isBlocked, orderController.returnOrder)
 router
   .route('/orders/:orderId/return/:itemId')
-  .get(orderController.itemReturnLoad)
-  .patch(orderController.returnOrderItem)
+  .get(middlewares.isBlocked, orderController.itemReturnLoad)
+  .patch(middlewares.isBlocked, orderController.returnOrderItem)
+
+router
+  .route('/orders/:itemId/review')
+  .get(orderController.reviewLoad)
+  .post(orderController.addReview)
 
 // ------------------------------------ Payment Section ----------------------------------------
 // ------------------------------------ Payment Section ----------------------------------------
 // ------------------------------------ Payment Section ----------------------------------------
 
-router.post('/create-order', paymentController.createOrder)
-router.post('/verify-payment', paymentController.verifyPayment)
-router.get('/checkout/payment/failed', middlewares.checkAuth, paymentController.paymentFailedPage)
+router.post('/create-order',middlewares.isBlocked, paymentController.createOrder)
+router.post('/verify-payment',middlewares.isBlocked,  paymentController.verifyPayment)
+router.get('/checkout/payment/failed',middlewares.isBlocked, middlewares.checkAuth, paymentController.paymentFailedPage)
 
 
 //-------------------------------------- Wallet Section -----------------------------------------
 //-------------------------------------- Wallet Section -----------------------------------------
 //-------------------------------------- Wallet Section -----------------------------------------
 
-router.get('/profile-wallet',middlewares.checkAuth,walletController.loadWallet)
-router.post('/wallet/create-order',walletController.createWalletOrder)
-router.post('/wallet/verify-payment',walletController.verifyWalletPayment)
+router.get('/profile-wallet',middlewares.isBlocked, middlewares.checkAuth,walletController.loadWallet)
+router.post('/wallet/create-order',middlewares.isBlocked, walletController.createWalletOrder)
+router.post('/wallet/verify-payment',middlewares.isBlocked, walletController.verifyWalletPayment)
 
 // ------------------------------------- Coupon managment --------------------------------------
 // ------------------------------------- Coupon managment --------------------------------------
@@ -219,12 +227,12 @@ router.post('/wallet/verify-payment',walletController.verifyWalletPayment)
 
 router
   .route("/available-coupons")
-  .get(couponController.getAvailableCoupons)
+  .get(middlewares.isBlocked, couponController.getAvailableCoupons)
 
 router
-  .route("/apply-coupon").post(couponController.applyCoupon)
+  .route("/apply-coupon").post(middlewares.isBlocked, couponController.applyCoupon)
 router
-  .route('/remove-coupon').post(couponController.removeCoupon)
+  .route('/remove-coupon').post(middlewares.isBlocked, couponController.removeCoupon)
 
 // ------------------------------------- Referrel Section --------------------------------------
 // ------------------------------------- Referrel Section --------------------------------------
@@ -232,11 +240,11 @@ router
 
 router
   .route("/profile-referral")
-  .get(referelController.referralLoad)
+  .get(middlewares.isBlocked, referelController.referralLoad)
 
 
 
-router.route("/contact").get(profileController.contactLoad).post(profileController.contactMail)
+router.route("/contact").get(middlewares.isBlocked, profileController.contactLoad).post(profileController.contactMail)
 router.route('/logout').get(userController.logout)
 
 export default router

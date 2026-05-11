@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Techora – Sales Report</title>
+<style>
+  /* ── Google Fonts ── */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+  /* ── Variables ── */
+  :root {
+    --navy:       #1B2F45;
+    --navy-dark:  #142336;
+    --navy-light: #243B55;
+    --page-bg:    #F0F2F5;
+    --white:      #FFFFFF;
+    --border:     #DDE2E8;
+    --border-light: #EEF1F4;
+    --text:       #1B2F45;
+    --muted:      #7A8A99;
+    --muted-lt:   #A8B5BF;
+    --green:      #1E8A4C;
+    --green-bg:   #EAF7EF;
+    --red:        #C0392B;
+    --red-bg:     #FDF0EE;
+    --blue-accent:#2F6FB0;
+  }
+
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Page / Print ── */
+  html { font-size: 10pt; }
+
+  body {
+    font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  @media print {
+    body { background: var(--page-bg); }
+    .page { box-shadow: none; margin: 0; border-radius: 0; }
+    .page-break { page-break-before: always; }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; }
+  }
+
+  /* ── Page wrapper ── */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: var(--page-bg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media screen {
+    .page {
+      box-shadow: 0 4px 32px rgba(0,0,0,.12);
+      margin: 24px auto;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--navy);
+    padding: 22px 28px 18px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 4px; }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 6px;
+  }
+
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,.15);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+
+  .logo-name {
+    font-size: 13.5pt;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -.2px;
+  }
+
+  .header-title {
+    font-size: 9pt;
+    font-weight: 500;
+    color: rgba(255,255,255,.55);
+    letter-spacing: .8px;
+    text-transform: uppercase;
+  }
+
+  .date-range {
+    font-size: 9.5pt;
+    color: rgba(255,255,255,.9);
+    font-weight: 400;
+    margin-top: 1px;
+  }
+
+  .date-range span { color: rgba(255,255,255,.5); margin: 0 4px; }
+
+  .header-right { text-align: right; }
+
+  .report-label {
+    font-size: 7.5pt;
+    color: rgba(255,255,255,.45);
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .report-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    letter-spacing: -.4px;
+  }
+
+  .generated-info {
+    font-size: 7.5pt;
+    color: rgba(255,255,255,.4);
+    margin-top: 6px;
+  }
+
+  /* ── Body padding ── */
+  .body { padding: 20px 28px 28px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 8pt;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .9px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Cards row ── */
+  .cards-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--navy);
+    border-radius: 8px 8px 0 0;
+  }
+
+  .card.green::before { background: var(--green); }
+  .card.red::before   { background: var(--red); }
+  .card.blue::before  { background: var(--blue-accent); }
+
+  .card-label {
+    font-size: 7pt;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-size: 15pt;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -.4px;
+  }
+
+  .card-sub {
+    font-size: 7pt;
+    color: var(--muted-lt);
+    margin-top: 5px;
+  }
+
+  /* ── Adjustments ── */
+  .adjustments-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .adj-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .adj-left { display: flex; flex-direction: column; gap: 2px; }
+
+  .adj-label {
+    font-size: 7.5pt;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  .adj-desc {
+    font-size: 7pt;
+    color: var(--muted-lt);
+  }
+
+  .adj-value {
+    font-size: 13pt;
+    font-weight: 700;
+    color: var(--red);
+    white-space: nowrap;
+  }
+
+  .adj-badge {
+    font-size: 6.5pt;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: var(--red-bg);
+    color: var(--red);
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+  }
+
+  thead tr {
+    background: #EEF1F4;
+  }
+
+  thead th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 7pt;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th.right { text-align: right; }
+
+  tbody tr:nth-child(even) { background: #FAFBFC; }
+  tbody tr:last-child td   { border-bottom: none; }
+
+  tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody td.right  { text-align: right; }
+  tbody td.muted  { color: var(--muted); }
+  tbody td.red    { color: var(--red); font-weight: 500; text-align: right; }
+  tbody td.green  { color: var(--green); font-weight: 500; text-align: right; }
+
+  .date-cell { font-weight: 500; white-space: nowrap; }
+  .orders-count { font-weight: 600; color: var(--navy); }
+
+  /* ── Final Summary ── */
+  .final-summary {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .final-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 18px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .final-row:last-child { border-bottom: none; }
+
+  .final-row.highlight {
+    background: var(--navy);
+    border-bottom: none;
+  }
+
+  .final-label {
+    font-size: 8.5pt;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .final-value {
+    font-size: 9pt;
+    color: var(--text);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .final-value.red   { color: var(--red); }
+  .final-value.green { color: var(--green); }
+
+  .final-row.highlight .final-label {
+    font-size: 9pt;
+    font-weight: 600;
+    color: rgba(255,255,255,.7);
+  }
+
+  .final-row.highlight .final-value {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    background: var(--navy-dark);
+    padding: 13px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .footer-left {
+    font-size: 7.5pt;
+    color: rgba(255,255,255,.4);
+  }
+
+  .footer-left strong {
+    color: rgba(255,255,255,.65);
+    font-weight: 600;
+  }
+
+  .footer-right {
+    font-size: 7.5pt;
+    color: rgba(255,255,255,.35);
+  }
+
+  /* ── Meta strip ── */
+  .meta-strip {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .meta-item {
+    padding: 0 14px;
+    border-right: 1px solid var(--border);
+  }
+
+  .meta-item:first-child { padding-left: 0; }
+  .meta-item:last-child  { border-right: none; }
+
+  .meta-label {
+    font-size: 6.5pt;
+    color: var(--muted-lt);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 3px;
+  }
+
+  .meta-val {
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .meta-val.status-final {
+    color: var(--green);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-row">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="logo-name">Techora</span>
+      </div>
+      <div class="header-title">Sales Report</div>
+      <div class="date-range">
+        From: <%= startDate %> <span>—</span> To: <%= endDate %>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="report-label">Report</div>
+      <div class="report-title">SALES<br>SUMMARY</div>
+      <div class="generated-info">Generated: <%= typeof generatedDate !== 'undefined' ? generatedDate : new Date().toLocaleDateString() %></div>
+    </div>
+  </div>
+
+  <!-- ═══ BODY ═══ -->
+  <div class="body">
+
+    <!-- Meta strip -->
+    <div class="meta-strip">
+      <div class="meta-item">
+        <div class="meta-label">Store</div>
+        <div class="meta-val"><%= typeof storeName !== 'undefined' ? storeName : 'Techora' %></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Period</div>
+        <div class="meta-val"><%= startDate %> - <%= endDate %></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Generated</div>
+        <div class="meta-val"><%= typeof generatedDate !== 'undefined' ? generatedDate : new Date().toLocaleDateString() %></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div class="meta-val status-final">&#10003; Final</div>
+      </div>
+    </div>
+
+    <!-- ── Summary Cards ── -->
+    <div>
+      <div class="section-title">Summary</div>
+      <div class="cards-row">
+        <div class="card">
+          <div class="card-label">Total Orders</div>
+          <div class="card-value"><%= totalOrders %></div>
+          <div class="card-sub">Selected period</div>
+        </div>
+        <div class="card blue">
+          <div class="card-label">Gross Sales</div>
+          <div class="card-value">&#8377;<%= grossSales %></div>
+          <div class="card-sub">Before adjustments</div>
+        </div>
+        <div class="card red">
+          <div class="card-label">Total Discounts</div>
+          <div class="card-value">&#8377;<%= totalDiscount %></div>
+          <div class="card-sub">Coupons &amp; offers</div>
+        </div>
+        <div class="card green">
+          <div class="card-label">Net Revenue</div>
+          <div class="card-value">&#8377;<%= netRevenue %></div>
+          <div class="card-sub">After adjustments</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Adjustments ── -->
+    <div>
+      <div class="section-title">Adjustments</div>
+      <div class="adjustments-grid">
+        <div class="adj-item">
+          <div class="adj-left">
+            <div class="adj-label">Refunded Amount</div>
+            <div class="adj-desc">Total refunds processed this period</div>
+          </div>
+          <div class="adj-value">−&#8377;<%= totalRefunds %></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Sales Breakdown Table ── -->
+    <div>
+      <div class="section-title">Sales Breakdown</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="right">Orders</th>
+              <th class="right">Gross Sales</th>
+              <th class="right">Discounts</th>
+              <th class="right">Refunds</th>
+              <th class="right">Net Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (typeof reportData !== 'undefined' && reportData.length > 0) { %>
+              <% reportData.forEach(row => { %>
+              <tr>
+                <td class="date-cell"><%= row.date %></td>
+                <td class="right orders-count"><%= row.ordersCount %></td>
+                <td class="right">&#8377;<%= row.grossSales %></td>
+                <td class="red">−&#8377;<%= row.discount %></td>
+                <td class="red">−&#8377;<%= row.refunds %></td>
+                <td class="right">&#8377;<%= row.netRevenue %></td>
+              </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">No data available for this period</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Final Summary ── -->
+    <div>
+      <div class="section-title">Final Summary</div>
+      <div class="final-summary">
+        <div class="final-row">
+          <span class="final-label">Total Gross Sales</span>
+          <span class="final-value">&#8377;<%= grossSales %></span>
+        </div>
+        <div class="final-row">
+          <span class="final-label">Total Discounts Applied</span>
+          <span class="final-value red">−&#8377;<%= totalDiscount %></span>
+        </div>
+        <div class="final-row">
+          <span class="final-label">Total Refunds Processed</span>
+          <span class="final-value red">−&#8377;<%= totalRefunds %></span>
+        </div>
+        <div class="final-row highlight">
+          <span class="final-label">Final Net Revenue</span>
+          <span class="final-value">&#8377;<%= netRevenue %></span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <!-- ═══ FOOTER ═══ -->
+  <div class="footer">
+    <div class="footer-left">
+      <strong>Techora Admin Dashboard</strong> &nbsp;·&nbsp; Generated by system &nbsp;·&nbsp; Confidential
+    </div>
+    <div class="footer-right">Page 1 of 1</div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

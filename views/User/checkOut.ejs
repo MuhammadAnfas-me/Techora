@@ -150,9 +150,10 @@
                                 <div>
                                     <h3 class="item-name"><%= item.name %></h3>
                                      <% if (!item.isValid) { %>
-                                      <p class="error-message" style="color:red;">
-                                        <%= item.message %>
-                                      </p>
+                                      <div class="<%= item.message.includes('left') ? 'stock-warning' : 'item-unavailable-alert' %>">
+                                        <i class="fas <%= item.message === 'Out of stock' ? 'fa-box-open' : (item.message === 'Product unavailable' ? 'fa-ban' : (item.message.includes('left') ? 'fa-hourglass-half' : 'fa-exclamation-circle')) %>"></i>
+                                        <span><%= item.message %></span>
+                                      </div>
                                     <% } %>
                                     <p class="item-desc"><%= item.brand.toUpperCase() %> • <%= item.color %></p>
                                 </div>

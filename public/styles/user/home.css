@@ -830,7 +830,8 @@ button {
     transition: color 0.3s;
 }
 
-.wishlist-btn:hover {
+.wishlist-btn:hover,
+.wishlist-btn.active {
     color: #ef4444;
 }
 

@@ -1,474 +1,191 @@
-import { Categories } from '../../models/categoryModel.js'
-import { Order } from '../../models/orderModel.js'
-import { Offers } from '../../models/offerModel.js'
-import Product from '../../models/productModel.js'
+import {
+  fetchOfferList,
+  fetchActiveCategories,
+  fetchActiveProducts,
+  createOffer,
+  getOfferForEdit,
+  updateOffer,
+  softDeleteOffer,
+  toggleOfferStatus
+} from '../../services/admin/offerService.js'  
+
+// ─────────────────────────────────────────────
+// Offer List — Page render
+// ─────────────────────────────────────────────
 
 export const offerLoad = async (req, res) => {
   try {
     let { page = 1, limit = 5, search = '', type, status } = req.query
 
-    page = parseInt(page)
+    page  = parseInt(page)
     limit = parseInt(limit)
 
-    const query = {}
+    const data = await fetchOfferList({ page, limit, search, type, status })
 
-    // 🔍 Search (Offer Name)
-    if (search) {
-      query.name = { $regex: search, $options: 'i' }
-    }
-
-    // 🎯 Filter by Offer Type
-    if (type && type !== 'All') {
-      query.type = type
-    }
-
-    // 📅 Status Filter (Active / Expired / Scheduled)
-    if (status && status !== 'All') {
-      const today = new Date()
-
-      if (status === 'Active') {
-        query.start = { $lte: today }
-        query.end = { $gte: today }
-      }
-
-      if (status === 'Expired') {
-        query.end = { $lt: today }
-      }
-
-      if (status === 'Scheduled') {
-        query.start = { $gt: today }
-      }
-    }
-
-    // 📊 Total count
-    const totalOffers = await Offers.countDocuments(query)
-    const offers = await Offers.find(query)
-      .sort({ createdAt: -1 })
-      .populate('product', 'name')
-      .populate('category', 'name')
-    if (!offers) {
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to load offers'
-      })
-    }
-    res.render('Admin/offer/offerListPage.ejs', {
-      offers,
-      currentPage: page,
-      totalPages: Math.ceil(totalOffers / limit),
-      totalOffers,
-      search,
-      limit,
-      type,
-      status
-    })
+    res.render('Admin/offer/offerListPage.ejs', data)
   } catch (error) {
-    console.log('Error from offerLoad :', error)
+    console.log('Error from offerLoad:', error)
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
+
+// ─────────────────────────────────────────────
+// List Categories (dropdown API)
+// ─────────────────────────────────────────────
 
 export const listCategories = async (req, res) => {
   try {
-    const categories = await Categories.find({ isActive: true })
-    if (!categories) {
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to fetch categories'
-      })
-    }
-    return res.status(200).json({
-      success: true,
-      categories
-    })
+    const categories = await fetchActiveCategories()
+
+    return res.status(200).json({ success: true, categories })
   } catch (error) {
-    console.log('Error from listCategories :', error)
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    })
+    console.log('Error from listCategories:', error)
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
+
+// ─────────────────────────────────────────────
+// List Products (dropdown API)
+// ─────────────────────────────────────────────
 
 export const listProducts = async (req, res) => {
   try {
-    const products = await Product.find({ status: 'active' })
-    if (!products) {
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to fetch products'
-      })
-    }
+    const products = await fetchActiveProducts()
 
-    return res.status(200).json({
-      success: true,
-      products
-    })
+    return res.status(200).json({ success: true, products })
   } catch (error) {
-    console.log('Error from listProducts :', error)
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    })
+    console.log('Error from listProducts:', error)
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
 
+// ─────────────────────────────────────────────
+// Add Offer — Page render
+// ─────────────────────────────────────────────
+
 export const addOfferLoad = (req, res) => {
-  res.render('Admin/offer/addOffer.ejs', {
-    date: new Date()
-  })
+  res.render('Admin/offer/addOffer.ejs', { date: new Date() })
 }
+
+// ─────────────────────────────────────────────
+// Add Offer — Action
+// ─────────────────────────────────────────────
 
 export const addOffer = async (req, res) => {
   try {
     const {
-      name,
-      type,
-      value,
-      scope,
-      product: productId,
-      category: categoryId,
-      start,
-      end,
-      isActive
+      name, type, value, scope,
+      product: productId, category: categoryId,
+      start, end, isActive
     } = req.body
-  
-    // 🔹 Basic validation
-    if (!name?.trim()) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Offer name required' })
-    }
 
-    if (!['flat', 'percentage'].includes(type)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid offer type' })
-    }
-
-    if (!value || value <= 0) {
-      return res.status(400).json({ success: false, message: 'Invalid value' })
-    }
-
-    if (type === 'percentage' && value > 80) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Percentage cannot exceed 80' })
-    }
-
-    if (!['product', 'category'].includes(scope)) {
-      return res.status(400).json({ success: false, message: 'Invalid scope' })
-    }
-
-    // 🔥 Scope validation
-    if (scope === 'product' && !productId) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Product required' })
-    }
-
-    if (scope === 'category' && !categoryId) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Category required' })
-    }
-
-    // 🔹 Date validation
-    if (!start || !end) {
-      return res.status(400).json({ success: false, message: 'Dates required' })
-    }
-
-    if (new Date(start) >= new Date(end)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid date range' })
-    }
-
-    // 🔥 Prevent duplicate active offer (important)
-    let existing
-
-    const existingName = await Offers.findOne({ name })
-
-    if (existingName) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name is already existing'
-      })
-    }
-
-    if (scope === 'product') {
-      existing = await Offers.findOne({
-        scope: 'product',
-        product: productId,
-        isActive: true,
-        isDeleted: false
-      })
-    }
-
-    if (scope === 'category') {
-      existing = await Offers.findOne({
-        scope: 'category',
-        category: categoryId,
-        isActive: true,
-        isDeleted: false
-      })
-    }
-
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: 'Offer already exists for this target'
-      })
-    }
-
-    if (type === 'flat') {
-      let minPrice = Infinity;
-      if (scope === 'product') {
-        const product = await Product.findById(productId);
-        product?.variants?.forEach(v => {
-          if (v.price < minPrice) minPrice = v.price;
-        });
-      } else if (scope === 'category') {
-        const products = await Product.find({ categoryId });
-        products.forEach(p => {
-          p.variants?.forEach(v => {
-            if (v.price < minPrice) minPrice = v.price;
-          });
-        });
-      }
-      
-      if (minPrice !== Infinity && value >= minPrice) {
-        return res.status(400).json({
-          success: false,
-          message: "Flat discount cannot be equal to or exceed the minimum product price."
-        });
-      }
-    }
-
-    // 🔹 Create offer
-    const offer = new Offers({
-      name: name.trim(),
-      type,
-      value: Number(value),
-      scope,
-      product: scope === 'product' ? productId : null,
-      category: scope === 'category' ? categoryId : null,
-      start,
-      end,
-      isActive: isActive ?? true
+    const offer = await createOffer({
+      name, type, value, scope,
+      product: productId, category: categoryId,
+      start, end, isActive
     })
 
-    await offer.save()
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Offer created successfully',
       offer
     })
-  } catch (err) {
-    console.error('Add Offer Error:', err)
-    res.status(500).json({ success: false, message: 'Server error' })
+  } catch (error) {
+    console.error('Add Offer Error:', error)
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
 
+// ─────────────────────────────────────────────
+// Edit Offer — Page render
+// ─────────────────────────────────────────────
+
 export const editLoad = async (req, res) => {
   try {
-    const name = req.params.id
-    const offer = await Offers.findOne({ name: name })
-    let items = null
-    let selected = null
-
-    if (offer.category != null) {
-      items = await Categories.find()
-      selected = items.find(item => item._id.equals(offer.category))
-    } else if (offer.product != null) {
-      items = await Product.find()
-      selected = items.find(item => item._id.equals(offer.product))
-    }
+    const { offer, items, selected, selectedId } =
+      await getOfferForEdit(req.params.id)
 
     res.render('Admin/offer/editOffer.ejs', {
       offer,
       items,
       selected,
       date: new Date(),
-      selectedId: selected._id
+      selectedId
     })
   } catch (error) {
-    console.log('Error from aditLoad :', error)
+    console.log('Error from editLoad:', error)
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
 
-export const updateOffer = async (req, res) => {
-  try {
-    const nameId = req.params.id
+// ─────────────────────────────────────────────
+// Update Offer — Action
+// ─────────────────────────────────────────────
 
+export const updateOfferHandler = async (req, res) => {
+  try {
     const {
-      name,
-      type,
-      value,
-      start,
-      end,
-      scope, // Product or Category
-      product: productId,
-      category: categoryId,
-      isActive
+      name, type, value, start, end,
+      scope, product: productId, category: categoryId, isActive
     } = req.body
 
-    // 🔴 Basic Validation
-    if (!name || !type || !value || !start || !end) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'All fields required' })
-    }
-
-    if (new Date(start) >= new Date(end)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Expiry must be after start date' })
-    }
-
-    if (type === 'percentage' && value > 80) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Percentage cannot exceed 80' })
-    }
-
-    if (type === 'flat') {
-      let minPrice = Infinity;
-      if (scope === 'product') {
-        const product = await Product.findById(productId);
-        product?.variants?.forEach(v => {
-          if (v.price < minPrice) minPrice = v.price;
-        });
-      } else if (scope === 'category') {
-        const products = await Product.find({ categoryId });
-        products.forEach(p => {
-          p.variants?.forEach(v => {
-            if (v.price < minPrice) minPrice = v.price;
-          });
-        });
-      }
-      
-      if (minPrice !== Infinity && value >= minPrice) {
-        return res.status(400).json({
-          success: false,
-          message: "Flat discount cannot be equal to or exceed the minimum product price."
-        });
-      }
-    }
-
-    // 🎯 Prepare update data
-    const updateData = {
-      name,
-      type,
-      value: Number(value),
-      start,
-      end,
-      scope,
-      product: scope === 'product' ? productId : null,
-      category: scope === 'category' ? categoryId : null,
-      isActive
-    }
-
-    // 🔄 Update
-    await Offers.findOneAndUpdate({ name: nameId }, updateData, { new: true })
-    return res.status(200).json({
-      success: true,
-      message: 'Offer updated successfully'
+    await updateOffer(req.params.id, {
+      name, type, value, start, end,
+      scope, product: productId, category: categoryId, isActive
     })
+
+    return res.status(200).json({ success: true, message: 'Offer updated successfully' })
   } catch (error) {
     console.log('Error updating offer:', error)
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    })
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
+
+// ─────────────────────────────────────────────
+// Delete Offer (soft delete)
+// ─────────────────────────────────────────────
 
 export const deleteCoupon = async (req, res) => {
   try {
-    const offerId = req.params.id
+    await softDeleteOffer(req.params.id)
 
-    // 1. Validate ID
-    if (!offerId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Offer Id is required'
-      })
-    }
-
-    // 2. Find offer
-    const offer = await Offers.findById(offerId)
-
-    if (!offer) {
-      return res.status(404).json({
-        success: false,
-        message: 'Offer not found'
-      })
-    }
-
-    // 3. Prevent deleting already deleted
-    if (offer.isDeleted) {
-      return res.status(400).json({
-        success: false,
-        message: 'Offer already deleted'
-      })
-    }
-
-    // 4. Check if coupon is used in orders
-    const isUsed = await Order.exists({ _id: offerId })
-
-    if (isUsed) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot delete Offer already used in orders'
-      })
-    }
-
-    // 5. Soft delete
-    offer.isDeleted = true
-    offer.isActive = false
-
-    await offer.save()
-
-    return res.status(200).json({
-      success: true,
-      message: 'Coupon deleted successfully'
-    })
+    return res.status(200).json({ success: true, message: 'Coupon deleted successfully' })
   } catch (error) {
     console.error('Delete offer Error:', error)
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    })
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
+
+// ─────────────────────────────────────────────
+// Toggle Status
+// ─────────────────────────────────────────────
 
 export const toggleStatus = async (req, res) => {
   try {
-    const { id, isActive } = req.body
-    const offer = await Offers.findById(id)
-    if (!offer) {
-      return res.status(400).json({
-        success: false,
-        message: 'Offer not found'
-      })
-    }
+    const { id } = req.body
 
-    offer.isActive = !offer.isActive
+    const { message } = await toggleOfferStatus(id)
 
-    await offer.save()
-
-    return res.status(200).json({
-      success: true,
-      message: `Offer ${
-        offer.isActive ? 'activated' : 'deactivated'
-      } successfully`
-    })
+    return res.status(200).json({ success: true, message })
   } catch (error) {
-    console.log('Toggle offer error :', error)
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    })
+    console.log('Toggle offer error:', error)
+    const status  = error.status || 500
+    const message = error.message || 'Server error'
+    return res.status(status).json({ success: false, message })
   }
 }
+export { updateOfferHandler as updateOffer }

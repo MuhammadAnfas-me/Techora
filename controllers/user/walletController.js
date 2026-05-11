@@ -85,7 +85,6 @@ export const verifyWalletPayment = async (req, res) => {
 
       wallet.balance += Number(amount)
 
-      // optional: transaction history
       wallet.transaction.push({
         txnId: generateTxnId(),
         type: 'credit',

@@ -130,9 +130,21 @@ async function loadOrders(page = 1) {
   const data = await res.json()
   renderOrders(data.orders)
   renderPagination(data.currentPage, data.totalPages)
+  
+  // Scroll to top on page change
+  window.scrollTo({ top: 0, behavior: "smooth" })
+
   setTimeout(()=>{
     hideLoader()
   },500)
+}
+
+function formatINR(amount) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0
+  }).format(amount)
 }
 
 function formatStatus(status) {
@@ -161,7 +173,7 @@ function renderOrders(orders) {
           <div class="product-info">
             <h4>${item.name}</h4>
             <p>• ${item.color || ""}</p>
-            <p>Qty: ${item.quantity} <strong>₹${item.price}</strong></p>
+            <p>Qty: ${item.quantity} <strong>${formatINR(item.price)}</strong></p>
           </div>
         </div>
       `
@@ -181,7 +193,7 @@ function renderOrders(orders) {
             </div>
             <div class="meta-group">
               <span class="meta-label">Total</span>
-              <span class="meta-value">₹${order.totalAmount}</span>
+              <span class="meta-value">${formatINR(order.totalAmount)}</span>
             </div>
           </div>
 
@@ -250,7 +262,10 @@ function renderOrders(orders) {
 
 function renderPagination(currentPage, totalPages) {
   const container = document.getElementById("paginationContainer")
+  if (!container) return
   container.innerHTML = ""
+
+  if (totalPages <= 1) return
 
   // Previous button
   if (currentPage > 1) {
@@ -261,13 +276,29 @@ function renderPagination(currentPage, totalPages) {
     `
   }
 
-  // Page numbers
-  for (let i = 1; i <= totalPages; i++) {
+  // Page numbers (Sliding window: show max 5 pages)
+  let startPage = Math.max(1, currentPage - 2)
+  let endPage = Math.min(totalPages, startPage + 4)
+  
+  if (endPage - startPage < 4) {
+    startPage = Math.max(1, endPage - 4)
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
     container.innerHTML += `
       <button 
         class="page-num ${currentPage === i ? "active" : ""}"
         onclick="loadOrders(${i})">
         ${i}
+      </button>
+    `
+  }
+
+  // Next button
+  if (currentPage < totalPages) {
+    container.innerHTML += `
+      <button class="page-next" onclick="loadOrders(${currentPage + 1})">
+        Next &rsaquo;
       </button>
     `
   }
@@ -287,5 +318,5 @@ function debounceLoad() {
 // }
 
 // scroller Smooth
-window.scrollTo({ top: 0, behavior: "smooth" })
+// window.scrollTo({ top: 0, behavior: "smooth" })
 </script>
