@@ -102,9 +102,11 @@ const variantLoad = async (req, res) => {
       total
     })
   } catch (error) {
-    if (error.status === 404) return res.status(404).send(error.message)
-    console.error(error)
-    res.status(500).send('Server Error')
+    const statusCode = error.status || 500
+    res.status(statusCode).render('error', { 
+      statusCode, 
+      message: error.message || 'Server Error' 
+    })
   }
 }
 

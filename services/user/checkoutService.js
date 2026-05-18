@@ -133,26 +133,17 @@ export async function validateCartItems (userId) {
 
     if (!variant) {
       errors[itemKey].push(`${product.name} variant not available`)
-    }
-
-    if (product.status === 'inactive') {
+    } else if (product.status === 'inactive') {
       errors[itemKey].push(`${product.name} is unavailable`)
-    }
-
-    if (item.quantity > 5) {
+    } else if (variant.stock === 0) {
+      errors[itemKey].push(`${product.name} is out of stock`)
+    } else if (item.quantity > variant.stock) {
+      errors[itemKey].push(`${product.name} has limited stock`)
+    } else if (item.quantity > 5) {
       errors[itemKey].push(`Max 5 allowed for ${product.name}`)
     }
 
     if (variant) {
-      if (variant.stock === 0) {
-        errors[itemKey].push(`${product.name} is out of stock`)
-      }
-
-
-      if (item.quantity > variant.stock) {
-        errors[itemKey].push(`${product.name} has limited stock`)
-      }
-
       // Silently correct stale total
       const offerPrice = getOfferPrice(product, variant.price, activeOffers)
       const correctTotal = offerPrice * item.quantity

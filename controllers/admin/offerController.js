@@ -82,13 +82,13 @@ export const addOffer = async (req, res) => {
     const {
       name, type, value, scope,
       product: productId, category: categoryId,
-      start, end, isActive
+      start, end, isActive, maxDiscount
     } = req.body
 
     const offer = await createOffer({
       name, type, value, scope,
       product: productId, category: categoryId,
-      start, end, isActive
+      start, end, isActive, maxDiscount
     })
 
     return res.status(201).json({
@@ -136,12 +136,12 @@ export const updateOfferHandler = async (req, res) => {
   try {
     const {
       name, type, value, start, end,
-      scope, product: productId, category: categoryId, isActive
+      scope, product: productId, category: categoryId, isActive, maxDiscount
     } = req.body
 
     await updateOffer(req.params.id, {
       name, type, value, start, end,
-      scope, product: productId, category: categoryId, isActive
+      scope, product: productId, category: categoryId, isActive, maxDiscount
     })
 
     return res.status(200).json({ success: true, message: 'Offer updated successfully' })

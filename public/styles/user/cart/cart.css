@@ -3,7 +3,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 40px;
   color: #333;
   /* Removed the background-color from here */
 }
@@ -350,27 +350,40 @@
 @media (max-width: 500px) {
   .cart-item-card {
     flex-direction: column;
-    padding: 20px 16px;
+    padding: 16px;
   }
   
+  .item-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    max-height: 250px;
+  }
+
   .item-image img {
     width: 100%;
-    height: 180px;
+    height: 100%;
+    object-fit: contain;
   }
   
   .delete-btn {
-    top: 16px;
-    right: 16px;
+    top: 12px;
+    right: 12px;
+    background: #f1f5f9;
+    border-radius: 50%;
   }
   
   .item-actions {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 16px;
+    margin-top: 12px;
   }
   
   .item-price {
-    align-self: flex-end;
+    align-self: center;
+    font-size: 18px;
   }
 }
 

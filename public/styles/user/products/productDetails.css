@@ -928,8 +928,16 @@ a {
   }
 }
 
-.wish-btn.active i{
+.wish-btn.active {
+  border-color: #ef4444;
+}
+
+.wish-btn.active i {
   color: #ef4444;
+}
+
+.wishlist-btn.active {
+  background-color: #ef4444;
 }
 .text-yellow-400 {
   color: #facc15;

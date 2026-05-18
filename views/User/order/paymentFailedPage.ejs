@@ -117,7 +117,7 @@
         showLoader()
         setTimeout(()=>{
           sessionStorage.setItem("paymentError",response.error.description)
-          window.location.href = `/checkout/payment/failed?addressId=${addressId}?message=${response.error.description}`
+          window.location.href = `/checkout/payment/failed?addressId=${addressId}&message=${response.error.description}`
           hideLoader()
         },1200)
       })

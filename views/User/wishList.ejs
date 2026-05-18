@@ -116,6 +116,12 @@
     e.preventDefault()
     e.stopPropagation()
     showLoader()
+    
+    // Count items currently displayed on the page
+    const itemsOnPage = document.querySelectorAll('.wishlist-grid .product-card').length;
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = parseInt(urlParams.get('page')) || 1;
+
     try {
       const res = await axios.delete("/wishlist/remove",{
         data :{
@@ -123,23 +129,32 @@
           variantId
         }})
 
+    const wishCountEl = document.getElementById("wishCount")
     const favBtn = document.getElementById('favBtn')
-    const wishCount = document.getElementById("wishCount")
-    if (favBtn && wishCount) {
+    if (wishCountEl) {
+      wishCountEl.textContent = res.data.wishCount
+    }
+    if (favBtn) {
       favBtn.classList.add('cart-bounce')
-      wishCount.textContent = res.data.wishCount
-      setTimeout(() => {
-        favBtn.classList.remove('cart-bounce')
-      }, 300)
+      setTimeout(() => favBtn.classList.remove('cart-bounce'), 300)
     }
 
-      showToast(res.data?.message || "removed item")
+      showToast(res.data?.message || "Item removed from wishlist")
+      
       setTimeout(()=>{
-        location.reload()
+        // If it was the last item on the page and not page 1, go to previous page
+        if (itemsOnPage === 1 && currentPage > 1) {
+          urlParams.set('page', currentPage - 1);
+          window.location.search = urlParams.toString();
+        } else {
+          location.reload();
+        }
         hideLoader()
       },800)
     } catch (error) {
-      console.log("Error from removeItem from wishlist ::",error)
+      console.error("Error from removeItem from wishlist ::",error)
+      showToast("Failed to remove item", "error")
+      hideLoader()
     }
   }
 
@@ -190,6 +205,7 @@ function openProductPage (productId) {
 }
 
 function changePage(page) {
+    if (page < 1 || page > <%= totalPages %>) return;
     showLoader()
     const url = new URL(window.location.href);
     url.searchParams.set('page', page);

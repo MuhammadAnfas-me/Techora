@@ -32,37 +32,35 @@
         
         <div class="cr-item-list">
           <% if(!item){ %>
-            <% order.items.forEach(item=>{ %>
-
-           <% if(item.status != "Cancelled"){ %>
-          <div class="cr-item">
-            <div class="cr-item-details">
-              <div class="cr-item-image">
-                <img src="<%= item.image %>" alt="Sorry">
-              </div>
-              <div class="cr-item-meta">
-                <h4 class="cr-item-name"><%= item.name %></h4>
-                <span class="cr-item-qty">Qty: <%= item.quantity %></span>
-              </div>
-            </div>
-            <div class="cr-item-price"><%= formatINR(item.finalTotal) %></div>
-          </div>
-          <% } %>
-          <% }) %>
+            <% order.items.forEach(orderItem=>{ %>
+              <% if([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(orderItem.status)){ %>
+                <div class="cr-item">
+                  <div class="cr-item-details">
+                    <div class="cr-item-image">
+                      <img src="<%= orderItem.image %>" alt="Product">
+                    </div>
+                    <div class="cr-item-meta">
+                      <h4 class="cr-item-name"><%= orderItem.name %></h4>
+                      <span class="cr-item-qty">Qty: <%= orderItem.quantity %></span>
+                    </div>
+                  </div>
+                  <div class="cr-item-price"><%= formatINR(orderItem.finalTotal || orderItem.total) %></div>
+                </div>
+              <% } %>
+            <% }) %>
           <% }else{ %>
              <div class="cr-item">
                <div class="cr-item-details">
                  <div class="cr-item-image">
-                   <img src="<%= item.image %>" alt="Sorry">
+                   <img src="<%= item.image %>" alt="Product">
                  </div>
                  <div class="cr-item-meta">
                    <h4 class="cr-item-name"><%= item.name %></h4>
                    <span class="cr-item-qty">Qty: <%= item.quantity %></span>
                  </div>
                </div>
-               <div class="cr-item-price"><%= formatINR(item.finalTotal) %></div>
+               <div class="cr-item-price"><%= formatINR(item.finalTotal || item.total) %></div>
              </div>
-
           <% } %>
         </div>
 
@@ -74,9 +72,10 @@
             <span class="cr-refund-note">Final refund will be confirmed after review</span>
           </div>
           <% if(item){ %>
-          <div class="cr-refund-amount"><%= formatINR(item.finalTotal) %></div>
+            <div class="cr-refund-amount"><%= formatINR(item.finalTotal || item.total) %></div>
           <% }else{ %>
-            <div class="cr-refund-amount"><%= formatINR(order.totalAmount) %></div>
+            <% const cancellableTotal = order.items.reduce((sum, i) => [ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(i.status) ? sum + (i.finalTotal || i.total) : sum, 0) %>
+            <div class="cr-refund-amount"><%= formatINR(cancellableTotal) %></div>
           <% } %>
         </div>
       </div>

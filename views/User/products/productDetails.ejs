@@ -159,7 +159,7 @@
                     <p>Quantity</p>
                     <div class="qty-controls">
                         <button id="qtyLessBtn" ><i class="fas fa-minus"></i></button>
-                        <input type="text" id="qty-input" value="1" readonly>
+                        <input type="text" id="qty-input" value="1"  readonly>
                         <button id="qtyAddBtn" ><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
@@ -289,8 +289,14 @@
                 <% relatedItems.forEach(items=>{ %>
                 <div class="product-card" onclick="openProductPage('<%= items.name %>')">
                     <div class="card-badges">
-                        <button class="wishlist-btn"><i class="fas fa-heart"></i></button>
-                        <% 
+                      <% 
+                        const isRelatedWishlisted = wishListIds?.some(wish => 
+                          wish.productId === items._id.toString() && 
+                          wish.variantId === items.variants[0].varientId
+                        );
+                      %>
+                      <button class="wishlist-btn <%= isRelatedWishlisted ? 'active' : '' %>" onclick="addToWishlist(event,'<%= items._id %>' , '<%= items.variants[0].varientId %>', <%= user ? 'true' : 'false' %>,this)"><i class="fas fa-heart"></i></button>
+                      <% 
                             const now = new Date()
                             const createdAt = new Date(items.createdAt)
                             const diffDays = (now-createdAt) / (1000*60*60*24)
@@ -340,6 +346,16 @@
     <%- include("../../partitials/user/footer.ejs") %>
 
     <script >
+
+function updateButtons(item, index) {
+  const plusBtn = document.getElementById(`plus-${index}`)
+  const minusBtn = document.getElementById(`minus-${index}`)
+
+  const maxLimit = Math.min(item.stock, item.maxPurchaseLimit || Infinity)
+
+  plusBtn.disabled = item.quantity >= maxLimit
+  minusBtn.disabled = item.quantity <= 1
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   if (selectedVariant) {
@@ -393,30 +409,49 @@ function changeImage(element) {
     element.classList.add('active');
 }
 
-// Quantity Counter Logic
+function getAlreadyInCartQty(variantId) {
+    const existingItem = cart?.items?.find(item =>
+        item.productId.toString() === productId && item.variantId === variantId
+    );
+    return existingItem ? existingItem.quantity : 0;
+}
 
-const existingItem = cart?.items?.find(item=>
-    item.productId.toString() === productId && item.variantId === selectedVariant.varientId
-)
-const alreadyInCartQty = existingItem ? existingItem.quantity : 0
-function updateQty(change,price) {
+function updateQty(change) {
     const qtyInput = document.getElementById('qty-input');
-    const currentPrice = document.getElementById("currentPrice")
-    const stock = selectedVariant.stock - alreadyInCartQty
+    const qtyAddBtn = document.getElementById('qtyAddBtn');
+    const qtyLessBtn = document.getElementById('qtyLessBtn');
+    
+    const alreadyInCartQty = getAlreadyInCartQty(selectedVariant.varientId);
+    const maxPurchaseLimit = 5;
+    const availableStock = selectedVariant.stock - alreadyInCartQty;
+    const effectiveLimit = Math.min(maxPurchaseLimit - alreadyInCartQty, availableStock);
     
     let currentQty = parseInt(qtyInput.value) || 1;
     let newQty = currentQty + change;
 
-    if(newQty > stock){
-        showToast(`Only ${currentQty} stocks are left`,"error")
-        return
+    // Boundary checks
+    if (newQty < 1) newQty = 1;
+    if (newQty > effectiveLimit) {
+        if (effectiveLimit <= 0) {
+            newQty = 0; // Should be handled by main Add to Cart button being disabled
+        } else {
+            newQty = effectiveLimit;
+        }
     }
 
-    // Prevent going below 1
-    if (newQty < 1) return
-
-        qtyInput.value = newQty;
+    qtyInput.value = newQty;
     
+    // Update button states
+    qtyLessBtn.disabled = (newQty <= 1);
+    qtyAddBtn.disabled = (newQty >= effectiveLimit || effectiveLimit <= 0);
+    
+    if (change > 0 && currentQty >= effectiveLimit) {
+        if (maxPurchaseLimit - alreadyInCartQty <= availableStock) {
+           showToast("Maximum purchase limit is 5 units per order", "warning");
+        } else {
+           showToast(`Only ${availableStock} units available in stock`, "warning");
+        }
+    }
 }
 
 // Tab Switching Logic
@@ -574,37 +609,56 @@ function moveLens(e) {
       `).join("");
     }
 
-      if (stockStatus) {
-    qtyAddBtn.disabled = false;
-    qtyLessBtn.disabled = false;
-    cartAdd.disabled = false;
+    const alreadyInCartQty = getAlreadyInCartQty(variant.varientId);
+    const maxPurchaseLimit = 5;
 
-    if(productStatus === "inactive"){
-      stockStatus.className = "stock-status blocked";
-      stockStatus.innerHTML = `
-      <div class="blocked-alert">
-        <i class="fas fa-ban"></i>
-        <span>This product is currently blocked and cannot be purchased.</span>
-      </div>`;
-      qtyAddBtn.disabled = true;
-      qtyLessBtn.disabled = true;
-      cartAdd.disabled = true;
-    }else if (variant.stock <= alreadyInCartQty || variant.stock === 0) {
-      stockStatus.className = "stock-status out-of-stock";
-      stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
-      qtyAddBtn.disabled = true;
-      cartAdd.disabled = true
-    } else if (variant.stock <= 5) {
-      stockStatus.className = "stock-status low-stock";
-      stockStatus.innerHTML = `<span class="dot low"></span> Only ${variant.stock - alreadyInCartQty} left`;
-    } else if (variant.stock < 15) {
-      stockStatus.className = "stock-status";
-      stockStatus.innerHTML = `<span class="dot"></span> In Stock - Only ${variant.stock - alreadyInCartQty} left`;
-    } else {
-      stockStatus.className = "stock-status";
-      stockStatus.innerHTML = `<span class="dot"></span> In Stock`;
+    if (stockStatus) {
+      qtyAddBtn.disabled = false;
+      qtyLessBtn.disabled = false;
+      cartAdd.disabled = false;
+
+      if (productStatus === "inactive") {
+        stockStatus.className = "stock-status blocked";
+        stockStatus.innerHTML = `
+        <div class="blocked-alert">
+          <i class="fas fa-ban"></i>
+          <span>This product is currently blocked and cannot be purchased.</span>
+        </div>`;
+        qtyAddBtn.disabled = true;
+        qtyLessBtn.disabled = true;
+        cartAdd.disabled = true;
+      } else if (variant.stock === 0) {
+        stockStatus.className = "stock-status out-of-stock";
+        stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
+        qtyAddBtn.disabled = true;
+        cartAdd.disabled = true;
+        qtyInput.value = 0;
+      } else if (alreadyInCartQty >= maxPurchaseLimit) {
+        stockStatus.className = "stock-status limit-reached";
+        stockStatus.innerHTML = `<span class="dot warning" style="background: #f59e0b;"></span> Max limit reached in cart (5 units)`;
+        qtyAddBtn.disabled = true;
+        qtyLessBtn.disabled = true;
+        cartAdd.disabled = true;
+        qtyInput.value = 0;
+      } else if (variant.stock <= alreadyInCartQty) {
+        stockStatus.className = "stock-status out-of-stock";
+        stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock (All items in your cart)`;
+        qtyAddBtn.disabled = true;
+        cartAdd.disabled = true;
+        qtyInput.value = 0;
+      } else if (variant.stock <= 5) {
+        stockStatus.className = "stock-status low-stock";
+        stockStatus.innerHTML = `<span class="dot low" style="background: #f97316;"></span> Only ${variant.stock - alreadyInCartQty} left`;
+      } else if (variant.stock < 15) {
+        stockStatus.className = "stock-status";
+        stockStatus.innerHTML = `<span class="dot"></span> In Stock - Only ${variant.stock - alreadyInCartQty} left`;
+      } else {
+        stockStatus.className = "stock-status";
+        stockStatus.innerHTML = `<span class="dot"></span> In Stock`;
+      }
     }
-  }
+
+    updateQty(0);
 
     if (zoomPreview && variant.image?.length) {
       zoomPreview.style.backgroundImage = `url('${variant.image[0]}')`;

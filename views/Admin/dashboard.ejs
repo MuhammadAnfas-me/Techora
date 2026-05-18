@@ -333,9 +333,9 @@
                   <td><%= order.customer %></td>
                   <td><%= order.date %></td>
                   <td>
-                    <% if (order.status === 'Delivered') { %>
+                    <% if (order.status === ORDER_STATUS.DELIVERED) { %>
                       <span class="status-pill status-delivered"><%= order.status %></span>
-                    <% } else if (['Pending', 'Placed', 'Confirmed'].includes(order.status)) { %>
+                    <% } else if ([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED, ORDER_STATUS.SHIPPED].includes(order.status)) { %>
                       <span class="status-pill status-pending"><%= order.status %></span>
                     <% } else { %>
                       <span class="status-pill status-cancelled"><%= order.status %></span>

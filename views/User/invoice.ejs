@@ -313,7 +313,7 @@
       <div class="meta-cell">
         <div class="meta-label">Order Status</div>
         <div class="meta-value">
-          <span class="badge <%= order.orderStatus === 'Delivered' ? 'paid' : order.orderStatus === 'Cancelled' ? 'cancelled' : 'pending' %>">
+          <span class="badge <%= order.orderStatus === ORDER_STATUS.DELIVERED ? 'paid' : order.orderStatus === ORDER_STATUS.CANCELLED ? 'cancelled' : 'pending' %>">
             <%= order.orderStatus %>
           </span>
         </div>
@@ -321,7 +321,7 @@
       <div class="meta-cell">
         <div class="meta-label">Payment Status</div>
         <div class="meta-value">
-          <span class="badge <%= order.paymentStatus === 'Paid' ? 'paid' : 'pending' %>">
+          <span class="badge <%= order.paymentStatus === PAYMENT_STATUS.PAID ? 'paid' : 'pending' %>">
             <%= order.paymentStatus %>
           </span>
         </div>
@@ -373,11 +373,11 @@
         </thead>
         <tbody>
           <%
-            const validStatuses = ["Placed", "Confirmed", "Shipped", "Delivered"]
+            const activeStatuses = [ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED, ORDER_STATUS.SHIPPED, ORDER_STATUS.DELIVERED, ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.RETURN_REQUESTED]
           %>
 
           <% order.items.forEach(item => { %>
-             <tr style="<%= !validStatuses.includes(item.status) ? 'opacity:0.5;' : '' %>"></tr>
+             <tr style="<%= !activeStatuses.includes(item.status) ? 'opacity:0.5;' : '' %>"></tr>
           <tr>
             <td>
               <div class="product-name"><%= item.name %></div>
@@ -388,7 +388,7 @@
             <td><%= item.quantity %></td>
             <td>&#8377;<%= item.price %></td>
                 <td>
-                  <% if (validStatuses.includes(item.status)) { %>
+                  <% if (activeStatuses.includes(item.status)) { %>
                     &#8377;<%= item.finalTotal %>
                   <% } else { %>
                     —

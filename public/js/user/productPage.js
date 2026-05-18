@@ -6,8 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const sortSelect = document.getElementById('sort-select')
   const minRange = document.getElementById('minRange')
   const maxRange = document.getElementById('maxRange')
+  const minRangeMobile = document.getElementById('minRangeMobile')
+  const maxRangeMobile = document.getElementById('maxRangeMobile')
   const minPriceLabel = document.getElementById('minPriceLabel')
   const maxPriceLabel = document.getElementById('maxPriceLabel')
+  const minPriceLabelMobile = document.getElementById('minPriceLabelMobile')
+  const maxPriceLabelMobile = document.getElementById('maxPriceLabelMobile')
   const productCount = document.getElementById('productCount')
 
   function updatePriceLabels () {
@@ -24,6 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (minPriceLabel) minPriceLabel.textContent = `₹${min}`
     if (maxPriceLabel) maxPriceLabel.textContent = `₹${max}`
+    
+    if (minPriceLabelMobile) minPriceLabelMobile.textContent = `₹${min}`
+    if (maxPriceLabelMobile) maxPriceLabelMobile.textContent = `₹${max}`
+    
+    if (minRangeMobile) minRangeMobile.value = min
+    if (maxRangeMobile) maxRangeMobile.value = max
   }
 
   function getCheckedValues (name) {
@@ -169,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const offerPrice = firstVariant.offerPrice ?? firstVariant.price ?? 0;
         const originalPrice = firstVariant.originalPrice ?? firstVariant.price ?? 0;
         const variantId = firstVariant.varientId || ''
+        const isOutOfStock = variant.stock === undefined || variant.stock === null || variant.stock < 1;
 
         const createdAt = new Date(product.createdAt)
         const now = new Date()
@@ -218,16 +229,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 <button
                   type="button"
-                  class="add-btn ${variant.stock < 1 ? 'out-stock-btn' : ''}"
+                  class="add-btn ${isOutOfStock ? 'out-stock-btn' : ''}"
                   onclick="${
-                    variant.stock > 0 ?
+                    !isOutOfStock ?
                      `addToCart(event, '${product._id}', '${variantId}', ${loggedIn})`
                       : ''
                   }"
-                  ${variant.stock < 1 ? 'disabled' : ''}
+                  ${isOutOfStock ? 'disabled' : ''}
                 >
                   ${
-                    variant.stock < 1 ?
+                    isOutOfStock ?
                      `<span class="add-text">Out of Stock</span>`
                       : `<div class="h-4 w-4">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -367,6 +378,16 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePriceLabels()
   })
 
+  minRangeMobile?.addEventListener('input', (e) => {
+    if (minRange) minRange.value = e.target.value
+    updatePriceLabels()
+  })
+
+  maxRangeMobile?.addEventListener('input', (e) => {
+    if (maxRange) maxRange.value = e.target.value
+    updatePriceLabels()
+  })
+
   updatePriceLabels()
   toggleClearBtn()
 
@@ -387,6 +408,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sortSelect) {
       sortSelect.value = value
     }
+
+    // Update active class and checkmarks in the mobile sort drawer
+    document.querySelectorAll('.sort-option').forEach(btn => {
+      // Check if this button matches the selected sort value
+      const isMatch = (btn.dataset.sort === value);
+      
+      if (isMatch) {
+        btn.classList.add('active');
+        // Add checkmark if it doesn't have one
+        if (!btn.querySelector('.checkmark-icon')) {
+          btn.innerHTML += `<div class="h-5 w-5 checkmark-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>`;
+        }
+      } else {
+        btn.classList.remove('active');
+        // Remove checkmark if it exists
+        const checkmark = btn.querySelector('.checkmark-icon');
+        if (checkmark) checkmark.remove();
+      }
+    });
 
     loadFilteredProducts(1)
     toggleDrawer('mobile-sort-drawer', false)

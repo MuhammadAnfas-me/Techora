@@ -55,8 +55,6 @@ export const createOrder = async (req, res) => {
 // ─────────────────────────────────────────────
 
 export const verifyPayment = (req, res) => {
-  console.log('Call reached in verifyPayment')
-
   try {
     const { paymentId } = verifyRazorpaySignature(req.body)
     res.json({ success: true, paymentId })

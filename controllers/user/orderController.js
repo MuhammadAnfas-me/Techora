@@ -14,7 +14,7 @@ import {
   getReviewPageData,
   submitReview
 } from '../../services/user/orderService.js'
-
+import { ORDER_STATUS, PAYMENT_METHOD } from '../../constants/orderConstants.js'
 // ─────────────────────────────────────────────
 // Order Dashboard
 // ─────────────────────────────────────────────
@@ -26,7 +26,7 @@ export const OrderLoad = async (req, res) => {
 
     const data = await getOrderDashboardData(user.id)
 
-    res.render('User/order/orderPage.ejs', data)
+    res.render('User/order/orderPage.ejs', { ...data, ORDER_STATUS })
   } catch (error) {
     console.log(error)
   }
@@ -51,7 +51,7 @@ export const orderListPage = async (req, res) => {
       return res.json(data)
     }
 
-    res.render('User/order/orderListPage.ejs', data)
+    res.render('User/order/orderListPage.ejs', { ...data, ORDER_STATUS })
   } catch (error) {
     console.error('error from orderListPage:', error)
   }
@@ -68,15 +68,15 @@ export const orderDetailsLoad = async (req, res) => {
 
     const orderId = req.params.orderId
     if (!orderId) {
-      return res.status(404).render('404', { message: 'Order id not found' })
+      return res.status(404).render('error', { statusCode: 404, message: 'Order id not found' })
     }
 
     const data = await getOrderDetails(orderId)
 
-    res.render('User/order/orderDetails.ejs', data)
+    res.render('User/order/orderDetails.ejs', { ...data, ORDER_STATUS, PAYMENT_METHOD })
   } catch (error) {
     if (error.status === 404) {
-      return res.status(404).render('404', { message: error.message })
+      return res.status(404).render('error', { statusCode: 404, message: error.message })
     }
     console.error('Error from orderDetailsPage:', error)
   }
@@ -118,7 +118,7 @@ export const itemCancelLoad = async (req, res) => {
     }
 
     const data = await getItemForCancelPage(orderId, itemId)
-    res.render('User/order/orderCancelPage.ejs', data)
+    res.render('User/order/orderCancelPage.ejs', { ...data, ORDER_STATUS })
   } catch (error) {
     console.log('Error from orderCancelLoad:', error)
   }
@@ -166,7 +166,7 @@ export const orderCancelLoad = async (req, res) => {
     }
 
     const data = await getOrderForCancelPage(orderId, user.id)
-    res.render('User/order/orderCancelPage.ejs', data)
+    res.render('User/order/orderCancelPage.ejs', { ...data, ORDER_STATUS })
   } catch (error) {
     console.log('Error from orderCancelLoad:', error)
   }

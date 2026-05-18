@@ -8,7 +8,7 @@ import { getOfferPrice } from '../../utils/offer.js'
 // ─────────────────────────────────────────────
 
 
-async function fetchActiveOffers () {
+async function fetchActiveOffers() {
   const now = new Date()
   return Offers.find({
     isActive: true,
@@ -17,7 +17,7 @@ async function fetchActiveOffers () {
   }).lean()
 }
 
-async function calculateCartSubtotal (cart, activeOffers) {
+async function calculateCartSubtotal(cart, activeOffers) {
   let subtotal = 0
 
   for (const item of cart.items) {
@@ -41,7 +41,7 @@ async function calculateCartSubtotal (cart, activeOffers) {
 // ─────────────────────────────────────────────
 
 
-export async function fetchAvailableCoupons () {
+export async function fetchAvailableCoupons() {
   const now = new Date()
 
   return Coupon.find({
@@ -58,7 +58,7 @@ export async function fetchAvailableCoupons () {
 // Apply Coupon
 // ─────────────────────────────────────────────
 
-export async function applyUserCoupon ({ code, userId, alreadyApplied }) {
+export async function applyUserCoupon({ code, userId, alreadyApplied }) {
   if (!code || !code.trim()) {
     throw Object.assign(new Error('Enter coupon code'), { status: 200 })
   }
@@ -137,6 +137,17 @@ export async function applyUserCoupon ({ code, userId, alreadyApplied }) {
   let discount = 0
 
   if (itemCount > 0) {
+    let rawDiscount = 0
+    if (coupon.discountType === 'Percentage') {
+      rawDiscount = (subtotal * coupon.discountValue) / 100
+      if (coupon.maxDiscount) {
+        rawDiscount = Math.min(rawDiscount, coupon.maxDiscount)
+      }
+    } else {
+      rawDiscount = coupon.discountValue
+    }
+
+    // Distribute the capped rawDiscount across items
     for (const item of cart.items) {
       const product = item.productId
       const variant = product.variants.find(
@@ -144,24 +155,13 @@ export async function applyUserCoupon ({ code, userId, alreadyApplied }) {
       )
       const offerPrice = getOfferPrice(product, variant.price, activeOffers)
       const itemSubtotal = offerPrice * item.quantity
-      
-      let itemDiscount = 0
-      if (coupon.discountType === 'Percentage') {
-        const splitPercentage = coupon.discountValue / itemCount
-        itemDiscount = Math.round((itemSubtotal * splitPercentage) / 100)
-      } else {
-        itemDiscount = Math.round(coupon.discountValue / itemCount)
-      }
-      
+
+      const itemDiscount = (itemSubtotal / subtotal) * rawDiscount
       discount += Math.min(itemDiscount, itemSubtotal)
     }
   }
 
-  // Apply maxDiscount cap
-  if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-    discount = coupon.maxDiscount
-  }
-
+  discount = Math.round(discount)
   const finalTotal = Math.round(subtotal - discount)
 
   return {
@@ -178,7 +178,7 @@ export async function applyUserCoupon ({ code, userId, alreadyApplied }) {
 // ─────────────────────────────────────────────
 
 
-export async function recalculateAfterCouponRemoval (userId) {
+export async function recalculateAfterCouponRemoval(userId) {
   const cart = await Cart.findOne({ userId }).populate('items.productId')
 
   const activeOffers = await fetchActiveOffers()

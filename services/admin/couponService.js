@@ -34,17 +34,43 @@ function resolveCouponStatus (coupon) {
   return 'Active'
 }
 
-function validateDiscountValues (discountType, discountValue, minOrder) {
-  if (discountType === 'Flat' && Number(discountValue) > Number(minOrder)) {
-    throw new AppError('Discount cannot be greater than minimum order value', 400)
+function validateDiscountValues (discountType, discountValue, minOrder, maxDiscount) {
+  const dVal = Number(discountValue)
+  const mOrder = Number(minOrder)
+  const mxDiscount = maxDiscount !== null ? Number(maxDiscount) : null
+
+  if (isNaN(dVal) || dVal <= 0) {
+    throw new AppError('Discount value must be a positive number', 400)
+  }
+
+  if (isNaN(mOrder) || mOrder < 0) {
+    throw new AppError('Minimum order value must be a non-negative number', 400)
+  }
+
+  if (mxDiscount !== null && (isNaN(mxDiscount) || mxDiscount <= 0)) {
+    throw new AppError('Maximum discount must be a positive number', 400)
+  }
+
+  if (discountType === 'Flat' && dVal >= mOrder) {
+    throw new AppError('Flat discount must be less than the minimum order value', 400)
   }
 
   if (discountType === 'Percentage') {
-    const pct = Number(discountValue)
-    if (pct <= 0 || pct > 80) {
-      throw new AppError('Percentage discount must be between 1 and 80', 400)
+    if (dVal > 80) {
+      throw new AppError('Percentage discount cannot exceed 80%', 400)
     }
   }
+}
+
+function validateCouponCode(code) {
+  const trimmed = code?.trim()
+  if (!trimmed) throw new AppError('Coupon code is required', 400)
+  
+  const regex = /^[A-Z0-9]{3,15}$/
+  if (!regex.test(trimmed.toUpperCase())) {
+    throw new AppError('Coupon code must be 3-15 characters and alphanumeric (no spaces)', 400)
+  }
+  return trimmed.toUpperCase()
 }
 
 // ─────────────────────────────────────────────
@@ -120,11 +146,11 @@ export async function createCoupon ({
   startDate,
   expiryDate,
   isActive,
-  internalNotes
+  internalNotes,
+  maxDiscount
 }) {
-  couponCode = couponCode?.trim()
+  couponCode = validateCouponCode(couponCode)
 
-  if (!couponCode)    throw new AppError('Coupon is required', 400)
   if (!discountType)  throw new AppError('Please select discount type', 400)
   if (!discountValue) throw new AppError('Please enter discount value', 400)
   if (!minOrder)      throw new AppError('Please enter Minimum order value', 400)
@@ -132,12 +158,12 @@ export async function createCoupon ({
   if (!startDate)     throw new AppError('Please select starting date', 400)
   if (!expiryDate)    throw new AppError('Please select expiry date', 400)
 
-  if (usageLimit !== null && Number(usageLimit) <= 0) {
-    throw new AppError('Usage limit must be greater than 0', 400)
-  }
+  if (Number(limitPerUser) <= 0) throw new AppError('Limit per user must be at least 1', 400)
 
-  if (new Date(startDate) >= new Date(expiryDate)) {
-    throw new AppError('Expiry date must be after start date', 400)
+  const now = new Date()
+  now.setHours(0,0,0,0)
+  if (new Date(startDate) < now) {
+    throw new AppError('Start date cannot be in the past', 400)
   }
 
   const exists = await Coupon.findOne({ couponCode: couponCode.toUpperCase() })
@@ -145,13 +171,14 @@ export async function createCoupon ({
     throw new AppError('Coupon already exists', 400)
   }
 
-  validateDiscountValues(discountType, discountValue, minOrder)
+  validateDiscountValues(discountType, discountValue, minOrder, maxDiscount)
 
   const newCoupon = new Coupon({
     couponCode:    couponCode.toUpperCase(),
     discountType,
     discountValue,
     minOrderValue: minOrder,
+    maxDiscount:   maxDiscount === null ? null : Number(maxDiscount),
     usageLimit:    usageLimit === null ? null : Number(usageLimit),
     limit:         limitPerUser,
     startDate,
@@ -190,19 +217,21 @@ export async function updateCoupon (currentCode, {
   startDate,
   expiryDate,
   isActive,
-  internalNotes
+  internalNotes,
+  maxDiscount
 }) {
   minOrder      = Number(minOrder)
   discountValue = Number(discountValue)
-  couponCode    = couponCode?.trim()
+  couponCode = validateCouponCode(couponCode)
 
-  if (!couponCode)    throw new AppError('Coupon is required', 400)
   if (!discountType)  throw new AppError('Please select discount type', 400)
   if (!discountValue) throw new AppError('Please enter discount value', 400)
   if (!minOrder)      throw new AppError('Please enter Minimum order value', 400)
   if (!limitPerUser)  throw new AppError('Limit is required', 400)
   if (!startDate)     throw new AppError('Please select starting date', 400)
   if (!expiryDate)    throw new AppError('Please select expiry date', 400)
+
+  if (Number(limitPerUser) <= 0) throw new AppError('Limit per user must be at least 1', 400)
 
   if (usageLimit !== null && usageLimit !== '' && Number(usageLimit) <= 0) {
     throw new AppError('Usage limit must be greater than 0', 400)
@@ -225,7 +254,7 @@ export async function updateCoupon (currentCode, {
     throw new AppError('Coupon already exists', 400)
   }
 
-  validateDiscountValues(discountType, discountValue, minOrder)
+  validateDiscountValues(discountType, discountValue, minOrder, maxDiscount)
 
   await Coupon.findOneAndUpdate(
     { _id: existingCoupon._id },
@@ -234,6 +263,7 @@ export async function updateCoupon (currentCode, {
       discountType,
       discountValue,
       minOrderValue: minOrder,
+      maxDiscount:   maxDiscount === null ? null : Number(maxDiscount),
       usageLimit:    usageLimit === null ? null : Number(usageLimit),
       limit:         limitPerUser,
       startDate,

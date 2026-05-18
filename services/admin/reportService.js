@@ -5,6 +5,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { getSalesReportData } from '../../utils/reportHelper.js'
 import { Order } from '../../models/orderModel.js'
+import {
+  ORDER_STATUS,
+  PAYMENT_METHOD,
+  PAYMENT_STATUS
+} from '../../constants/orderConstants.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -38,45 +43,56 @@ export const getReportDashboardData = async () => {
   last7Days.forEach(day => (dailyVolume[day] = 0))
 
   for (const order of allOrders) {
-    if (['Placed', 'Confirmed', 'Pending'].includes(order.orderStatus)) pendingOrders++
-    if (order.orderStatus === 'Cancelled') cancelledOrders++
-    if (order.orderStatus === 'Delivered') deliveredOrders++
+    if ([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED, PAYMENT_STATUS.PENDING].includes(order.orderStatus)) pendingOrders++
+    if (order.orderStatus === ORDER_STATUS.CANCELLED) cancelledOrders++
+    if ([ORDER_STATUS.DELIVERED, ORDER_STATUS.PARTIALLY_RETURNED].includes(order.orderStatus)) deliveredOrders++
 
     if (
-      order.paymentStatus === 'Paid' &&
-      ['Delivered', 'Shipped', 'Confirmed', 'Placed'].includes(order.orderStatus)
+      (order.paymentStatus === PAYMENT_STATUS.PAID || (order.paymentMethod === PAYMENT_METHOD.COD && order.orderStatus === ORDER_STATUS.DELIVERED)) &&
+      [ORDER_STATUS.DELIVERED, ORDER_STATUS.SHIPPED, ORDER_STATUS.CONFIRMED, ORDER_STATUS.PLACED, ORDER_STATUS.PARTIALLY_RETURNED].includes(order.orderStatus)
     ) {
-      totalRevenue += order.totalAmount || 0
-
       const dayStr = new Date(order.createdAt).toLocaleDateString('en-US', { weekday: 'short' })
       if (dailyVolume[dayStr] !== undefined) dailyVolume[dayStr]++
 
       order.items?.forEach(item => {
-        const product = item.productId
-        const categoryName = product?.categoryId?.name || 'Uncategorized'
-        const productName = product?.name || item.name || 'Unknown Item'
-        const img = product?.variants?.[0]?.image?.[0] || item.image || ''
+        // Only count items that are NOT cancelled or returned
+        if (![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
+          const product = item.productId
+          const categoryName = product?.categoryId?.name || 'Uncategorized'
+          const productName = product?.name || item.name || 'Unknown Item'
+          const img = product?.variants?.[0]?.image?.[0] || item.image || ''
 
-        const qty = item.quantity || 1
-        const rev = item.total || 0
+          const qty = item.quantity || 1
+          const rev = item.finalTotal || item.total || 0 // Use finalTotal if available (after split discount)
 
-        categoryRevenue[categoryName] = (categoryRevenue[categoryName] || 0) + rev
+          totalRevenue += rev
+          categoryRevenue[categoryName] = (categoryRevenue[categoryName] || 0) + rev
 
-        const pid = product?._id?.toString() || item.name
-        if (!productSales[pid]) {
-          productSales[pid] = {
-            name: productName,
-            image: img,
-            category: categoryName,
-            unitsSold: 0,
-            revenue: 0
+          const pid = product?._id?.toString() || item.name
+          if (!productSales[pid]) {
+            productSales[pid] = {
+              name: productName,
+              image: img,
+              category: categoryName,
+              unitsSold: 0,
+              revenue: 0
+            }
           }
+          productSales[pid].unitsSold += qty
+          productSales[pid].revenue += rev
         }
-        productSales[pid].unitsSold += qty
-        productSales[pid].revenue += rev
       })
     }
   }
+
+  // Round totalRevenue and category data
+  totalRevenue = Math.round(totalRevenue * 100) / 100
+  Object.keys(categoryRevenue).forEach(key => {
+    categoryRevenue[key] = Math.round(categoryRevenue[key] * 100) / 100
+  })
+  Object.keys(productSales).forEach(key => {
+    productSales[key].revenue = Math.round(productSales[key].revenue * 100) / 100
+  })
 
   const chartLabels = last7Days
   const chartData = last7Days.map(day => dailyVolume[day])
@@ -93,9 +109,16 @@ export const getReportDashboardData = async () => {
     .slice(0, 10)
 
   const topCategories = await Order.aggregate([
-    { $match: { paymentStatus: 'Paid' } },
+    { 
+      $match: { 
+        $or: [
+          { paymentStatus: PAYMENT_STATUS.PAID },
+          { paymentMethod: PAYMENT_METHOD.COD, orderStatus: ORDER_STATUS.DELIVERED }
+        ]
+      } 
+    },
     { $unwind: '$items' },
-    { $match: { 'items.status': { $in: ['Delivered'] } } },
+    { $match: { 'items.status': ORDER_STATUS.DELIVERED } },
     {
       $lookup: {
         from: 'products',
@@ -152,7 +175,7 @@ export const generateSalesReportPDF = async (startDate, endDate) => {
     totalDiscount: data.totalDiscount || 0,
     totalRefunds: data.totalRefunds || 0,
     netRevenue: data.totalRevenue || 0,
-    reportData: data.reportData || []
+    reportData: data.detailedOrders || []
   }
 
   const templatePath = path.join(__dirname, '../../views/Admin/salesReport.ejs')

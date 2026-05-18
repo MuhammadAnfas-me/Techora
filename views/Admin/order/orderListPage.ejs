@@ -161,126 +161,193 @@
       color: #000;
     }
     .drawer {
-  position: fixed;
-  top: 0;
-  right: -400px; /* hidden */
-  width: 380px;
-  height: 100%;
-  background: #fff;
-  box-shadow: -4px 0 20px rgba(0,0,0,0.1);
-  z-index: 1000;
-  transition: 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
+      position: fixed;
+      top: 0;
+      right: -450px;
+      width: 420px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+      z-index: 1100;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #e5e7eb;
+    }
 
-.drawer.open {
-  right: 0;
-}
+    .drawer.open {
+      right: 0;
+    }
 
-.drawer-header {
-  padding: 15px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    .drawer-header {
+      padding: 24px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+    }
 
-.drawer-body {
-  padding: 15px;
-  overflow-y: auto;
-}
+    .drawer-header h4 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+    }
 
-/* Cards */
-.request-card {
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 8px;
-  background: #fff;
-  font-size: 13px;
-}
+    .drawer-body {
+      padding: 20px;
+      overflow-y: auto;
+      background: #f9fafb;
+      flex-grow: 1;
+    }
 
-/* top row */
-.row-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    .request-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-.order-id {
-  font-weight: 600;
-  font-size: 13px;
-}
+    .request-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
 
-/* tags */
-.tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
+    .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
 
-.tag.order {
-  background: #2563eb;
-  color: #fff;
-}
+    .title {
+      font-weight: 600;
+      color: #111827;
+      font-size: 14px;
+    }
 
-.tag.item {
-  background: #059669;
-  color: #fff;
-}
+    .tag {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-/* middle */
-.line {
-  margin: 4px 0;
-  font-size: 12px;
-  color: #333;
-}
+    .tag.order {
+      background: #eff6ff;
+      color: #2563eb;
+    }
 
-.reason {
-  font-size: 11px;
-  color: #666;
-  margin-bottom: 6px;
-}
+    .tag.item {
+      background: #ecfdf5;
+      color: #059669;
+    }
 
-/* bottom */
-.row-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    .line {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
 
-.amount {
-  font-weight: 600;
-  color: #059669;
-}
+    .reason {
+      font-size: 12px;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-style: italic;
+    }
 
-/* buttons */
-.actions {
-  display: flex;
-  gap: 5px;
-}
+    .row-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid #f3f4f6;
+    }
 
-.actions button {
-  border: none;
-  padding: 4px 6px;
-  font-size: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    .amount {
+      font-weight: 700;
+      color: #111827;
+      font-size: 15px;
+    }
 
-.approve {
-  background: #16a34a;
-  color: white;
-}
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
 
-.reject {
-  background: #dc2626;
-  color: white;
-}
-.close-btn{
-   cursor: context-menu
-}
+    .actions button {
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .approve {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .approve:hover {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    .reject {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .reject:hover {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .close-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #9ca3af;
+      transition: background 0.2s;
+    }
+
+    .close-btn:hover {
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    #returnRequestBtn .badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 11px;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -321,50 +388,52 @@
             <div id="returnDrawer" class="drawer">
   <div class="drawer-header">
     <h4>Return Requests</h4>
-    <span id="closeDrawer" class="close-btn">&times;</span>
+    <span id="closeDrawer" class="close-btn">
+      <span class="material-symbols-outlined">close</span>
+    </span>
   </div>
 
   <div class="drawer-body">
     <% if(returnRequests.length > 0){ %>
   <% returnRequests.forEach(item => { %>
 
-<div class="request-card">
+<div class="request-card" id="req-<%= item.id %>">
 
   <div class="row-top">
      <% if(item.type === "item"){ %>
     <span class="title">
-      <%= item.name %>
+      <%= item.productName %>
     </span>
   <% } else { %>
     <span class="title">
-      #<%= item.orderId %>
+      Order #<%= item.orderId %>
     </span>
   <% } %>
 
   <% if(item.type === "order"){ %>
-    <span class="tag order">Order</span>
+    <span class="tag order">Full Order</span>
   <% } else { %>
-    <span class="tag item">Item</span>
+    <span class="tag item">Single Item</span>
   <% } %>
 
   </div>
 
-  <% if(item.type === "item"){ %>
-    <p class="line">
-      <strong><%= item.productName %></strong> × <%= item.quantity %>
-    </p>
-  <% } else { %>
-    <p class="line">Full order return</p>
-  <% } %>
+  <p class="line">
+    <strong>Reason:</strong> <%= item.reason %>
+  </p>
 
-  <p class="reason"><%= item.reason %></p>
+  <p class="reason"><%= item.comment || 'No additional comments provided.' %></p>
 
   <div class="row-bottom">
     <span class="amount">₹<%= item.amount %></span>
 
     <div class="actions">
-      <button class="approve" onclick="updateReturnStatus('<%= item.id %>','<%=item.type%>','Approved')">✔</button>
-      <button class="reject" onclick="updateReturnStatus('<%= item.id %>','<%=item.type%>','Rejected')" >✖</button>
+      <button class="approve" onclick="updateReturnStatus('<%= item.id %>','<%=item.type%>','Approved')" title="Approve">
+        <span class="material-symbols-outlined" style="font-size: 18px;">check</span>
+      </button>
+      <button class="reject" onclick="updateReturnStatus('<%= item.id %>','<%=item.type%>','Rejected')" title="Reject">
+        <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+      </button>
     </div>
   </div>
 
@@ -379,13 +448,14 @@
 
             <form method="GET" class="filters-card">
 
-              <!-- 📦 Status Filter -->
-              <select class="filter-select" name="status" id="orderStatusSelect">
-                <option value="">All</option>
-                <option value="Delivered" <%=status==='Delivered' ? 'selected' : '' %>>Delivered</option>
-                <option value="Placed" <%=status==='Placed' ? 'selected' : '' %>>Pending</option>
-                <option value="Cancelled" <%=status==='Cancelled' ? 'selected' : '' %>>Cancelled</option>
-              </select>
+               <!-- 📦 Status Filter -->
+               <select class="filter-select" name="status" id="orderStatusSelect">
+                 <option value="">All Statuses</option>
+                 <option value="<%= ORDER_STATUS.DELIVERED %>" <%=status===ORDER_STATUS.DELIVERED ? 'selected' : '' %>>Delivered</option>
+                 <option value="<%= ORDER_STATUS.PLACED %>" <%=status===ORDER_STATUS.PLACED ? 'selected' : '' %>>Pending</option>
+                 <option value="<%= ORDER_STATUS.CANCELLED %>" <%=status===ORDER_STATUS.CANCELLED ? 'selected' : '' %>>Cancelled</option>
+                 <option value="<%= ORDER_STATUS.SHIPPED %>" <%=status===ORDER_STATUS.SHIPPED ? 'selected' : '' %>>Shipped</option>
+               </select>
 
               <!-- 📅 Date Sort -->
               <select class="filter-select" name="dateSort">
@@ -439,23 +509,23 @@
                         <td>
                           <%= item.paymentMethod %>
                         </td>
-                        <% if(["Returned","Delivered"].includes(item.orderStatus) ){ %>
+                        <% if([ORDER_STATUS.RETURNED, ORDER_STATUS.DELIVERED, ORDER_STATUS.PARTIALLY_RETURNED].includes(item.orderStatus) ){ %>
                           <td><span class="status-pill status-delivered">
                               <%= item.orderStatus %>
                             </span></td>
-                          <% }else if(["Cancelled","Return Rejected"].includes(item.orderStatus) ){ %>
+                          <% }else if([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURN_REJECTED].includes(item.orderStatus) ){ %>
                             <td><span class="status-pill status-cancelled">
                                 <%= item.orderStatus %>
                               </span></td>
-                            <% }else if(["Placed","Confirmed"].includes(item.orderStatus)){ %>
+                            <% }else if([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(item.orderStatus)){ %>
                               <td><span class="status-pill status-pending">
                                   <%= "Processing" %>
                                 </span></td>
-                              <% }else if(["Return Approved","Shipped"].includes(item.orderStatus) ){ %>
+                              <% }else if([ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.SHIPPED].includes(item.orderStatus) ){ %>
                                 <td><span class="status-pill status-shipped">
                                     <%= item.orderStatus %>
                                   </span></td>
-                                  <% }else if(item.orderStatus === "Return Requested") {%>
+                                  <% }else if(item.orderStatus === ORDER_STATUS.RETURN_REQUESTED) {%>
                                     <td><span class="status-pill status-pending">
                                       <%= item.orderStatus %>
                                     </span></td>
@@ -551,28 +621,42 @@
   const btn = document.getElementById("returnRequestBtn");
   const close = document.getElementById("closeDrawer");
 
+  // Reopen drawer if it was open before refresh
+  if (localStorage.getItem("returnDrawerOpen") === "true") {
+    drawer.classList.add("open");
+  }
+
   btn.addEventListener("click", () => {
     drawer.classList.add("open");
+    localStorage.setItem("returnDrawerOpen", "true");
   });
 
   close.addEventListener("click", () => {
     drawer.classList.remove("open");
+    localStorage.setItem("returnDrawerOpen", "false");
   });
 
 
-async function updateReturnStatus(id,type,status) {
+async function updateReturnStatus(id, type, status) {
   try {
-    const res = await axios.patch("/admin/orders/return/update",{
+    const res = await axios.patch("/admin/orders/return/update", {
       id,
       type,
       status
-    })
-    if(res.data.success){
-      window.location.href=res.data?.redirect
+    });
+    
+    if (res.data.success) {
+      showToast(`Request ${status} successfully`, "success");
+      
+      // Wait a bit for toast, then refresh. 
+      // The drawer will reopen automatically due to localStorage.
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   } catch (error) {
-    console.log(error)
-    showToast(error.response?.data?.message || "Something went wrong", "error")
+    console.log(error);
+    showToast(error.response?.data?.message || "Something went wrong", "error");
   }
 }
 

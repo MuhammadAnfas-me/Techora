@@ -505,6 +505,24 @@
                 <span class="error-text"></span>
               </div>
 
+              <!-- Maximum Discount (For Percentage) -->
+              <div class="form-group" id="maxDiscountGroup">
+                <label class="form-label" for="maxDiscount">Maximum Discount Amount</label>
+                <div class="input-prefix-wrap">
+                  <span class="input-prefix-icon">₹</span>
+                  <input
+                    class="form-input"
+                    type="number"
+                    id="maxDiscount"
+                    name="maxDiscount"
+                    placeholder="e.g. 500"
+                    min="0"
+                  />
+                </div>
+                <span class="error-text"></span>
+                <span class="field-hint">Cap the maximum discount for percentage coupons.</span>
+              </div>
+
               <!-- Minimum Order Value -->
               <div class="form-group">
                 <label class="form-label" for="minOrder">Minimum Order Value</label>
@@ -650,10 +668,23 @@
      // Swap prefix icon when discount type changes
     const discountTypeEl = document.getElementById('discountType');
     const valueIconEl    = document.getElementById('valueIcon');
+    const maxDiscountGroup = document.getElementById('maxDiscountGroup');
 
     discountTypeEl.addEventListener('change', function () {
       valueIconEl.textContent = this.value === 'Percentage' ? '%' : '₹';
+      // Toggle max discount field visibility
+      if (this.value === 'Percentage') {
+        maxDiscountGroup.style.display = 'flex';
+      } else {
+        maxDiscountGroup.style.display = 'none';
+        document.getElementById('maxDiscount').value = ''; // clear it
+      }
     });
+
+    // Run once on load to set initial state
+    if (discountTypeEl.value === 'Flat') {
+      maxDiscountGroup.style.display = 'none';
+    }
 
     // // Unlimited checkbox disables the usage limit input
     function toggleUnlimited(cb) {
@@ -680,6 +711,7 @@
       // get values
       const code = document.getElementById("couponCode");
       const discount = document.getElementById("discountValue");
+      const maxDiscount = document.getElementById("maxDiscount");
       const minOrder = document.getElementById("minOrder");
       const usageLimit = document.getElementById("usageLimit");
       const limitPerUser = document.getElementById("limitPerUser");
@@ -701,12 +733,31 @@
 }
     
       // validations
-      if (!code.value.trim()) setError(code, "Required");
+      const codeVal = code.value.trim().toUpperCase();
+      const codeRegex = /^[A-Z0-9]{3,15}$/;
+      if (!codeVal) {
+        setError(code, "Required");
+      } else if (!codeRegex.test(codeVal)) {
+        setError(code, "3-15 alphanumeric chars only");
+      }
     
-      if (!discount.value || discount.value <= 0)
+      const dVal = Number(discount.value);
+      const mVal = Number(minOrder.value);
+      const dType = document.getElementById("discountType").value;
+
+      if (!discount.value || dVal <= 0) {
         setError(discount, "Enter valid value");
+      } else if (dType === 'Percentage' && dVal > 80) {
+        setError(discount, "Max 80% allowed");
+      } else if (dType === 'Flat' && dVal >= mVal) {
+        setError(discount, "Must be < Min Order");
+      }
+
+      if (dType === 'Percentage' && maxDiscount.value && Number(maxDiscount.value) <= 0) {
+        setError(maxDiscount, "Must be > 0");
+      }
     
-      if (!minOrder.value || minOrder.value < 0)
+      if (!minOrder.value || mVal < 0)
         setError(minOrder, "Enter valid amount");
     
       if (!unlimited.checked && (!usageLimit.value || usageLimit.value <= 0))
@@ -715,11 +766,20 @@
       if (!limitPerUser.value || limitPerUser.value <= 0)
         setError(limitPerUser, "Required");
     
-      if (!startDate.value) setError(startDate, "Required");
+      if (!startDate.value) {
+        setError(startDate, "Required");
+      } else {
+        const selectedStart = new Date(startDate.value);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        if (selectedStart < today) {
+          setError(startDate, "Cannot be in past");
+        }
+      }
     
-      if (!expiryDate.value) setError(expiryDate, "Required");
-    
-      if (startDate.value && expiryDate.value && startDate.value >= expiryDate.value) {
+      if (!expiryDate.value) {
+        setError(expiryDate, "Required");
+      } else if (startDate.value && new Date(startDate.value) >= new Date(expiryDate.value)) {
         setError(expiryDate, "Must be after start date");
       }
     
@@ -729,6 +789,7 @@
         couponCode:    document.getElementById('couponCode').value.trim().toUpperCase(),
         discountType:  document.getElementById('discountType').value,
         discountValue: document.getElementById('discountValue').value,
+        maxDiscount:   document.getElementById('maxDiscount').value || null,
         minOrder:      document.getElementById('minOrder').value,
         usageLimit:    document.getElementById('unlimitedCheck').checked
                          ? null

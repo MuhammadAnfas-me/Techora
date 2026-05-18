@@ -3,6 +3,13 @@ import { Wallet } from '../../models/walletModel.js'
 import { Coupon } from '../../models/couponModel.js'
 import PDFDocument from 'pdfkit'
 import Product from '../../models/productModel.js'
+import {
+  ORDER_STATUS,
+  PAYMENT_METHOD,
+  PAYMENT_STATUS,
+  REFUND_STATUS,
+  RETURN_STATUS
+} from '../../constants/orderConstants.js'
 
 // ─────────────────────────────────────────────
 // AppError — guaranteed to carry status + message
@@ -67,7 +74,7 @@ function collectReturnRequests (orders) {
   let returnRequestsCount  = 0
 
   orders.forEach(order => {
-    const isOrderReturn = order.returnRequest?.status === 'Pending'
+    const isOrderReturn = order.returnRequest?.status === RETURN_STATUS.PENDING
 
     if (isOrderReturn) {
       returnRequests.push({
@@ -75,6 +82,7 @@ function collectReturnRequests (orders) {
         orderId:    order.orderId,
         userName:   order.userId?.fullName,
         reason:     order.returnRequest.reason,
+        comment:    order.returnRequest.comment || '',
         amount:     order.totalAmount,
         totalItems: order.items?.length || 0,
         id:         order._id
@@ -85,7 +93,7 @@ function collectReturnRequests (orders) {
 
     if (order.items?.length) {
       order.items.forEach(item => {
-        if (item.returnRequest?.status === 'Pending') {
+        if (item.returnRequest?.status === RETURN_STATUS.PENDING) {
           returnRequests.push({
             type:        'item',
             orderId:     order.orderId,
@@ -93,6 +101,7 @@ function collectReturnRequests (orders) {
             productName: item.name,
             quantity:    item.quantity,
             reason:      item.returnRequest.reason,
+            comment:     item.returnRequest.comment || '',
             amount:      item.finalTotal,
             id:          item._id
           })
@@ -249,8 +258,23 @@ export async function changeOrderStatus (orderId, newStatus) {
   const order = await Order.findOne({ orderId })
   if (!order) throw new AppError('Order not found', 400)
 
-  if (order.orderStatus === 'Delivered') {
+  if (order.orderStatus === ORDER_STATUS.DELIVERED) {
     throw new AppError('Order is already delivered', 400)
+  }
+
+  const statusWeight = {
+    [ORDER_STATUS.PLACED]: 1,
+    [ORDER_STATUS.CONFIRMED]: 2,
+    [ORDER_STATUS.SHIPPED]: 3,
+    [ORDER_STATUS.DELIVERED]: 4,
+    [ORDER_STATUS.RETURN_REQUESTED]: 5,
+    [ORDER_STATUS.RETURN_APPROVED]: 6,
+    [ORDER_STATUS.RETURN_REJECTED]: 7,
+    [ORDER_STATUS.RETURNED]: 8
+  }
+
+  if (statusWeight[order.orderStatus] && statusWeight[newStatus] && statusWeight[newStatus] < statusWeight[order.orderStatus]) {
+    throw new AppError(`Cannot move order status backward from ${order.orderStatus} to ${newStatus}`, 400)
   }
 
   if (newStatus === order.orderStatus) {
@@ -259,35 +283,65 @@ export async function changeOrderStatus (orderId, newStatus) {
 
   order.orderStatus = newStatus
 
-  if (newStatus === 'Confirmed') order.timeline.confirmedAt = new Date()
-  if (newStatus === 'Shipped')   order.timeline.shippedAt   = new Date()
+  if (newStatus === ORDER_STATUS.CONFIRMED) {
+    order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+  }
 
-  if (newStatus === 'Delivered') {
-    order.timeline.deliveredAt = new Date()
-    if (!['RAZORPAY', 'WALLET'].includes(order.paymentMethod)) {
-      order.paymentStatus = 'Paid'
+  if (newStatus === ORDER_STATUS.SHIPPED) {
+    order.timeline.shippedAt = order.timeline.shippedAt || new Date()
+    order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+  }
+
+  if (newStatus === ORDER_STATUS.DELIVERED) {
+    order.timeline.deliveredAt = order.timeline.deliveredAt || new Date()
+    order.timeline.shippedAt = order.timeline.shippedAt || new Date()
+    order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+
+    if (![PAYMENT_METHOD.RAZORPAY, PAYMENT_METHOD.WALLET].includes(order.paymentMethod)) {
+      order.paymentStatus = PAYMENT_STATUS.PAID
     }
   }
 
-  if (newStatus === 'Returned') {
+  if (newStatus === ORDER_STATUS.RETURNED) {
     order.timeline.returnedAt = new Date()
-    order.paymentStatus       = 'Refunded'
+    order.paymentStatus       = PAYMENT_STATUS.REFUNDED
 
-    order.items.forEach(item => { item.refunds = 'refunded' })
-
-    const wallet = await Wallet.findOne({ userId: order.userId })
-    wallet.balance += order.totalAmount
-    wallet.transaction.push({
-      type:        'credit',
-      amount:      order.totalAmount,
-      description: 'Order return amount refunded'
+    // Calculate refund only for items not yet refunded
+    let totalToRefund = 0
+    order.items.forEach(item => {
+      if (![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
+        totalToRefund += (item.finalTotal || item.total)
+        item.status    = ORDER_STATUS.RETURNED
+        item.refunds   = REFUND_STATUS.REFUNDED
+      }
     })
-    await wallet.save()
+
+    if (totalToRefund > 0) {
+      const wallet = await Wallet.findOne({ userId: order.userId })
+      wallet.balance += totalToRefund
+      wallet.transaction.push({
+        type:        'credit',
+        amount:      totalToRefund,
+        description: 'Order marked as returned (remaining amount)'
+      })
+      await wallet.save()
+    }
   }
 
-  // Sync item statuses — skip already-terminal items
+  // Sync item statuses
   order.items.forEach(item => {
-    if (!['Cancelled', 'Returned'].includes(item.status)) {
+    // Skip already terminal items
+    if ([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) return
+
+    // If whole order is RETURNED, all active/approved items should also be RETURNED
+    if (newStatus === ORDER_STATUS.RETURNED) {
+      item.status = ORDER_STATUS.RETURNED
+      return
+    }
+
+    // Otherwise, skip items that are already in return flow (requested/approved/rejected)
+    // as we shouldn't move them back to SHIPPED/DELIVERED
+    if (![ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.RETURN_REJECTED].includes(item.status)) {
       item.status = newStatus
     }
   })
@@ -295,17 +349,109 @@ export async function changeOrderStatus (orderId, newStatus) {
   await order.save()
 }
 
+/**
+ * Updates a single item's status and syncs the parent order status.
+ */
+export async function changeItemStatus(orderId, itemId, newStatus) {
+  const order = await Order.findOne({ orderId })
+  if (!order) throw new AppError('Order not found', 404)
+
+  const item = order.items.id(itemId)
+  if (!item) throw new AppError('Item not found', 404)
+
+  if (item.status === newStatus) return
+
+  // Prevent moving back from terminal states
+  const terminalStatuses = [ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED]
+  if (terminalStatuses.includes(item.status) && !terminalStatuses.includes(newStatus)) {
+     throw new AppError(`Cannot change status back from ${item.status}`, 400)
+  }
+
+  // Basic forward-only flow validation
+  const statusWeight = {
+    [ORDER_STATUS.PLACED]: 1,
+    [ORDER_STATUS.CONFIRMED]: 2,
+    [ORDER_STATUS.SHIPPED]: 3,
+    [ORDER_STATUS.DELIVERED]: 4,
+    [ORDER_STATUS.RETURN_REQUESTED]: 5,
+    [ORDER_STATUS.RETURN_APPROVED]: 6,
+    [ORDER_STATUS.RETURN_REJECTED]: 7,
+    [ORDER_STATUS.RETURNED]: 8
+  }
+
+  if (statusWeight[item.status] && statusWeight[newStatus] && statusWeight[newStatus] < statusWeight[item.status]) {
+    throw new AppError(`Cannot move status backward from ${item.status} to ${newStatus}`, 400)
+  }
+
+  item.status = newStatus
+
+  syncOrderStatus(order)
+  await order.save()
+}
+
+function syncOrderStatus(order) {
+  const itemStatuses = order.items.map(i => i.status)
+  
+  const allCancelled = itemStatuses.every(s => s === ORDER_STATUS.CANCELLED)
+  const allReturned = itemStatuses.every(s => s === ORDER_STATUS.RETURNED)
+
+  if (allCancelled) {
+    order.orderStatus = ORDER_STATUS.CANCELLED
+    order.timeline.cancelledAt = order.timeline.cancelledAt || new Date()
+    return
+  }
+  
+  if (allReturned) {
+    order.orderStatus = ORDER_STATUS.RETURNED
+    order.timeline.returnedAt = order.timeline.returnedAt || new Date()
+    return
+  }
+
+  const activeItems = itemStatuses.filter(s => 
+    ![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_REJECTED].includes(s)
+  )
+  
+  if (activeItems.length === 0) {
+     // If no strictly "active" items, but some are RETURN_APPROVED etc, we handle that
+     if (itemStatuses.some(s => s === ORDER_STATUS.RETURNED || s === ORDER_STATUS.RETURN_APPROVED)) {
+       order.orderStatus = ORDER_STATUS.PARTIALLY_RETURNED
+     }
+     return
+  }
+
+  if (activeItems.every(s => s === ORDER_STATUS.DELIVERED)) {
+    order.orderStatus = ORDER_STATUS.DELIVERED
+    order.timeline.deliveredAt = order.timeline.deliveredAt || new Date()
+    order.timeline.shippedAt   = order.timeline.shippedAt || new Date()
+    order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+
+    // COD Handling: If entire order is delivered, mark as Paid
+    if (order.paymentMethod === PAYMENT_METHOD.COD && order.paymentStatus !== PAYMENT_STATUS.PAID) {
+      order.paymentStatus = PAYMENT_STATUS.PAID
+    }
+  } else if (activeItems.some(s => s === ORDER_STATUS.DELIVERED || s === ORDER_STATUS.SHIPPED)) {
+    order.orderStatus = ORDER_STATUS.SHIPPED
+    order.timeline.shippedAt   = order.timeline.shippedAt || new Date()
+    order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+  } else if (activeItems.some(s => s === ORDER_STATUS.CONFIRMED)) {
+    order.orderStatus = ORDER_STATUS.CONFIRMED
+    order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+  } else {
+    order.orderStatus = ORDER_STATUS.PLACED
+  }
+
+  // Handle PARTIALLY_RETURNED if some items are already returned or in return flow
+  if (itemStatuses.some(s => [ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.RETURN_REQUESTED].includes(s)) && 
+      order.orderStatus !== ORDER_STATUS.RETURNED) {
+    order.orderStatus = ORDER_STATUS.PARTIALLY_RETURNED
+  }
+}
+
 // ─────────────────────────────────────────────
 // Return Item (admin approve single item)
 // ─────────────────────────────────────────────
 
-/**
- * Marks a single order item as Returned, refunds the wallet,
- * and upgrades the whole order to Returned when all items are done.
- *
- * Returns { itemName }
- */
-export async function processItemReturn (orderId, itemId) {
+export async function processItemReturn(orderId, itemId) {
   if (!orderId) throw new AppError('Order id not found', 400)
 
   const order = await Order.findOne({ orderId })
@@ -314,40 +460,66 @@ export async function processItemReturn (orderId, itemId) {
   const item = order.items.find(i => i._id.toString() === itemId)
   if (!item) throw new AppError('Order item not Found', 400)
 
-  item.status  = 'Returned'
-  item.refunds = 'refunded'
+  // ✅ Prevent double refund
+  if (item.refunds === REFUND_STATUS.REFUNDED || item.status === ORDER_STATUS.RETURNED) {
+    throw new AppError('Item already returned/refunded', 400)
+  }
 
-  // Calculate refund and handle coupon validation
-  const allReturned = order.items.every(i => i.status === 'Returned')
-  const oldTotal = order.totalAmount
+  if (item.status !== ORDER_STATUS.RETURN_APPROVED) {
+    throw new AppError('Item return must be approved before processing', 400)
+  }
+
+  // ✅ Update item status
+  item.status = ORDER_STATUS.RETURNED
+  item.refunds = REFUND_STATUS.REFUNDED
+
+  // ── Refund Calculation (SAFE) ─────────────
+  const getRefundAmount = (item) => {
+    // always prefer finalPrice (after coupon split)
+    return item.finalTotal ?? item.total
+  }
+
+  const allReturned = order.items.every(i => i.status === ORDER_STATUS.RETURNED)
+
   let refundAmount = 0
 
   if (allReturned) {
-    order.orderStatus = 'Returned'
-    refundAmount = oldTotal
-    order.totalAmount = 0
+    // FULL ORDER RETURN
+    order.orderStatus = ORDER_STATUS.RETURNED
+    refundAmount = order.totalAmount
+    order.paymentStatus = PAYMENT_STATUS.REFUNDED
   } else {
-    if (order.coupon && order.coupon.couponId) {
-      const remainingItems = order.items.filter(i => !['Cancelled', 'Returned', 'Return Approved'].includes(i.status))
-      const remainingSubtotal = remainingItems.reduce((sum, i) => sum + (i.total || 0), 0)
-
-      const couponDoc = await Coupon.findById(order.coupon.couponId)
-      if (couponDoc && remainingSubtotal < couponDoc.minOrderValue) {
-        throw new AppError(`Returning this item would make the order total fall below the coupon's minimum requirement of ₹${couponDoc.minOrderValue}. Please process a full order return instead.`, 400)
-      }
-    }
-
-    order.totalAmount = oldTotal - (item.finalTotal || item.total)
-    refundAmount = oldTotal - order.totalAmount
+    // PARTIAL RETURN
+    refundAmount = getRefundAmount(item)
+    order.orderStatus = ORDER_STATUS.PARTIALLY_RETURNED
   }
 
-  const wallet = await Wallet.findOne({ userId: order.userId })
+  // ── Wallet Handling ──────────────────────
+  let wallet = await Wallet.findOne({ userId: order.userId })
+
+  if (!wallet) {
+    wallet = await Wallet.create({
+      userId: order.userId,
+      balance: 0,
+      transaction: []
+    })
+  }
+
   wallet.balance += refundAmount
+
   wallet.transaction.push({
     type: 'credit',
     amount: refundAmount,
-    description: allReturned ? 'Order return amount refunded' : 'Item return amount refunded'
+    description: allReturned
+      ? 'Order return amount refunded'
+      : `Refund for item: ${item.name}`
   })
+
+  // ── Restore Stock ────────────────────────
+  await Product.updateOne(
+    { _id: item.productId, 'variants.varientId': item.variantId },
+    { $inc: { 'variants.$.stock': item.quantity } }
+  )
 
   await wallet.save()
   await order.save()
@@ -366,18 +538,14 @@ export async function cancelAdminOrder (orderId) {
   const order = await Order.findOne({ orderId })
   if (!order) throw new AppError('Order not found', 400)
 
-  if (['Shipped', 'Delivered'].includes(order.orderStatus)) {
-    throw new AppError(`This Order already ${order.orderStatus}`, 400)
+  const cancellableItems = order.items.filter(i => [ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(i.status))
+  if (cancellableItems.length === 0) {
+    throw new AppError('No cancellable items found in this order', 400)
   }
 
-  const allCancelled = order.items.every(i => i.status === 'Cancelled')
-  if (allCancelled) throw new AppError('Order already Cancelled', 400)
-
-  order.orderStatus = 'Cancelled'
-
   for (const item of order.items) {
-    if (!['Returned', 'Cancelled', 'Delivered'].includes(item.status)) {
-      item.status                  = 'Cancelled'
+    if ([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(item.status)) {
+      item.status = ORDER_STATUS.CANCELLED
       item.cancellation.cancelledAt = new Date()
 
       await Product.updateOne(
@@ -387,9 +555,7 @@ export async function cancelAdminOrder (orderId) {
     }
   }
 
-  const nowAllCancelled = order.items.every(i => i.status === 'Cancelled')
-  if (nowAllCancelled) order.timeline.cancelledAt = new Date()
-
+  syncOrderStatus(order)
   await order.save()
 }
 
@@ -398,117 +564,80 @@ export async function cancelAdminOrder (orderId) {
 // ─────────────────────────────────────────────
 
 
-export async function processReturnStatus (id, type, status) {
+export async function processReturnStatus(id, type, status) {
+  let order
+
+  // ── Fetch Order ───────────────────────────
   if (type === 'order') {
-    const order = await Order.findById(id)
-    if (!order) throw new AppError('Order not found', 404)
-
-    // Handle Approved status (Refund + Stock)
-    if (status === 'Approved' && order.returnRequest.status !== 'Approved') {
-      const oldTotal = order.totalAmount
-      let refundAmount = 0
-      
-      // All items in order are being returned
-      order.items.forEach(item => {
-        if (!['Cancelled', 'Returned', 'Return Approved'].includes(item.status)) {
-           // Restore stock
-           Product.updateOne(
-             { _id: item.productId, 'variants.varientId': item.variantId },
-             { $inc: { 'variants.$.stock': item.quantity } }
-           ).exec();
-        }
-        item.status = 'Return Approved'
-        item.returnRequest.status = 'Approved'
-      })
-      
-      order.orderStatus = 'Return Approved'
-      order.returnRequest.status = 'Approved'
-      
-      // Refund entire remaining total
-      refundAmount = oldTotal
-      order.totalAmount = 0
-      order.paymentStatus = 'Refunded'
-
-      // Wallet refund
-      const wallet = await Wallet.findOne({ userId: order.userId })
-      if (wallet) {
-        wallet.balance += refundAmount
-        wallet.transaction.push({
-          type: 'credit',
-          amount: refundAmount,
-          description: 'Order return approved - Refunded'
-        })
-        await wallet.save()
-      }
-    } else {
-      order.returnRequest.status = status
-      order.items.forEach(item => {
-        item.returnRequest.status = status
-        item.status = status === 'Approved' ? 'Return Approved' : 'Return Rejected'
-      })
-      order.orderStatus = status === 'Approved' ? 'Return Approved' : 'Return Rejected'
-    }
-
-    await order.save()
+    order = await Order.findById(id)
   } else {
-    const order = await Order.findOne({ 'items._id': id })
-    if (!order) throw new AppError('Order not found', 404)
+    order = await Order.findOne({ 'items._id': id })
+  }
 
-    const item = order.items.id(id)
-    if (!item) throw new AppError('Item not found', 404)
+  if (!order) throw new AppError('Order not found', 404)
 
-    // Handle Approved status
-    if (status === 'Approved' && item.returnRequest.status !== 'Approved') {
-       const oldTotal = order.totalAmount
-       let refundAmount = 0
+  // ── ORDER LEVEL ───────────────────────────
+  if (type === 'order') {
+    if (order.returnRequest.status !== RETURN_STATUS.PENDING) {
+      throw new AppError('Return request is already processed', 400)
+    }
 
-       // Restore stock
-       await Product.updateOne(
-         { _id: item.productId, 'variants.varientId': item.variantId },
-         { $inc: { 'variants.$.stock': item.quantity } }
-       )
+    order.returnRequest.status = status
 
-       item.status = 'Return Approved'
-       item.returnRequest.status = 'Approved'
-
-       // Check if all items are now non-active
-       const activeItems = order.items.filter(i => !['Cancelled', 'Returned', 'Return Approved'].includes(i.status))
-       
-       if (activeItems.length === 0) {
-         order.orderStatus = 'Return Approved'
-         refundAmount = oldTotal
-         order.totalAmount = 0
-         order.paymentStatus = 'Refunded'
-       } else {
-         // Check if remaining subtotal still satisfies coupon minOrderValue
-         if (order.coupon && order.coupon.couponId) {
-           const remainingSubtotal = activeItems.reduce((sum, i) => sum + (i.total || 0), 0)
-           const couponDoc = await Coupon.findById(order.coupon.couponId)
-           if (couponDoc && remainingSubtotal < couponDoc.minOrderValue) {
-             throw new AppError(`Returning this item would make the order total fall below the coupon's minimum requirement of ₹${couponDoc.minOrderValue}. Please approve a full order return instead.`, 400)
-           }
-         }
-
-         order.totalAmount = oldTotal - (item.finalTotal || item.total)
-         refundAmount = oldTotal - order.totalAmount
-       }
-
-       // Wallet refund
-       const wallet = await Wallet.findOne({ userId: order.userId })
-       if (wallet) {
-         wallet.balance += refundAmount
-         wallet.transaction.push({
-           type: 'credit',
-           amount: refundAmount,
-           description: 'Item return approved - Refunded'
-         })
-         await wallet.save()
-       }
-    } else {
+    order.items.forEach(item => {
       item.returnRequest.status = status
-      item.status = status === 'Approved' ? 'Return Approved' : 'Return Rejected'
+      item.status =
+        status === RETURN_STATUS.APPROVED ? ORDER_STATUS.RETURN_APPROVED : ORDER_STATUS.RETURN_REJECTED
+
+      // mark for refund (don't calculate)
+      if (status === RETURN_STATUS.APPROVED) {
+        item.refundStatus = REFUND_STATUS.PENDING
+      }
+    })
+
+    order.orderStatus =
+      status === RETURN_STATUS.APPROVED ? ORDER_STATUS.RETURN_APPROVED : ORDER_STATUS.RETURN_REJECTED
+
+    if (status === RETURN_STATUS.APPROVED) {
+      order.paymentStatus = PAYMENT_STATUS.REFUND_PENDING
     }
 
     await order.save()
+    return order
   }
+
+  // ── ITEM LEVEL ────────────────────────────
+  const item = order.items.id(id)
+  if (!item) throw new AppError('Item not found', 404)
+
+  if (item.returnRequest.status !== RETURN_STATUS.PENDING) {
+    throw new AppError('Item return request is already processed', 400)
+  }
+
+  if (status === RETURN_STATUS.APPROVED) {
+    item.returnRequest.status = RETURN_STATUS.APPROVED
+    item.status = ORDER_STATUS.RETURN_APPROVED
+
+    // mark only this item
+    item.refundStatus = REFUND_STATUS.PENDING
+
+    // Check if all items returned
+    const activeItems = order.items.filter(
+      i => ![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_APPROVED].includes(i.status)
+    )
+
+    if (activeItems.length === 0) {
+      order.orderStatus = ORDER_STATUS.RETURN_APPROVED
+      order.paymentStatus = PAYMENT_STATUS.REFUND_PENDING
+    } else {
+      order.orderStatus = ORDER_STATUS.PARTIALLY_RETURNED
+    }
+
+  } else {
+    item.returnRequest.status = status
+    item.status = ORDER_STATUS.RETURN_REJECTED
+  }
+
+  await order.save()
+  return order
 }

@@ -205,30 +205,43 @@ async function payNow(amt){
             order_id: res.data.order.id,
 
             handler: async function (response) {
-             const verifyRes = await axios.post('/verify-payment', {
-              ...response   // ✅ send properly
-            });
-    
-        if (verifyRes.data.success) {
-          const placeRes = await axios.post("/place-order",{
-            addressId,
-            paymentMethod,
-            paymentId : verifyRes.data.paymentId
-        })
-        if(placeRes.data.success){
-            showLoader()
-            setTimeout(()=>{
-                window.location.href=`/checkout/payment/success?orderId=${placeRes.data.orderId}`
-            },300)
-        }else{
-            showToast(placeRes.data.message||"Failed to place order","error")
-        }
-      
-        } else {
-            console.log('Handler error:', err)
-            showToast(err.response?.data?.message || 'Something went wrong', 'error')
-        }
-        },
+                try {
+                    const verifyRes = await axios.post('/verify-payment', {
+                        ...response
+                    });
+
+                    if (verifyRes.data.success) {
+                        try {
+                            const placeRes = await axios.post("/place-order", {
+                                addressId,
+                                paymentMethod,
+                                paymentId: verifyRes.data.paymentId
+                            });
+
+                            if (placeRes.data.success) {
+                                showLoader();
+                                setTimeout(() => {
+                                    window.location.href = `/checkout/payment/success?orderId=${placeRes.data.orderId}`;
+                                }, 300);
+                            } else {
+                                showToast(placeRes.data.message || "Failed to place order", "error");
+                                setTimeout(() => location.reload(), 1500);
+                            }
+                        } catch (orderError) {
+                            console.error('Order placement error:', orderError);
+                            showToast(orderError.response?.data?.message || "Failed to place order. If amount was deducted, it will be refunded.", "error");
+                            setTimeout(() => location.reload(), 2500);
+                        }
+                    } else {
+                        showToast(verifyRes.data.message || 'Payment verification failed', 'error');
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                } catch (verifyError) {
+                    console.error('Verification error:', verifyError);
+                    showToast(verifyError.response?.data?.message || 'Something went wrong during payment verification', 'error');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            },
 
         prefill: {
           name: userName,

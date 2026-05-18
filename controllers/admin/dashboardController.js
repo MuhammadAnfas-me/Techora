@@ -1,5 +1,6 @@
 import { Order } from '../../models/orderModel.js';
 import { User } from '../../models/userModel.js';
+import { ORDER_STATUS, PAYMENT_STATUS } from '../../constants/orderConstants.js';
 
 export const dashboardLoad = async (req, res) => {
   try {
@@ -22,21 +23,28 @@ export const dashboardLoad = async (req, res) => {
     }
 
     for (const order of allOrders) {
-      if (['Placed', 'Confirmed', 'Pending'].includes(order.orderStatus)) {
+      if ([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED, PAYMENT_STATUS.PENDING].includes(order.orderStatus)) {
         pendingOrdersCount++;
       }
       
-      if (
-        order.paymentStatus === 'Paid' &&
-        ['Delivered', 'Shipped', 'Confirmed', 'Placed'].includes(order.orderStatus)
-      ) {
-        totalRevenue += order.totalAmount || 0;
+      // Calculate Net Revenue for this order (Paid items only, excluding cancelled/returned)
+      let orderNetRevenue = 0;
+      if (order.paymentStatus === PAYMENT_STATUS.PAID || order.paymentStatus === PAYMENT_STATUS.REFUNDED) {
+         order.items.forEach(item => {
+           if (![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
+             orderNetRevenue += (item.finalTotal || item.total || 0);
+           }
+         });
+      }
+
+      if (orderNetRevenue > 0) {
+        totalRevenue += orderNetRevenue;
         
         const orderDate = new Date(order.createdAt);
         const monthDiff = (now.getFullYear() - orderDate.getFullYear()) * 12 + now.getMonth() - orderDate.getMonth();
         if (monthDiff >= 0 && monthDiff <= 5) {
           const idx = 5 - monthDiff; 
-          chartData[idx] += order.totalAmount || 0;
+          chartData[idx] += orderNetRevenue;
         }
       }
     }
@@ -54,8 +62,9 @@ export const dashboardLoad = async (req, res) => {
 
     // Top 10 Best Selling Products
     const topProducts = await Order.aggregate([
-      { $match: { paymentStatus: 'Paid' } },
+      { $match: { paymentStatus: { $in: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED] } } },
       { $unwind: '$items' },
+      { $match: { 'items.status': { $nin: [ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED] } } },
       {
         $group: {
           _id: '$items.productId',
@@ -70,8 +79,9 @@ export const dashboardLoad = async (req, res) => {
 
     // Top 10 Best Selling Categories
     const topCategories = await Order.aggregate([
-      { $match: { paymentStatus: 'Paid' } },
+      { $match: { paymentStatus: { $in: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED] } } },
       { $unwind: '$items' },
+      { $match: { 'items.status': { $nin: [ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED] } } },
       {
         $lookup: {
           from: 'products',
@@ -103,8 +113,9 @@ export const dashboardLoad = async (req, res) => {
 
     // Top 10 Best Selling Brands
     const topBrands = await Order.aggregate([
-      { $match: { paymentStatus: 'Paid' } },
+      { $match: { paymentStatus: { $in: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED] } } },
       { $unwind: '$items' },
+      { $match: { 'items.status': { $nin: [ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED] } } },
       {
         $group: {
           _id: '$items.brand',
@@ -125,7 +136,8 @@ export const dashboardLoad = async (req, res) => {
       recentOrders,
       topProducts,
       topCategories,
-      topBrands
+      topBrands,
+      ORDER_STATUS
     });
 
   } catch (error) {

@@ -25,7 +25,15 @@ export function getOfferPrice(product, variantPrice, offers) {
 
 export function getDiscountAmount (offer, price) {
   if (offer.type === 'flat') return offer.value
-  return (price * offer.value) / 100
+
+  const rawDiscount = (price * offer.value) / 100
+
+  // Cap percentage discount by maxDiscount if set
+  if (offer.maxDiscount && rawDiscount > offer.maxDiscount) {
+    return offer.maxDiscount
+  }
+
+  return rawDiscount
 }
 
 export function isOfferValid(offer) {

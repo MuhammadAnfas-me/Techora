@@ -18,6 +18,11 @@ const offerSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  
+  maxDiscount: {
+    type: Number,
+    default: null
+  },
 
   scope: {
     type: String,

@@ -47,5 +47,27 @@ app.use("/",userRoute)
 app.use("/admin",adminRoute)
 
 
+// 404 Handler
+app.use((req, res, next) => {
+  res.status(404).render("error", {
+    statusCode: 404,
+    message: "Page Not Found"
+  })
+})
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err)
+  const statusCode = err.status || 500
+  const message = err.message || "Internal Server Error"
+  
+  res.status(statusCode).render("error", {
+    statusCode,
+    message
+  })
+})
+
+
+
 connectDB()
 app.listen(PORT,()=>console.log(`Server running at http://localhost:${PORT}`))

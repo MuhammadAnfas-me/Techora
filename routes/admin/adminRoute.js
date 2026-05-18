@@ -98,11 +98,14 @@ router
   .get(middleWares.checkAdminAuth, orderController.orderDetailsPage)
   .patch(orderController.updateOrderStatus)
 
+router.get('/orders/:orderId/invoice', middleWares.checkAdminAuth, orderController.generateInvoice)
+
 router.route('/orders/:orderId/cancel').patch(orderController.orderCancel)
 
 router.route('/orders/return/update').patch(orderController.updateReturnStatus)
 // For return an item not the entire order
 router.patch('/orders/return/item/:orderId', orderController.returnItem)
+router.patch('/orders/:orderId/items/:itemId/status', middleWares.checkAdminAuth, orderController.updateItemStatus)
 
 //-------------------------------------- Coupon Management --------------------------------
 router

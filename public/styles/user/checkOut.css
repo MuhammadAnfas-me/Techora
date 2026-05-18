@@ -1086,6 +1086,7 @@ small[class$="Error"] {
 /* Modal Box */
 .coupon-modal-content {
   width: 420px;
+  max-width: 90%;
   max-height: 80vh;
   overflow-y: auto;
   background: #fff;

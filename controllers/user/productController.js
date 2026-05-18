@@ -53,7 +53,7 @@ const productPage = async (req, res) => {
     const data = await getProductDetailData(productName, userId)
 
     if (!data) {
-      return res.status(404).render('404')  
+      return res.status(404).render('error', { statusCode: 404, message: 'Product not found' })  
     }
 
     return res.render('User/products/productDetails', {

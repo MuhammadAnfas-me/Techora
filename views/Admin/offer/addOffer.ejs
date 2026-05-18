@@ -679,22 +679,23 @@
                     />
                     <span class="input-suffix" id="discountSuffix">% OFF</span>
                   </div>
-                  <!-- Buy X Get: extra free-unit field -->
-                  <div id="buyXGetField" style="display:none; margin-top:10px;">
-                    <label class="form-label" for="getFreeQty">Free Units to Get</label>
-                    <div class="input-suffix-wrap">
-                      <input
-                        type="number"
-                        id="getFreeQty"
-                        name="getFreeQty"
-                        class="form-control"
-                        placeholder="1"
-                        min="1"
-                        value="1"
-                      />
-                      <span class="input-suffix">Free</span>
-                    </div>
+                </div>
+
+                <!-- Maximum Discount (New Field) -->
+                <div class="form-group" id="maxDiscountGroup">
+                  <label class="form-label" for="maxDiscount">Maximum Discount Amount</label>
+                  <div class="input-suffix-wrap">
+                    <input
+                      type="number"
+                      id="maxDiscount"
+                      name="maxDiscount"
+                      class="form-control"
+                      placeholder="e.g. 500"
+                      min="0"
+                    />
+                    <span class="input-suffix">₹ Max</span>
                   </div>
+                  <p class="form-hint">Capping the discount amount for percentage offers.</p>
                 </div>
               </div>
 
@@ -823,8 +824,14 @@
         discountValue.placeholder = config.placeholder;
         discountValue.value = "";
 
-        // Show/hide Buy X Get extra field
-        buyXGetField.style.display = config.showBuyX ? "block" : "none";
+        // Show/hide maxDiscount field
+        const maxDiscountGroup = document.getElementById("maxDiscountGroup");
+        if (type === "Percentage") {
+          maxDiscountGroup.style.display = "block";
+        } else {
+          maxDiscountGroup.style.display = "none";
+          document.getElementById("maxDiscount").value = "";
+        }
       });
     });
 
@@ -845,6 +852,7 @@ form.addEventListener("submit", async function (e) {
   const start = document.querySelector('input[name="validFrom"]').value;
   const end = document.querySelector('input[name="validTo"]').value;
   const isActive = document.getElementById("statusToggle").checked;
+  const maxDiscountValue = document.getElementById("maxDiscount").value;
 
   // 🔥 Convert values to backend format
   const type = typeRaw === "Percentage" ? "percentage" : "flat";
@@ -894,6 +902,11 @@ form.addEventListener("submit", async function (e) {
     valid = false;
   }
 
+  if (maxDiscountValue && Number(maxDiscountValue) <= 0) {
+    showToast("Maximum discount must be a positive number", "error");
+    valid = false;
+  }
+
   if (!valid) return;
 
   // 🔹 Payload
@@ -906,7 +919,8 @@ form.addEventListener("submit", async function (e) {
     category,
     start,
     end,
-    isActive
+    isActive,
+    maxDiscount: maxDiscountValue ? Number(maxDiscountValue) : null
   };
 
   try {

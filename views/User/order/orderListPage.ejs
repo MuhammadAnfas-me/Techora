@@ -11,10 +11,10 @@
       <input type="text" id="searchInput" name="search" oninput="loadOrders()"  value="<%= search %>" placeholder="Search by Order ID...">
       <select name="status" id="statusFilter" onchange="loadOrders()">
         <option value="all">All</option>
-        <option value="Placed" <%= status==="Placed"?"selected":"" %>>Processing</option>
-        <option value="Shipped" <%= status==="Shipped"?"selected":"" %>>Shipped</option>
-        <option value="Delivered" <%= status==="Delivered"?"selected":"" %>>Delivered</option>
-        <option value="Cancelled" <%= status==="Cancelled"?"selected":"" %>>Cancelled</option>
+        <option value="<%= ORDER_STATUS.PLACED %>" <%= status===ORDER_STATUS.PLACED?"selected":"" %>>Processing</option>
+        <option value="<%= ORDER_STATUS.SHIPPED %>" <%= status===ORDER_STATUS.SHIPPED?"selected":"" %>>Shipped</option>
+        <option value="<%= ORDER_STATUS.DELIVERED %>" <%= status===ORDER_STATUS.DELIVERED?"selected":"" %>>Delivered</option>
+        <option value="<%= ORDER_STATUS.CANCELLED %>" <%= status===ORDER_STATUS.CANCELLED?"selected":"" %>>Cancelled</option>
       </select>
     </div>
   </div>
@@ -43,12 +43,14 @@
         </div>
       </div>
       
-      <% if (["Placed","Confirmed"].includes(order.orderStatus)) { %>
-      <div class="status-badge status-<%= order.orderStatus.toLowerCase() %>">Processing</div>
-      <% } else if (order.orderStatus === "Shipped") { %>
+      <% if ([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(order.orderStatus)) { %>
+      <div class="status-badge status-placed">Processing</div>
+      <% } else if (order.orderStatus === ORDER_STATUS.SHIPPED) { %>
         <div class="status-badge status-shipped">In Transit</div>
-        <% } else { %>
-          <div class="status-badge status-cancelled">Cancelled</div>
+      <% } else if (order.orderStatus === ORDER_STATUS.DELIVERED) { %>
+        <div class="status-badge status-delivered">Delivered</div>
+      <% } else { %>
+        <div class="status-badge status-cancelled"><%= order.orderStatus %></div>
       <% } %>
 
     </div>
@@ -106,6 +108,9 @@
 <%- include("../../partitials/user/footer.ejs") %>
 
 <script>
+  // Inject Enums for Client Side use
+  const ORDER_STATUS = <%- JSON.stringify(ORDER_STATUS) %>;
+
 function openOrderDetails(orderId){
   showLoader()
   setTimeout(()=>{
@@ -148,8 +153,8 @@ function formatINR(amount) {
 }
 
 function formatStatus(status) {
-  if (["Placed","Confirmed"].includes(status)) return "Processing"
-  if (status === "Shipped") return "In Transit"
+  if ([ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(status)) return "Processing"
+  if (status === ORDER_STATUS.SHIPPED) return "In Transit"
   return status
 }
 
@@ -197,7 +202,7 @@ function renderOrders(orders) {
             </div>
           </div>
 
-          <div class="status-badge status-${order.orderStatus === "Return Request" ? "placed" : order.orderStatus === "Return Rejected" ? "cancelled" : order.orderStatus.toLowerCase()}">
+          <div class="status-badge status-${order.orderStatus === ORDER_STATUS.RETURN_REQUESTED ? "placed" : order.orderStatus === ORDER_STATUS.RETURN_REJECTED ? "cancelled" : order.orderStatus.toLowerCase()}">
             ${formatStatus(order.orderStatus)}
           </div>
         </div>
@@ -226,7 +231,7 @@ function renderOrders(orders) {
                          ${order.courier || "Standard Delivery"}
                        </p>`         
                      
-                    : order.orderStatus === "Cancelled"
+                    : order.orderStatus === ORDER_STATUS.CANCELLED
                     ? `<div class="cancel-notice">
                          This order was cancelled on<br>
                          ${

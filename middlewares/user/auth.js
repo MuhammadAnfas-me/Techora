@@ -57,13 +57,8 @@ const setUser = async (req, res, next) => {
       res.locals.user = user
       const cart = await Cart.findOne({ userId: req.session.user?.id })
       const wishlist = await Wishlist.findOne({ userId: req.session.user?.id })
-      if (cart) {
-        res.locals.cartCount = cart.items.length 
-        res.locals.wishCount = wishlist.items.length 
-      } else {
-        res.locals.cartCount = 0
-        res.locals.wishCount = 0
-      }
+      res.locals.cartCount = cart ? cart.items.length : 0;
+      res.locals.wishCount = wishlist ? wishlist.items.length : 0;
     } else {
       res.locals.user = null
     }

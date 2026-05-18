@@ -132,11 +132,25 @@ export const getProductsListData = async (query, userId) => {
 
   const selectedBrands = brand ? (Array.isArray(brand) ? brand : [brand]) : []
 
-  // ── Build filter ──────────────────────────────
-  const filter = { status: 'active', 'variants.stock': { $gt: 0 } }
+  // ── Get Active Categories ──────────────────
+  const activeCategories = await Categories.find({ isActive: true }).select('_id');
+  const activeCategoryIds = activeCategories.map(cat => cat._id);
 
-  if (selectedCategory.length) filter.categoryId = { $in: selectedCategory }
-  if (selectedBrands.length) filter.brand = { $in: selectedBrands }
+  // ── Build filter ──────────────────────────────
+  const filter = { status: 'active' };
+
+  if (selectedCategory.length) {
+    // Only allow categories that are both selected and active
+    const filteredCategories = selectedCategory.filter(id => 
+      activeCategoryIds.some(activeId => activeId.toString() === id)
+    );
+    filter.categoryId = { $in: filteredCategories };
+  } else {
+    // Default: Only show products from active categories
+    filter.categoryId = { $in: activeCategoryIds };
+  }
+  
+  if (selectedBrands.length) filter.brand = { $in: selectedBrands };
 
   if (minPrice || maxPrice) {
     filter['variants.0.price'] = {}
@@ -169,7 +183,7 @@ export const getProductsListData = async (query, userId) => {
       .lean(),
     Product.countDocuments(filter),
     Categories.find({ isActive: true }).lean(),
-    Product.distinct('brand', { status: 'active', brand: { $ne: '' } })
+    Product.distinct('brand', { status: 'active', categoryId: { $in: activeCategoryIds }, brand: { $ne: '' } })
   ])
 
   const totalPages = Math.ceil(totalProducts / limit)
@@ -213,9 +227,8 @@ export const getProductsListData = async (query, userId) => {
 
 
 export const getProductDetailData = async (productName, userId) => {
-  const product = await Product.findOne({ name: productName }).lean()
-  if (!product) return null
-
+  const product = await Product.findOne({ name: productName }).populate('categoryId').lean()
+  if (!product || !product.categoryId || !product.categoryId.isActive) return null
     
     const productReviews = await Review.find({ productId: product._id })
     .populate('userId', 'fullName profileImage')
@@ -227,12 +240,19 @@ export const getProductDetailData = async (productName, userId) => {
     product.avgRating = avg
     product.reviewCount = productReviews.length
 
-  const [relatedItems, offers] = await Promise.all([
-    Product.find({ categoryId: product.categoryId, status: 'active' })
-      .limit(4)
-      .lean(),
+  const [activeCategories, offers] = await Promise.all([
+    Categories.find({ isActive: true }).select('_id'),
     getActiveOffers()
   ])
+  const activeCategoryIds = activeCategories.map(cat => cat._id.toString());
+
+  const relatedItems = await Product.find({ 
+    categoryId: { $in: activeCategoryIds }, 
+    status: 'active',
+    _id: { $ne: product._id } 
+  })
+    .limit(4)
+    .lean();
 
   applyBestOfferToAllVariants(product, offers)
 

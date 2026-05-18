@@ -130,7 +130,7 @@ export async function fetchActiveProducts () {
 export async function createOffer ({
   name, type, value, scope,
   product: productId, category: categoryId,
-  start, end, isActive
+  start, end, isActive, maxDiscount
 }) {
   // ── Basic field validation ────────────────
   if (!name?.trim()) throw new AppError('Offer name required', 400)
@@ -143,6 +143,14 @@ export async function createOffer ({
 
   if (type === 'percentage' && value > 80) {
     throw new AppError('Percentage cannot exceed 80', 400)
+  }
+
+  // maxDiscount validation — only relevant for percentage offers
+  if (type === 'percentage' && maxDiscount !== null && maxDiscount !== undefined && maxDiscount !== '') {
+    const mxD = Number(maxDiscount)
+    if (isNaN(mxD) || mxD <= 0) {
+      throw new AppError('Maximum discount must be a positive number', 400)
+    }
   }
 
   if (!['product', 'category'].includes(scope)) {
@@ -184,9 +192,10 @@ export async function createOffer ({
   }
 
   const offer = new Offers({
-    name:     name.trim(),
+    name:        name.trim(),
     type,
-    value:    Number(value),
+    value:       Number(value),
+    maxDiscount: (type === 'percentage' && maxDiscount) ? Number(maxDiscount) : null,
     scope,
     product:  scope === 'product'  ? productId  : null,
     category: scope === 'category' ? categoryId : null,
@@ -232,7 +241,7 @@ export async function getOfferForEdit (name) {
 
 export async function updateOffer (nameId, {
   name, type, value, start, end,
-  scope, product: productId, category: categoryId, isActive
+  scope, product: productId, category: categoryId, isActive, maxDiscount
 }) {
   // ── Basic validation ──────────────────────
   if (!name || !type || !value || !start || !end) {
@@ -245,6 +254,14 @@ export async function updateOffer (nameId, {
 
   if (type === 'percentage' && value > 80) {
     throw new AppError('Percentage cannot exceed 80', 400)
+  }
+
+  // maxDiscount validation — only relevant for percentage offers
+  if (type === 'percentage' && maxDiscount !== null && maxDiscount !== undefined && maxDiscount !== '') {
+    const mxD = Number(maxDiscount)
+    if (isNaN(mxD) || mxD <= 0) {
+      throw new AppError('Maximum discount must be a positive number', 400)
+    }
   }
 
   // ── Flat discount vs min product price ────
@@ -261,7 +278,8 @@ export async function updateOffer (nameId, {
   const updateData = {
     name,
     type,
-    value:    Number(value),
+    value:       Number(value),
+    maxDiscount: (type === 'percentage' && maxDiscount) ? Number(maxDiscount) : null,
     start,
     end,
     scope,

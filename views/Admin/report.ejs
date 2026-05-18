@@ -27,75 +27,108 @@
 
     /* ── Page Header Row ── */
     .reports-header {
+      margin-bottom: 32px;
+    }
+
+    .reports-header-top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 14px;
     }
 
     .reports-header-left h1 {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 700;
       color: #111827;
       margin: 0 0 4px 0;
+      letter-spacing: -0.5px;
     }
 
     .reports-header-left p {
-      font-size: 13px;
+      font-size: 14px;
       color: #6b7280;
       margin: 0;
     }
 
-    .reports-header-right {
+    /* ── Toolbox / Filter Row ── */
+    .reports-toolbox {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      background: #fff;
+      padding: 16px 20px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      gap: 20px;
       flex-wrap: wrap;
     }
 
-    /* Date range badge */
-    .date-range-badge {
+    .toolbox-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .date-input-group {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 14px;
-      background: #fff;
+      background: #f9fafb;
       border: 1px solid #e5e7eb;
-      border-radius: 7px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #374151;
+      padding: 6px 14px;
+      border-radius: 8px;
       cursor: pointer;
-      white-space: nowrap;
+      transition: border-color 0.2s, background 0.2s;
     }
 
-    .date-range-badge i {
-      color: #6b7280;
+    .date-input-group:hover {
+      border-color: #1B3C53;
+      background: #fff;
+    }
+
+    .date-input-group i {
+      color: #1B3C53;
+      font-size: 14px;
+    }
+
+    .date-input-group span {
       font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .toolbox-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     /* Export button */
-    .btn-export {
+    .btn-export-trigger {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 9px 18px;
+      padding: 10px 20px;
       background: #1B3C53;
       border: none;
-      border-radius: 7px;
+      border-radius: 8px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       color: #fff;
       cursor: pointer;
-      transition: background 0.2s;
-      white-space: nowrap;
-      font-family: 'Inter', sans-serif;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(27, 60, 83, 0.1);
     }
 
-    .btn-export:hover {
-      background: #14303f;
+    .btn-export-trigger:hover {
+      background: #143040;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(27, 60, 83, 0.2);
+    }
+
+    .btn-export-trigger i {
+      font-size: 14px;
     }
 
     /* ── Stat Cards ── */
@@ -417,22 +450,17 @@
 /* 🔥 Glass Dropdown */
 .dropdown-content {
   position: absolute;
-  top: 115%;
+  top: calc(100% + 10px);
   right: 0;
-
-  width: 220px; /* 🔥 FIXED WIDTH */
-  border-radius: 14px;
-
-  background: rgba(31, 59, 77, 0.6);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-
-  padding: 8px 0;
+  width: 240px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 8px;
   display: none;
-  z-index: 99;
+  z-index: 100;
 }
 
 /* Items */
@@ -440,26 +468,28 @@
   display: flex;
   align-items: center;
   gap: 12px;
-
-  padding: 14px 18px;
-  color: #e5e7eb;
-  font-size: 14.5px;
+  padding: 12px 16px;
+  color: #374151;
+  font-size: 14px;
   font-weight: 500;
-
   cursor: pointer;
   transition: all 0.2s ease;
-
-  white-space: nowrap; /* 🔥 PREVENT TEXT BREAK */
+  border-radius: 8px;
 }
 
 /* Hover */
 .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: #f3f4f6;
+  color: #111827;
 }
 
-/* Divider */
-.dropdown-item:not(:last-child) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+.dropdown-item i {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.dropdown-item:hover i {
+  color: #1B3C53;
 }
 
 /* Show */
@@ -507,40 +537,43 @@
  
         <!-- ── Page Header ── -->
         <div class="reports-header">
-          <div class="reports-header-left">
-            <h1>Reports Management</h1>
-            <p>Create, manage, and analyze business performance reports</p>
-          </div>
-          <div class="reports-header-right">
-            <div class="date-range-badge" onclick="openDatePicker()">
-            <i class="fas fa-calendar"></i>
-            <span id="dateText">Select Date Range</span>
+          <div class="reports-header-top">
+            <div class="reports-header-left">
+              <h1>Reports Management</h1>
+              <p>Analyze business performance and generate detailed reports</p>
+            </div>
           </div>
 
+          <div class="reports-toolbox">
+            <div class="toolbox-left">
+              <div class="date-input-group" onclick="openDatePicker()">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="dateText">Select Date Range</span>
+              </div>
+              <input type="hidden" id="startDate">
+              <input type="hidden" id="endDate">
+              <input type="text" id="dateRangePicker" style="display:none;">
+            </div>
 
-        <input type="hidden" id="startDate">
-        <input type="hidden" id="endDate">
-        <!-- hidden actual picker -->
-        <input type="text" id="dateRangePicker" style="display:none;">
-
-<div class="export-dropdown">
-  <button class="export-btn" onclick="toggleDropdown(event)">
-    <i class="fas fa-file-export"></i> Export Report
-  </button>
-
-  <div id="dropdownMenu" class="dropdown-content">
-    <div class="dropdown-item" onclick="downloadPDF()">
-      <i class="fas fa-file-pdf"></i>
-      <span>Download PDF</span>
-    </div>
-
-    <div class="dropdown-item" onclick="downloadExcel()">
-      <i class="fas fa-file-excel"></i>
-      <span>Download Excel</span>
-    </div>
-  </div>
-</div>
-
+            <div class="toolbox-right">
+              <div class="export-dropdown">
+                <button class="btn-export-trigger" onclick="toggleDropdown(event)">
+                  <i class="fas fa-download"></i>
+                  <span>Export Analysis</span>
+                  <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i>
+                </button>
+                <div id="dropdownMenu" class="dropdown-content">
+                  <div class="dropdown-item" onclick="downloadPDF()">
+                    <i class="fas fa-file-pdf" style="color: #ef4444;"></i>
+                    <span>Download as PDF</span>
+                  </div>
+                  <div class="dropdown-item" onclick="downloadExcel()">
+                    <i class="fas fa-file-excel" style="color: #10b981;"></i>
+                    <span>Download as Excel</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -825,6 +858,8 @@
     const picker = flatpickr("#dateRangePicker", {
       mode: "range",
       dateFormat: "Y-m-d",
+      positionElement: document.querySelector('.date-input-group'),
+      monthSelectorType: 'static',
       onClose: function(selectedDates) {
         if (selectedDates.length === 2) {
           const options = { day: '2-digit', month: 'short', year: 'numeric' };

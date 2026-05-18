@@ -23,6 +23,7 @@
 <div id="loaderOverlay" class="loader-overlay">
   <div class="spinner"></div>
 </div>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
@@ -38,7 +39,7 @@
                     </a>
                 </div>
 
-                <!-- CENTER: Nav Links -->
+                <!-- CENTER: Nav Links (desktop) -->
                 <div class="nav-center">
                     <div class="nav-links">
                         <a href="/" class="nav-link active">Home</a>
@@ -65,7 +66,7 @@
                     </div>
                 </div>
 
-                <!-- RIGHT: Icons -->
+                <!-- RIGHT: Icons + Hamburger -->
                 <div class="nav-right">
                     <% if(user){ %>
                     <div class="nav-icons">
@@ -83,7 +84,7 @@
                             </button>
                             <div class="profile-dropdown dropdown-menu">
                                 <div class="profile-header">
-                                    <img src="<%= user.profileImage ? user.profileImage :" " %>" alt="User">
+                                    <img src="<%= user.profileImage ? user.profileImage:" " %>" alt="User">
                                     <div>
                                         <h5><%= user.fullName ? user.fullName : ""%></h5>
                                         <p class="user-email"><%= user.email ? user.email : "" %></p>
@@ -112,13 +113,102 @@
   <a href="/signup" class="nav-auth-btn">Signup</a>
 </div>
                     <% } %>
+
+                    <!-- Hamburger Button (mobile only) -->
+                    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
                 </div>
 
             </div>
         </div>
     </nav>
-    <!-- <div id="toast" class="toast"></div> -->
-<div class="toast toast-banner" id="toast">
+
+    <!-- Mobile Drawer Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="drawer-header">
+            <a href="/" class="logo">
+                <div class="logo-icon">
+                    <span class="material-symbols-outlined">dataset</span>
+                </div>
+                <span class="logo-text">Techora</span>
+            </a>
+            <button class="drawer-close" id="drawerClose" aria-label="Close menu">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <% if(user){ %>
+        <div class="drawer-profile">
+            <img src="<%= user.profileImage ? user.profileImage : '' %>" alt="Avatar" class="drawer-avatar">
+            <div>
+                <p class="drawer-name"><%= user.fullName || '' %></p>
+                <p class="drawer-email"><%= user.email || '' %></p>
+            </div>
+        </div>
+        <% } %>
+
+        <nav class="drawer-nav">
+            <a href="/" class="drawer-link">
+                <span class="material-symbols-outlined">home</span>
+                Home
+            </a>
+
+            <!-- Categories accordion -->
+            <div class="drawer-accordion">
+                <button class="drawer-accordion-btn" id="categoriesAccordionBtn">
+                    <span class="drawer-link-inner">
+                        <span class="material-symbols-outlined">category</span>
+                        Categories
+                    </span>
+                    <span class="material-symbols-outlined accordion-arrow">expand_more</span>
+                </button>
+                <div class="drawer-accordion-body" id="categoriesAccordionBody">
+                    <a href="/products?category=69a9b338e3f99130d71b888b&minPrice=0&maxPrice=50000&page=1&sort=&search=" class="drawer-sub-link">TWS</a>
+                    <a href="/products?category=69a9b36be3f99130d71b8895&minPrice=0&maxPrice=50000&page=1&sort=&search=" class="drawer-sub-link">Neckbands</a>
+                    <a href="/products?category=69a9b387e3f99130d71b889a&minPrice=0&maxPrice=50000&page=1&sort=&search=" class="drawer-sub-link">Wired Headphones</a>
+                    <a href="/products?category=69a9b3a1e3f99130d71b889f&minPrice=0&maxPrice=50000&page=1&sort=&search=" class="drawer-sub-link">Wireless Headphones</a>
+                    <a href="/products?category=69a9b34de3f99130d71b8890&minPrice=0&maxPrice=50000&page=1&sort=&search=" class="drawer-sub-link">Gaming Headsets</a>
+                </div>
+            </div>
+
+            <a href="/products" class="drawer-link">
+                <span class="material-symbols-outlined">storefront</span>
+                Store
+            </a>
+            <a href="/contact" class="drawer-link">
+                <span class="material-symbols-outlined">mail</span>
+                Contact
+            </a>
+        </nav>
+
+        <div class="drawer-footer">
+            <% if(user){ %>
+            <a href="/profile" class="drawer-footer-link">
+                <span class="material-symbols-outlined">person</span>
+                My Profile
+            </a>
+            <a href="/orders" class="drawer-footer-link">
+                <span class="material-symbols-outlined">package_2</span>
+                My Orders
+            </a>
+            <a href="/logout" class="drawer-footer-link drawer-logout">
+                <span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+            <% } else { %>
+            <a href="/login" class="drawer-auth-btn">Login</a>
+            <a href="/signup" class="drawer-auth-btn drawer-auth-outline">Signup</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="toast toast-banner" id="toast">
     <div class="tb-icon" id="toastIcon"></div>
     <div class="tb-text">
         <div class="tb-title" id="toastTitle"></div>
@@ -126,3 +216,38 @@
     </div>
     <div class="tb-close" onclick="removeToast()">&#10005;</div>
 </div>
+
+<script>
+  // ── Hamburger / Drawer ────────────────────────────────────────────
+  const hamburgerBtn  = document.getElementById('hamburgerBtn')
+  const mobileOverlay = document.getElementById('mobileOverlay')
+  const mobileDrawer  = document.getElementById('mobileDrawer')
+  const drawerClose   = document.getElementById('drawerClose')
+
+  function openDrawer () {
+    mobileDrawer.classList.add('open')
+    mobileOverlay.classList.add('show')
+    document.body.style.overflow = 'hidden'
+    hamburgerBtn.classList.add('active')
+  }
+
+  function closeDrawer () {
+    mobileDrawer.classList.remove('open')
+    mobileOverlay.classList.remove('show')
+    document.body.style.overflow = ''
+    hamburgerBtn.classList.remove('active')
+  }
+
+  hamburgerBtn.addEventListener('click', openDrawer)
+  drawerClose.addEventListener('click', closeDrawer)
+  mobileOverlay.addEventListener('click', closeDrawer)
+
+  // ── Categories Accordion ──────────────────────────────────────────
+  const accBtn  = document.getElementById('categoriesAccordionBtn')
+  const accBody = document.getElementById('categoriesAccordionBody')
+
+  accBtn.addEventListener('click', () => {
+    const isOpen = accBody.classList.toggle('open')
+    accBtn.querySelector('.accordion-arrow').textContent = isOpen ? 'expand_less' : 'expand_more'
+  })
+</script>

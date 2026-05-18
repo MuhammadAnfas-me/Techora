@@ -386,16 +386,17 @@
               <p class="page-subtitle">View complete order information and manage status</p>
             </div>
             <div class="header-actions">
-              <% if(["Placed","Confirmed"].includes(order.orderStatus)){ %>
+              <% const hasCancellable = order.items.some(item => [ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(item.status)) %>
+              <% if(hasCancellable){ %>
                 <button class="btn btn-danger-light" onclick="cancelOrder('<%= order.orderId %>')">
                   <span class="material-symbols-outlined" style="font-size: 18px;">cancel</span> Cancel Order
                 </button>
               <% } %>
 
                 <button class="btn btn-primary d-flex align-items-center gap-2" onclick="updateStatus('<%= order.orderId %>')"
-                  <%= ["Delivered","Cancelled","Returned","Return Requested" , "Return Rejected"].includes(order.orderStatus) ? "disabled title='Order already delivered'" : "" %> >
+                  <%= [ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_REJECTED].includes(order.orderStatus) ? "disabled title='Order already delivered'" : "" %> >
                   
-                  <% if(["Cancelled" , "Returned" , "Delivered","Return Requested" , "Return Rejected"].includes(order.orderStatus)) { %>
+                  <% if([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.DELIVERED, ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_REJECTED].includes(order.orderStatus)) { %>
                     Update Status<i class="fas fa-lock"></i>
                   <% } else { %>
                     Update Status
@@ -435,14 +436,14 @@
                     <label>Order Status</label>
                     <select class="status-select" id="orderStatus">
                         <option selected><%= order.orderStatus %></option>
-                    <% if(order.orderStatus === "Placed"){ %>
-                        <option value="Confirmed">Confirmed</option>
-                    <% }else if(order.orderStatus === "Confirmed"){ %>
-                        <option value="Shipped">Shipped</option>
-                    <% } else if(order.orderStatus === "Shipped"){ %>
-                        <option value="Delivered">Delivered</option>
-                    <% }else if(order.orderStatus === "Return Approved"){ %>
-                          <option value="Returned">Returned</option>   
+                    <% if(order.orderStatus === ORDER_STATUS.PLACED){ %>
+                        <option value="<%= ORDER_STATUS.CONFIRMED %>">Confirmed</option>
+                    <% }else if(order.orderStatus === ORDER_STATUS.CONFIRMED){ %>
+                        <option value="<%= ORDER_STATUS.SHIPPED %>">Shipped</option>
+                    <% } else if(order.orderStatus === ORDER_STATUS.SHIPPED){ %>
+                        <option value="<%= ORDER_STATUS.DELIVERED %>">Delivered</option>
+                    <% }else if(order.orderStatus === ORDER_STATUS.RETURN_APPROVED){ %>
+                          <option value="<%= ORDER_STATUS.RETURNED %>">Returned</option>   
                     <% } %>
                     </select>
                   </div>
@@ -519,51 +520,48 @@
                     </thead>
                     <tbody>
                     <% order.items.forEach(item => { %>
-
-                    
                       <tr>
                         <td>
                           <div class="product-cell">
                             <div class="product-img" style="background: url('<%= item.image %>') center/cover;"></div>
                             <div>
-                              <p class="product-name"><%= item.profileImage %></p>
+                              <p class="product-name"><%= item.name %></p>
                               <p class="product-variant">• <%= item.color %></p>
                             </div>
                           </div>
                         </td>
-                        <td style="color:#6b7280; font-size:13px;">
-                          <% if(["Returned","Delivered"].includes(item.status) ){ %>
-                          <span class="status-pill status-delivered">
+                        <td>
+                          <% if([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_REJECTED].includes(item.status)) { %>
+                            <span class="status-pill <%= item.status === ORDER_STATUS.CANCELLED ? 'status-cancelled' : 'status-delivered' %>">
                               <%= item.status %>
                             </span>
-                          <% }else if(["Cancelled","Return Rejected"].includes(item.status) ){ %>
-                            <span class="status-pill status-cancelled">
-                                <%= item.status %>
-                              </span>
-                            <% }else if(["Placed","Confirmed"].includes(item.status)){ %>
-                              <span class="status-pill status-pending">
-                                  <%= "Processing" %>
-                                </span>
-                              <% }else if(["Return Approved","Shipped"].includes(item.status) ){ %>
-                                <span class="status-pill status-shipped">
-                                    <%= item.status %>
-                                  </span>
-                                  <% }else if(item.status === "Return Requested") {%>
-                                    <span class="status-pill status-pending">
-                                      <%= item.status %>
-                                    </span>
-                                  <% } %>
+                          <% } else { %>
+                            <select class="status-select" onchange="updateItemStatus('<%= order.orderId %>', '<%= item._id %>', this.value)">
+                              <option value="<%= ORDER_STATUS.PLACED %>" <%= item.status === ORDER_STATUS.PLACED ? 'selected' : '' %>>Placed</option>
+                              <option value="<%= ORDER_STATUS.CONFIRMED %>" <%= item.status === ORDER_STATUS.CONFIRMED ? 'selected' : '' %>>Confirmed</option>
+                              <option value="<%= ORDER_STATUS.SHIPPED %>" <%= item.status === ORDER_STATUS.SHIPPED ? 'selected' : '' %>>Shipped</option>
+                              <option value="<%= ORDER_STATUS.DELIVERED %>" <%= item.status === ORDER_STATUS.DELIVERED ? 'selected' : '' %>>Delivered</option>
+                              <% if(item.status === ORDER_STATUS.RETURN_REQUESTED) { %>
+                                <option value="<%= ORDER_STATUS.RETURN_REQUESTED %>" selected>Return Requested</option>
+                              <% } %>
+                              <% if(item.status === ORDER_STATUS.RETURN_APPROVED) { %>
+                                <option value="<%= ORDER_STATUS.RETURN_APPROVED %>" selected>Return Approved</option>
+                              <% } %>
+                            </select>
+                          <% } %>
                         </td>
-                        <td>1</td>
-                        <td><%= formatINR(item.price)  %></td>
+                        <td><%= item.quantity %></td>
+                        <td><%= formatINR(item.price) %></td>
                         <td style="font-weight: 500;"><%= formatINR(item.total) %></td>
-                        <% if(item.status === "Return Approved") {%>
-                          <td><span class="status-pill status-return" onclick="returnItem('<%= order.orderId %>','<%= item._id %>')">Return item</span></td>
-                        <% }else{ %>
-                          <td><span class="status-pill status-action">No Actions</span></td>
-                        <% } %>
+                        <td>
+                          <% if(item.status === ORDER_STATUS.RETURN_APPROVED) {%>
+                            <span class="status-pill status-return" onclick="returnItem('<%= order.orderId %>','<%= item._id %>')">Process Return</span>
+                          <% } else { %>
+                            <span class="status-pill status-action">No Actions</span>
+                          <% } %>
+                        </td>
                       </tr>
-                      <% }) %>
+                    <% }) %>
                     </tbody>
                   </table>
                 </div>
@@ -610,7 +608,7 @@
                     let hasRefund = false;
                     
                     order.items.forEach(item => {
-                        if (["Cancelled", "Returned", "Return Approved"].includes(item.status)) {
+                        if ([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
                             totalRefund += (item.finalTotal || item.total);
                             hasRefund = true;
                         }
@@ -663,16 +661,16 @@
                 </div>
                 <% 
                   let placedStatus = '', confirmedStatus = '', shippedStatus = '', deliveredStatus = '';
-                  const returnStatuses = ['Return Requested', 'Return Approved', 'Return Rejected',"Returned"];
-                  if (order.orderStatus === 'Delivered' || returnStatuses.includes(order.orderStatus)) {
+                  const returnStatuses = [ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.RETURN_REJECTED, ORDER_STATUS.RETURNED];
+                  if (order.orderStatus === ORDER_STATUS.DELIVERED || returnStatuses.includes(order.orderStatus)) {
                     placedStatus = 'active'; confirmedStatus = 'active'; shippedStatus = 'active'; deliveredStatus = 'active';
-                  } else if (order.orderStatus === 'Shipped') {
+                  } else if (order.orderStatus === ORDER_STATUS.SHIPPED) {
                     placedStatus = 'active'; confirmedStatus = 'active'; shippedStatus = 'current';
-                  } else if (order.orderStatus === 'Confirmed') {
+                  } else if (order.orderStatus === ORDER_STATUS.CONFIRMED) {
                     placedStatus = 'active'; confirmedStatus = 'current';
-                  } else if (order.orderStatus === 'Placed') {
+                  } else if (order.orderStatus === ORDER_STATUS.PLACED) {
                     placedStatus = 'current';
-                  } else if (order.orderStatus === 'Cancelled') {
+                  } else if (order.orderStatus === ORDER_STATUS.CANCELLED) {
                     if (order.timeline?.shippedAt) {
                       placedStatus = 'active'; confirmedStatus = 'active'; shippedStatus = 'active';
                     } else if (order.timeline?.confirmedAt) {
@@ -688,21 +686,20 @@
                   };
                 %>
                 <div class="timeline">
-                  
-                  <% if (returnStatuses.includes(order.orderStatus)) { %>
+                          <% if (returnStatuses.includes(order.orderStatus)) { %>
                   <div class="timeline-item">
                     <div class="timeline-dot current"></div>
                     <div class="timeline-content">
-                      <h5 style=" <%= order.orderStatus === 'Returned' ? 'color:#059669;' : 
-                              order.orderStatus === 'Return Rejected' ? 'color:#ef4444;' : 
-                              'color:#ea580c;' %>
+                       <h5 style=" <%= order.orderStatus === ORDER_STATUS.RETURNED ? 'color:#059669;' : 
+                               order.orderStatus === ORDER_STATUS.RETURN_REJECTED ? 'color:#ef4444;' : 
+                               'color:#ea580c;' %>
                         "><%= order.orderStatus %></h5>
                       <p>
-                        <% if(order.orderStatus === 'Returned') { %>
+                        <% if(order.orderStatus === ORDER_STATUS.RETURNED) { %>
                           Product successfully returned and processed.
-                        <% } else if(order.orderStatus === 'Return Approved') { %>
+                        <% } else if(order.orderStatus === ORDER_STATUS.RETURN_APPROVED) { %>
                           Return request approved.
-                        <% } else if(order.orderStatus === 'Return Rejected') { %>
+                        <% } else if(order.orderStatus === ORDER_STATUS.RETURN_REJECTED) { %>
                           Return request rejected.
                         <% } else { %>
                           Return process logged.
@@ -717,7 +714,7 @@
                   </div>
                   <% } %>
 
-                  <% if (order.orderStatus === 'Cancelled') { %>
+                  <% if (order.orderStatus === ORDER_STATUS.CANCELLED) { %>
                   <div class="timeline-item">
                     <div class="timeline-dot" style="background: #ef4444; border-color: #fca5a5;"></div>
                     <div class="timeline-content">
@@ -830,6 +827,21 @@
       }catch(error){
         console.error(error)
         showToast(error.response.data.message || "Something went wrong","error")
+      }
+    }
+
+    async function updateItemStatus(orderId, itemId, status) {
+      try {
+        const res = await axios.patch(`/admin/orders/${orderId}/items/${itemId}/status`, { status });
+        if (res.data.success) {
+          showToast(res.data.message || "Item status updated successfully");
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      } catch (error) {
+        console.error(error);
+        showToast(error.response.data.message || "Something went wrong", "error");
       }
     }
   </script>

@@ -9,6 +9,7 @@ import Product from '../../models/productModel.js'
 import generateUserId from '../../utils/generateUserId.js'
 import generateReferralCode from '../../utils/referral.js'
 import { generateTxnId } from '../../utils/generateTxnId.js'
+import { Categories } from '../../models/categoryModel.js'
 
 const SALT_ROUND = 10
 
@@ -227,8 +228,14 @@ export async function performPasswordReset (resetToken, newPassword) {
 
 
 export async function getHomeProducts () {
+  // 1. Get active categories
+  const activeCategories = await Categories.find({ isActive: true }).select('_id');
+  const activeCategoryIds = activeCategories.map(cat => cat._id);
+
+  // 2. Fetch products belonging to these categories
   const products = await Product.find({
     status: 'active',
+    categoryId: { $in: activeCategoryIds },
     'variants.stock': { $gte: 0 }
   })
     .populate('categoryId')

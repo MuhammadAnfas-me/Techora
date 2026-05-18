@@ -730,10 +730,27 @@
                       value="<%= offer.value %>"
                     />
                     <span class="input-suffix" id="discountSuffix">
-                      <%= offer.offerType === 'Flat Discount' ? '₹ OFF' : offer.offerType === 'Buy X Get' ? 'Buy Qty' : '% OFF' %>
+                      <%= offer.type === 'flat' ? '₹ OFF' : '% OFF' %>
                     </span>
                   </div>
-                  
+                </div>
+
+                <!-- Maximum Discount (New Field) -->
+                <div class="form-group" id="maxDiscountGroup" style="<%= offer.type === 'flat' ? 'display: none;' : '' %>">
+                  <label class="form-label" for="maxDiscount">Maximum Discount Amount</label>
+                  <div class="input-suffix-wrap">
+                    <input
+                      type="number"
+                      id="maxDiscount"
+                      name="maxDiscount"
+                      class="form-control"
+                      placeholder="e.g. 500"
+                      min="0"
+                      value="<%= offer.maxDiscount %>"
+                    />
+                    <span class="input-suffix">₹ Max</span>
+                  </div>
+                  <p class="form-hint">Capping the discount amount for percentage offers.</p>
                 </div>
               </div>
 
@@ -867,6 +884,14 @@
         discountValue.placeholder  = config.placeholder;
         discountValue.value        = "";
 
+        // Show/hide maxDiscount field
+        const maxDiscountGroup = document.getElementById("maxDiscountGroup");
+        if (type === "Percentage") {
+          maxDiscountGroup.style.display = "block";
+        } else {
+          maxDiscountGroup.style.display = "none";
+          document.getElementById("maxDiscount").value = "";
+        }
       });
     });
 
@@ -963,6 +988,7 @@
   const start = document.querySelector('input[name="validFrom"]').value;
   const end = document.querySelector('input[name="validTo"]').value;
   const isActive = document.getElementById("statusToggle").checked;
+  const maxDiscountValue = document.getElementById("maxDiscount").value;
 
   // 🔥 Convert values to backend format
   const type = typeRaw === "Percentage" ? "percentage" : "flat";
@@ -1012,6 +1038,11 @@
     valid = false;
   }
 
+  if (maxDiscountValue && Number(maxDiscountValue) <= 0) {
+    showToast("Maximum discount must be a positive number", "error");
+    valid = false;
+  }
+
   if (!valid) return;
 
   // 🔹 Payload
@@ -1024,7 +1055,8 @@
     category,
     start,
     end,
-    isActive
+    isActive,
+    maxDiscount: maxDiscountValue ? Number(maxDiscountValue) : null
   };
 
     const segments = window.location.pathname.split('/');

@@ -4,6 +4,13 @@ import { Wallet } from '../../models/walletModel.js'
 import { Review } from '../../models/reviewModel.js'
 import { Coupon } from '../../models/couponModel.js'
 import { formatDate } from '../../services/dateFormat.js'
+import {
+  ORDER_STATUS,
+  PAYMENT_METHOD,
+  PAYMENT_STATUS,
+  REFUND_STATUS,
+  RETURN_STATUS
+} from '../../constants/orderConstants.js'
 import puppeteer from 'puppeteer'
 import ejs from 'ejs'
 import path from 'path'
@@ -14,22 +21,22 @@ import path from 'path'
 
 export const getStatusText = status => {
   switch (status) {
-    case 'Placed':
+    case ORDER_STATUS.PLACED:
       return 'Order Placed'
-    case 'Confirmed':
+    case ORDER_STATUS.CONFIRMED:
       return 'Confirmed'
-    case 'Shipped':
+    case ORDER_STATUS.SHIPPED:
       return 'Shipped - In Transit'
-    case 'Delivered':
+    case ORDER_STATUS.DELIVERED:
       return 'Delivered'
-    case 'Cancelled':
+    case ORDER_STATUS.CANCELLED:
       return 'Cancelled'
     default:
       return status
   }
 }
 
-const REFUNDABLE_METHODS = ['RAZORPAY', 'WALLET']
+const REFUNDABLE_METHODS = [PAYMENT_METHOD.RAZORPAY, PAYMENT_METHOD.WALLET]
 
 // ─────────────────────────────────────────────
 // Order Dashboard
@@ -41,9 +48,9 @@ export async function getOrderDashboardData (userId) {
     await Promise.all([
       Order.find({ userId }).sort({ createdAt: -1 }).limit(4),
       Order.countDocuments({ userId }),
-      Order.countDocuments({ userId, orderStatus: 'Delivered' }),
-      Order.countDocuments({ userId, orderStatus: 'Shipped' }),
-      Order.countDocuments({ userId, orderStatus: 'Cancelled' })
+      Order.countDocuments({ userId, orderStatus: ORDER_STATUS.DELIVERED }),
+      Order.countDocuments({ userId, orderStatus: ORDER_STATUS.SHIPPED }),
+      Order.countDocuments({ userId, orderStatus: ORDER_STATUS.CANCELLED })
     ])
 
   return { orders, totalOrders, delivered, shipped, cancelled }
@@ -87,7 +94,7 @@ export async function getOrderDetails (orderId) {
     throw Object.assign(new Error('Order not found'), { status: 404 })
   }
 
-  const allCancelled = order.items.every(i => i.status === 'Cancelled')
+  const allCancelled = order.items.every(i => i.status === ORDER_STATUS.CANCELLED)
 
   return {
     order,
@@ -116,13 +123,13 @@ export async function generateOrderInvoice (orderId) {
 
   orderObj.items.forEach(item => {
     // If item is Cancelled or Returned, add its finalTotal to refundedTotal
-    if (['Cancelled', 'Returned', 'Return Approved'].includes(item.status)) {
+    if ([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
       refundedTotal += item.finalTotal || item.total
     }
   })
 
   // Grand Total = (Original Total Amount) - (Refunded Total)
-  const finalAmount = order.totalAmount - refundedTotal
+  const finalAmount = Math.max(0, order.totalAmount - refundedTotal)
 
   const invoiceData = {
     ...orderObj,
@@ -132,7 +139,7 @@ export async function generateOrderInvoice (orderId) {
     finalAmount
   }
   const filePath = path.join('views/User/invoice.ejs')
-  const html = await ejs.renderFile(filePath, { order: invoiceData })
+  const html = await ejs.renderFile(filePath, { order: invoiceData, ORDER_STATUS, PAYMENT_STATUS })
 
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -174,8 +181,8 @@ export async function cancelOrderItem (
     throw Object.assign(new Error('Item not Found'), { status: 404 })
   }
 
-  if (item.status === 'Cancelled') {
-    throw Object.assign(new Error('Already Cancelled'), { status: 400 })
+  if (![ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(item.status)) {
+    throw Object.assign(new Error(`Cannot cancel item because its current status is ${item.status}`), { status: 400 })
   }
 
   const { productId, variantId, quantity } = item
@@ -193,27 +200,26 @@ export async function cancelOrderItem (
   }
 
   // Update item status
-  item.status = 'Cancelled'
+  item.status = ORDER_STATUS.CANCELLED
   item.cancellation = { reason, comment, cancelledAt: new Date() }
 
   // Restore stock
   variant.stock += quantity
 
   // Calculate refund and handle coupon validation
-  const allCancelled = order.items.every(i => i.status === 'Cancelled')
+  const allCancelled = order.items.every(i => i.status === ORDER_STATUS.CANCELLED)
   const oldTotal = order.totalAmount
   let refundAmount = 0
 
   if (allCancelled) {
-    order.orderStatus = 'Cancelled'
+    order.orderStatus = ORDER_STATUS.CANCELLED
     order.cancellation = { reason, comment, cancelledAt: new Date() }
     order.timeline.cancelledAt = new Date()
     refundAmount = oldTotal
-    order.totalAmount = 0
   } else {
     // Check if remaining subtotal still satisfies coupon minOrderValue
     if (order.coupon && order.coupon.couponId) {
-      const remainingItems = order.items.filter(i => !['Cancelled', 'Returned', 'Return Approved'].includes(i.status))
+      const remainingItems = order.items.filter(i => ![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_APPROVED].includes(i.status))
       const remainingSubtotal = remainingItems.reduce((sum, i) => sum + (i.total || 0), 0)
 
       const couponDoc = await Coupon.findById(order.coupon.couponId)
@@ -225,8 +231,8 @@ export async function cancelOrderItem (
       }
     }
 
-    order.totalAmount = oldTotal - (item.finalTotal || item.total)
-    refundAmount = oldTotal - order.totalAmount
+    // order.totalAmount = oldTotal - (item.finalTotal || item.total)
+    refundAmount = item.finalTotal
   }
 
   // Wallet refund
@@ -234,7 +240,7 @@ export async function cancelOrderItem (
     const wallet = await Wallet.findOne({ userId })
     if (!wallet) throw new Error('Wallet not found')
 
-    item.refunds = 'refunded'
+    item.refunds = REFUND_STATUS.REFUNDED
     wallet.balance += refundAmount
     wallet.transaction.push({
       type: 'credit',
@@ -243,7 +249,7 @@ export async function cancelOrderItem (
     })
 
     if (allCancelled) {
-      order.paymentStatus = 'Refunded'
+      order.paymentStatus = PAYMENT_STATUS.REFUNDED
     }
     await wallet.save()
   }
@@ -287,25 +293,21 @@ export async function cancelWholeOrder (userId, { orderId, reason, comment }) {
     throw Object.assign(new Error('Order not found'), { status: 400 })
   }
 
-  if (['Shipped', 'Delivered'].includes(order.orderStatus)) {
-    throw Object.assign(new Error('Your order already Shipped'), {
-      status: 400
-    })
+  const cancellableItems = order.items.filter(i => [ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(i.status))
+  if (cancellableItems.length === 0) {
+    throw Object.assign(new Error('No cancellable items found in this order'), { status: 400 })
   }
 
-  const allCancelled = order.items.every(i => i.status === 'Cancelled')
-  if (allCancelled) {
-    throw Object.assign(new Error('You already Cancelled'), { status: 200 })
-  }
-
-  let totalAmount = 0
+  let totalRefundAmount = 0
 
   for (const item of order.items) {
-    if (item.status === 'Cancelled') continue
+    if (![ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(item.status)) continue
+
     if (REFUNDABLE_METHODS.includes(order.paymentMethod)) {
-      totalAmount += item.finalTotal
+      totalRefundAmount += (item.finalTotal || item.total)
     }
-    item.status = 'Cancelled'
+
+    item.status = ORDER_STATUS.CANCELLED
     item.cancellation = {
       reason,
       comment: comment?.trim() || '',
@@ -318,21 +320,50 @@ export async function cancelWholeOrder (userId, { orderId, reason, comment }) {
     )
   }
 
-  order.orderStatus = 'Cancelled'
-  order.timeline.cancelledAt = new Date()
+  // Sync order status
+  const itemStatuses = order.items.map(i => i.status)
+  const allCancelled = itemStatuses.every(s => s === ORDER_STATUS.CANCELLED)
 
-  if (REFUNDABLE_METHODS.includes(order.paymentMethod)) {
-    for (const item of order.items) {
-      item.refunds = 'refunded'
+  if (allCancelled) {
+    order.orderStatus = ORDER_STATUS.CANCELLED
+    order.timeline.cancelledAt = new Date()
+  } else {
+    // If not all cancelled, but some were delivered/shipped, orderStatus remains SHIPPED/DELIVERED
+    const activeItems = itemStatuses.filter(s => 
+      ![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_REJECTED].includes(s)
+    )
+
+    if (activeItems.length === 0) {
+      if (itemStatuses.some(s => s === ORDER_STATUS.RETURNED || s === ORDER_STATUS.RETURN_APPROVED)) {
+        order.orderStatus = ORDER_STATUS.PARTIALLY_RETURNED
+      }
+    } else if (activeItems.every(s => s === ORDER_STATUS.DELIVERED)) {
+      order.orderStatus = ORDER_STATUS.DELIVERED
+      order.timeline.deliveredAt = order.timeline.deliveredAt || new Date()
+      order.timeline.shippedAt = order.timeline.shippedAt || new Date()
+      order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+    } else if (activeItems.some(s => s === ORDER_STATUS.DELIVERED || s === ORDER_STATUS.SHIPPED)) {
+      order.orderStatus = ORDER_STATUS.SHIPPED
+      order.timeline.shippedAt = order.timeline.shippedAt || new Date()
+      order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
+    } else if (activeItems.some(s => s === ORDER_STATUS.CONFIRMED)) {
+      order.orderStatus = ORDER_STATUS.CONFIRMED
+      order.timeline.confirmedAt = order.timeline.confirmedAt || new Date()
     }
+  }
+
+  if (totalRefundAmount > 0 && REFUNDABLE_METHODS.includes(order.paymentMethod)) {
     const wallet = await Wallet.findOne({ userId: order.userId })
-    wallet.balance += totalAmount
+    wallet.balance += totalRefundAmount
     wallet.transaction.push({
       type: 'credit',
-      amount: totalAmount,
+      amount: totalRefundAmount,
       description: 'Order cancellation amount refunded'
     })
-    order.paymentStatus = 'Refunded'
+    
+    if (allCancelled) {
+      order.paymentStatus = PAYMENT_STATUS.REFUNDED
+    }
     await wallet.save()
   }
 
@@ -357,10 +388,16 @@ export async function getItemForReturnPage (orderId, itemId) {
 
 export async function getOrderForReturnPage (orderId) {
   const order = await Order.findOne({ orderId })
+  const total = order.items.reduce((acc,curr)=>{
+    if(curr.status === ORDER_STATUS.DELIVERED){
+      acc += curr.finalTotal
+    }
+    return acc
+  },0)
   if (!order) {
     throw Object.assign(new Error('Order not found'), { status: 404 })
   }
-  return { order, item: null }
+  return { order, item: null ,total}
 }
 
 
@@ -382,29 +419,29 @@ export async function requestItemReturn (
     throw Object.assign(new Error('Item not found'), { status: 400 })
   }
 
-  if (item.status !== 'Delivered') {
+  if (item.status !== ORDER_STATUS.DELIVERED) {
     throw Object.assign(new Error('Only delivered items can be returned'), {
       status: 400
     })
   }
 
-  if (item.status === 'Returned') {
+  if (item.status === ORDER_STATUS.RETURNED) {
     throw Object.assign(new Error('Item already returned'), { status: 400 })
   }
 
-  item.status = 'Return Requested'
+  item.status = ORDER_STATUS.RETURN_REQUESTED
   item.returnRequest = {
-    status: 'Pending',
+    status: RETURN_STATUS.PENDING,
     reason,
     comment: comment?.trim() || '',
     returnedAt: new Date()
   }
 
-  const allReturned = order.items.every(i => i.status === 'Return Requested')
+  const allReturned = order.items.every(i => i.status === ORDER_STATUS.RETURN_REQUESTED)
   if (allReturned) {
-    order.orderStatus = 'Return Requested'
+    order.orderStatus = ORDER_STATUS.RETURN_REQUESTED
     order.returnRequest = {
-      status: 'Pending',
+      status: RETURN_STATUS.PENDING,
       reason,
       comment: comment?.trim() || ''
     }
@@ -428,34 +465,40 @@ export async function requestWholeOrderReturn (
     throw Object.assign(new Error('Order not found'), { status: 400 })
   }
 
-  if (order.orderStatus !== 'Delivered') {
+  if (![ORDER_STATUS.PARTIALLY_RETURNED, ORDER_STATUS.DELIVERED].includes(order.orderStatus)) {
     throw Object.assign(new Error('Only delivered orders can be returned'), {
       status: 400
     })
   }
 
-  if (order.orderStatus === 'Returned') {
+  if (order.orderStatus === ORDER_STATUS.RETURNED) {
     throw Object.assign(new Error('Order already returned'), { status: 400 })
   }
 
   const now = new Date()
 
-  for (const item of order.items) {
-    if (item.status === 'Returned' || item.status === 'Cancelled') continue
-    item.status = 'Return Requested'
+  const returnableItems = order.items.filter(item => ![ORDER_STATUS.RETURNED, ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURN_REJECTED, ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_APPROVED].includes(item.status))
+  
+  if (returnableItems.length === 0) {
+    throw Object.assign(new Error('No returnable items found in this order'), { status: 400 })
+  }
+
+  for (const item of returnableItems) {
+    item.status = ORDER_STATUS.RETURN_REQUESTED
     item.returnRequest = {
-      status: 'Pending',
+      status: RETURN_STATUS.PENDING,
       reason,
       comment: comment?.trim() || '',
       returnedAt: now
     }
   }
 
-  const allReturned = order.items.every(item => item.status === 'Returned')
-  if (allReturned) {
-    order.orderStatus = 'Return Requested'
+  const allHandled = order.items.every(item => [ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURNED, ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURN_APPROVED].includes(item.status))
+  
+  if (allHandled) {
+    order.orderStatus = ORDER_STATUS.RETURN_REQUESTED
     order.returnRequest = {
-      status: 'Pending',
+      status: RETURN_STATUS.PENDING,
       reason,
       comment: comment?.trim() || '',
       requestedAt: now
@@ -501,7 +544,7 @@ export async function submitReview (
 
   const item = order.items.find(i => i._id.toString() === itemId)
 
-  if (item.status !== 'Delivered') {
+  if (item.status !== ORDER_STATUS.DELIVERED) {
     throw Object.assign(new Error('Item is not delivered'), { status: 400 })
   }
 

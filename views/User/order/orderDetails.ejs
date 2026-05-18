@@ -34,7 +34,7 @@
             <div class="card">
                 <div class="status-header">
                     <div style="font-weight: 700; font-size: 14px;"><i class="fas fa-truck"></i> Order Status</div>
-                    <span class="status-badge <%= order.orderStatus.toLowerCase() %>">
+                    <span class="status-badge <%= order.orderStatus.toLowerCase().replace(' ', '-') %>">
                       <%= statusText %>
                     </span>
                 </div>
@@ -44,49 +44,59 @@
                 <div class="timeline">
                     <div class="step active">
                         <div class="step-icon"><i class="fas fa-shopping-bag"></i></div>
-                        <div class="step-label">Order Placed</div>
-                        <div class="step-time">
-                            <%= formatDate(order.createdAt) %>
-                         </div>
+                        <div class="step-content">
+                            <div class="step-label">Order Placed</div>
+                            <div class="step-time">
+                                <%= formatDate(order.createdAt) %>
+                             </div>
+                        </div>
                     </div>
                     <div class="step <%= order.timeline.confirmedAt ? 'active' : 'pending' %>">
                         <div class="step-icon"><i class="fas fa-clipboard-check"></i></div>
-                        <div class="step-label">Confirmed</div>
-                        <div class="step-time"><%= order.timeline.confirmedAt 
-                            ? formatDate(order.timeline.confirmedAt) 
-                            : '--' %>
+                        <div class="step-content">
+                            <div class="step-label">Confirmed</div>
+                            <div class="step-time"><%= order.timeline.confirmedAt 
+                                ? formatDate(order.timeline.confirmedAt) 
+                                : '--' %>
+                            </div>
                         </div>
                     </div>
                     <div class="step <%= order.timeline.shippedAt ? 'active' : 'pending' %>">
                         <div class="step-icon"><i class="fas fa-box"></i></div>
-                        <div class="step-label">Shipped</div>
-                        <div class="step-time">
-                            <%= order.timeline.shippedAt 
-                                ? formatDate(order.timeline.shippedAt) 
-                                : '--' 
-                            %>
+                        <div class="step-content">
+                            <div class="step-label">Shipped</div>
+                            <div class="step-time">
+                                <%= order.timeline.shippedAt 
+                                    ? formatDate(order.timeline.shippedAt) 
+                                    : '--' 
+                                %>
+                            </div>
                         </div>
                     </div>
-                    <% if(order.orderStatus === "Cancelled"){ %>
+                    <% if(order.orderStatus === ORDER_STATUS.CANCELLED){ %>
                         <div class="step active">
                         <div class="step-icon"><i class="fas fa-house"></i></div>
-                        <div class="step-label" style="color: #94a3b8;">Cancelled</div>
-                        <div class="step-time">
-                            <%= order.timeline.cancelledAt 
-                                ? formatDate(order.timeline.cancelledAt) 
-                                : 'Expected soon' 
-                            %>
+                        <div class="step-content">
+                            <div class="step-label" style="color: #94a3b8;">Cancelled</div>
+                            <div class="step-time">
+                                <%= order.timeline.cancelledAt 
+                                    ? formatDate(order.timeline.cancelledAt) 
+                                    : 'Expected soon' 
+                                %>
+                            </div>
                         </div>
                     </div>
                     <% }else{ %>
                     <div class="step <%= order.timeline.deliveredAt ? 'active' : 'pending' %>">
                         <div class="step-icon"><i class="fas fa-house"></i></div>
-                        <div class="step-label" style="color: #94a3b8;">Delivered</div>
-                        <div class="step-time">
-                            <%= order.timeline.deliveredAt 
-                                ? formatDate(order.timeline.deliveredAt) 
-                                : 'Expected soon' 
-                            %>
+                        <div class="step-content">
+                            <div class="step-label" style="color: #94a3b8;">Delivered</div>
+                            <div class="step-time">
+                                <%= order.timeline.deliveredAt 
+                                    ? formatDate(order.timeline.deliveredAt) 
+                                    : 'Expected soon' 
+                                %>
+                            </div>
                         </div>
                     </div>
                     <% } %>
@@ -97,57 +107,65 @@
                 <div class="items-title">Items in Your Order</div>
                 <% order.items.forEach(item=>{ %>
                 <div class="product-row">
-                    <img src="<%= item.image %>" class="product-img">
+                    <div class="prod-img-container">
+                        <img src="<%= item.image %>" class="product-img">
+                    </div>
+                    
                     <div class="product-info">
-                        <div class="prod-header">
-
-                            <div class="prod-name">
-                                <%= item.name %>
-                                <div style="font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 400;">
-                                    Brand: <strong><%= item.brand.toUpperCase() %></strong> • Unit Price: <%= formatINR(item.price) %>
+                        <div class="prod-main-section">
+                            <div class="prod-identity">
+                                <h4 class="prod-name"><%= item.name %></h4>
+                                <p class="prod-brand-text"><%= item.brand.toUpperCase() %></p>
+                                <div class="prod-meta-tags">
+                                    <span class="meta-badge">Color: <strong><%= item.color %></strong></span>
+                                    <span class="meta-badge">Qty: <strong><%= item.quantity %></strong></span>
                                 </div>
                             </div>
 
-                            <div class="prod-right">
-                            <% if(item.status === "Delivered"){ %>
-                            <span class="item-status delivered">Delivered</span>
-                            <% }else if(["Cancelled","Return Rejected"].includes(item.status)){ %>
-                                <span class="item-status cancelled"><%= item.status %></span>
-                            <% }else if(item.status === "Confirmed"){ %>
-                                <span class="item-status confirmed">Confirmed</span>
-                            <% }else if(["Shipped","Return Approved"].includes(item.status)){ %>
-                                <span class="item-status shipped"><%= item.status %></span>
-                            <% }else if(item.status === "Return Requested"){ %>
-                               <span class="item-status placed">Return Requested</span>
-                            <% }else if(item.status === "Returned"){ %>
-                               <span class="item-status delivered">Returned</span>
-                            <% } %>
-                            <div class="prod-price">
-                                <span class="curr-price"><%= formatINR(item.finalTotal || item.total) %></span>
-                                <% if (item.discount > 0) { %>
-                                    <span style="font-size: 11px; color: #94a3b8; text-decoration: line-through; display: block; margin-top: 2px; font-weight: 500;">
-                                        <%= formatINR(item.total) %>
-                                    </span>
-                                    <span style="font-size: 10px; color: #16a34a; font-weight: 600; display: block; margin-top: 2px;">
-                                        Coupon Saved: <%= formatINR(item.discount) %>
-                                    </span>
-                                <% } %>
+                            <div class="prod-pricing-status">
+                                <div class="status-indicator">
+                                    <% if(item.status === ORDER_STATUS.DELIVERED){ %>
+                                        <span class="item-status delivered">Delivered</span>
+                                    <% }else if(item.status === ORDER_STATUS.CANCELLED){ %>
+                                        <span class="item-status cancelled">Cancelled</span>
+                                    <% }else if(item.status === ORDER_STATUS.CONFIRMED){ %>
+                                        <span class="item-status confirmed">Confirmed</span>
+                                    <% }else if(item.status === ORDER_STATUS.SHIPPED){ %>
+                                        <span class="item-status shipped">Shipped</span>
+                                    <% }else if(item.status === ORDER_STATUS.RETURN_REQUESTED){ %>
+                                        <span class="item-status return-requested">Return Requested</span>
+                                    <% }else if(item.status === ORDER_STATUS.RETURN_APPROVED){ %>
+                                        <span class="item-status return-approved">Return Approved</span>
+                                    <% }else if(item.status === ORDER_STATUS.RETURN_REJECTED){ %>
+                                        <span class="item-status return-rejected">Return Rejected</span>
+                                    <% }else if(item.status === ORDER_STATUS.RETURNED){ %>
+                                        <span class="item-status returned">Returned</span>
+                                    <% }else{ %>
+                                        <span class="item-status placed"><%= item.status %></span>
+                                    <% } %>
+                                </div>
+                                <div class="price-display">
+                                    <div class="unit-price-label">Unit: <%= formatINR(item.price) %></div>
+                                    <div class="total-price-value">
+                                        <% if (item.discount > 0) { %>
+                                            <span class="old-price-strike"><%= formatINR(item.total) %></span>
+                                        <% } %>
+                                        <span class="final-price-amt"><%= formatINR(item.finalTotal || item.total) %></span>
+                                    </div>
+                                    <% if (item.discount > 0) { %>
+                                        <div class="savings-alert">Saved <%= formatINR(item.discount) %></div>
+                                    <% } %>
+                                </div>
                             </div>
                         </div>
-                        </div>
-                        <div class="prod-meta">
-                            <span class="meta-tag"><i class="fas fa-palette" style="font-size: 10px; margin-right: 4px;"></i> Color: <%= item.color %></span>
-                            <span class="meta-tag"><i class="fas fa-layer-group" style="font-size: 10px; margin-right: 4px;"></i> Qty: <%= item.quantity %></span>
-                        </div>
-                        <div class="prod-actions">
-                            <% if(item.status === "Delivered"){ %>
-                                <button class="btn-sm" onclick="window.location.href='/orders/<%= item._id %>/review  '">Write Review</button>
-                            <button class="btn-sm return-btn" onclick="returnItem('<%= order.orderId %>', '<%= item._id %>')">Return Item</button>
-                            <% }else if(!["Delivered","Shipped","Cancelled","Return Requested","Return Rejected","Return Approved","Returned"].includes(item.status)){ %>
-                            <button class="btn-sm cancel-btn" <%= order.orderStatus === "Cancelled" ? "hidden" : "" %> onclick="cancelItem('<%= order.orderId %>' , '<%= item._id %>')">Cancel Item</button>
-                            <% } %>
-                             
 
+                        <div class="prod-actions-row">
+                            <% if(item.status === ORDER_STATUS.DELIVERED){ %>
+                                <button class="btn-action-sm" onclick="window.location.href='/orders/<%= item._id %>/review'">Write Review</button>
+                                <button class="btn-action-sm return-btn" onclick="returnItem('<%= order.orderId %>', '<%= item._id %>')">Return Item</button>
+                            <% }else if(![ORDER_STATUS.DELIVERED, ORDER_STATUS.SHIPPED, ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURN_REQUESTED, ORDER_STATUS.RETURN_REJECTED, ORDER_STATUS.RETURN_APPROVED, ORDER_STATUS.RETURNED].includes(item.status)){ %>
+                                <button class="btn-action-sm cancel-btn" <%= order.orderStatus === ORDER_STATUS.CANCELLED ? "disabled" : "" %> onclick="cancelItem('<%= order.orderId %>' , '<%= item._id %>')">Cancel Item</button>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -163,7 +181,7 @@
                     let refundStatus = "";
                     
                     order.items.forEach(item => {
-                        if (["Cancelled", "Returned", "Return Approved"].includes(item.status)) {
+                        if ([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
                             totalRefund += (item.finalTotal || item.total);
                             hasRefund = true;
                             if (item.refunds === "refunded") {
@@ -198,7 +216,20 @@
                     <div class="adjustment-section">
                         <span class="adjustment-title">Adjustments</span>
                         <div class="summary-row">
-                            <span class="summary-label">Cancelled Items Refund</span>
+                            <% 
+                                let cancelledCount = 0;
+                                let returnedCount = 0;
+                                order.items.forEach(item => {
+                                    if (item.status === ORDER_STATUS.CANCELLED) cancelledCount++;
+                                    if (item.status === ORDER_STATUS.RETURNED) returnedCount++;
+                                });
+                                
+                                let refundLabel = "Items Refund";
+                                if (cancelledCount > 0 && returnedCount === 0) refundLabel = "Cancelled Items Refund";
+                                else if (returnedCount > 0 && cancelledCount === 0) refundLabel = "Returned Items Refund";
+                                else if (returnedCount > 0 && cancelledCount > 0) refundLabel = "Items Refund (Returns/Cancellations)";
+                            %>
+                            <span class="summary-label"><%= refundLabel %></span>
                             <span class="refund-text">-<%= formatINR(totalRefund) %></span>
                         </div>
                     </div>
@@ -212,10 +243,10 @@
                 <% if(order.paymentStatus === "Paid" || hasRefund){ %>
                 <div class="payment-status">
                     <div class="visa-info">
-                        <% if(order.paymentMethod === "RAZORPAY"){ %>
+                        <% if(order.paymentMethod === PAYMENT_METHOD.RAZORPAY){ %>
                             <i class="fab fa-cc-visa" style="color: #1a1f71; font-size: 20px;"></i>
                             Paid through <strong>Razorpay</strong>
-                        <% }else if(order.paymentMethod === "COD"){ %>
+                        <% }else if(order.paymentMethod === PAYMENT_METHOD.COD){ %>
                             <i class="fas fa-money-bill-1" style="color: #16a34a; font-size: 20px;"></i>
                             Paid on <strong>COD</strong>
                         <% }else{ %>
@@ -264,7 +295,7 @@
                     <i class="fas fa-credit-card side-icon"></i>
                     <div class="side-content">
                         <label>Payment Method</label>
-                        <strong><%= order.paymentMethod === 'RAZORPAY' ? 'Razorpay (Online)' : (order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Wallet') %></strong>
+                        <strong><%= order.paymentMethod === PAYMENT_METHOD.RAZORPAY ? 'Razorpay (Online)' : (order.paymentMethod === PAYMENT_METHOD.COD ? 'Cash on Delivery' : 'Wallet') %></strong>
                     </div>
                 </div>
                 <div class="side-item">
@@ -301,16 +332,17 @@
      
             </div>
 
-            <div class="card" style="background: #f8fafc;">
-                <% if(["Shipped", "Placed", "Confirmed"].includes(order.orderStatus) ){ %>
+                 <div class="card" style="background: #f8fafc;">
+                <% if([ORDER_STATUS.SHIPPED, ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(order.orderStatus) ){ %>
                     <span class="side-title">Actions</span>
                 <% } %>
                     
-                    <% const delivered = order.items.every(item => item.status === "Delivered") %>
-                    <% const capable = order.items.every(item => item.status === "Placed" || item.status === "Confirmed") %>
-                    <% if([ "Placed", "Confirmed"].includes(order.orderStatus)){ %>
-                        <button class="action-btn btn-cancel" onclick="cancelOrder('<%= order.orderId %>')" <%= allCancelled ? "Disabled" : ""  %>><i class="fas fa-circle-xmark"></i>Cancel Order</button>
-                    <% }else if(order.orderStatus === "Delivered" ){%>
+                    <% const delivered = order.items.every(item => item.status === ORDER_STATUS.DELIVERED) %>
+                    <% const capable = order.items.every(item => item.status === ORDER_STATUS.PLACED || item.status === ORDER_STATUS.CONFIRMED) %>
+                    <% const hasCancellable = order.items.some(item => [ORDER_STATUS.PLACED, ORDER_STATUS.CONFIRMED].includes(item.status)) %>
+                    <% if(hasCancellable){ %>
+                        <button class="action-btn btn-cancel" onclick="cancelOrder('<%= order.orderId %>')"><i class="fas fa-circle-xmark"></i>Cancel Order</button>
+                    <% }else if([ORDER_STATUS.DELIVERED, ORDER_STATUS.PARTIALLY_RETURNED, ORDER_STATUS.RETURN_APPROVED].includes(order.orderStatus) ){%>
                         <button class="action-btn" onclick="returnOrder('<%= order.orderId %>')"><i class="fas fa-rotate-left" ></i> Return Items</button>
                     <% }else{ %>
                     <% } %>

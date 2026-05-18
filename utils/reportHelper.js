@@ -1,7 +1,12 @@
 // utils/reportHelper.js
 import { Order } from "../models/orderModel.js"
+import {
+  ORDER_STATUS,
+  PAYMENT_METHOD,
+  PAYMENT_STATUS,
+  REFUND_STATUS
+} from '../constants/orderConstants.js'
 export const getSalesReportData = async (startDate, endDate) => {
-  
   const start = new Date(`${startDate}T00:00:00.000+05:30`);
   const end = new Date(`${endDate}T23:59:59.999+05:30`);
 
@@ -21,10 +26,10 @@ export const getSalesReportData = async (startDate, endDate) => {
           {
             $match: {
               $or: [
-                { paymentStatus: "Paid" },
-                { paymentMethod: "COD", orderStatus: { $nin: ["Cancelled", "Returned"] } }
+                { paymentStatus: PAYMENT_STATUS.PAID },
+                { paymentMethod: PAYMENT_METHOD.COD, orderStatus: { $nin: [ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED] } }
               ],
-              "items.status": { $in: ["Delivered", "Shipped", "Confirmed", "Placed"] }
+              "items.status": { $nin: [ORDER_STATUS.CANCELLED] }
             }
           },
           {
@@ -42,8 +47,8 @@ export const getSalesReportData = async (startDate, endDate) => {
           {
             $match: {
               $or: [
-                { "items.status": "Returned" },
-                { "items.refunds": "refunded" }
+                { "items.status": ORDER_STATUS.RETURNED },
+                { "items.refunds": REFUND_STATUS.REFUNDED }
               ]
             }
           },
@@ -56,15 +61,6 @@ export const getSalesReportData = async (startDate, endDate) => {
         ],
         daily: [
           {
-            $match: {
-              $or: [
-                { paymentStatus: "Paid" },
-                { paymentMethod: "COD", orderStatus: { $nin: ["Cancelled", "Returned"] } }
-              ],
-              "items.status": { $in: ["Delivered", "Shipped", "Confirmed", "Placed"] }
-            }
-          },
-          {
             $group: {
               _id: {
                 date: { 
@@ -76,9 +72,42 @@ export const getSalesReportData = async (startDate, endDate) => {
                 },
                 orderId: "$_id"
               },
-              grossSales: { $sum: "$items.total" },
-              discount: { $sum: "$items.discount" },
-              netRevenue: { $sum: "$items.finalTotal" }
+              grossSales: { 
+                $sum: {
+                  $cond: [
+                    { $in: ["$items.status", [ORDER_STATUS.DELIVERED, ORDER_STATUS.SHIPPED, ORDER_STATUS.CONFIRMED, ORDER_STATUS.PLACED]] },
+                    "$items.total",
+                    0
+                  ]
+                }
+              },
+              discount: { 
+                $sum: {
+                  $cond: [
+                    { $in: ["$items.status", [ORDER_STATUS.DELIVERED, ORDER_STATUS.SHIPPED, ORDER_STATUS.CONFIRMED, ORDER_STATUS.PLACED]] },
+                    "$items.discount",
+                    0
+                  ]
+                }
+              },
+              refunds: {
+                $sum: {
+                  $cond: [
+                    { $or: [{ $eq: ["$items.status", ORDER_STATUS.RETURNED] }, { $eq: ["$items.refunds", REFUND_STATUS.REFUNDED] }] },
+                    "$items.finalTotal",
+                    0
+                  ]
+                }
+              },
+              netRevenue: {
+                $sum: {
+                  $cond: [
+                    { $in: ["$items.status", [ORDER_STATUS.DELIVERED, ORDER_STATUS.SHIPPED, ORDER_STATUS.CONFIRMED, ORDER_STATUS.PLACED]] },
+                    "$items.finalTotal",
+                    0
+                  ]
+                }
+              }
             }
           },
           {
@@ -87,6 +116,7 @@ export const getSalesReportData = async (startDate, endDate) => {
               ordersCount: { $sum: 1 },
               grossSales: { $sum: "$grossSales" },
               discount: { $sum: "$discount" },
+              refunds: { $sum: "$refunds" },
               netRevenue: { $sum: "$netRevenue" }
             }
           },
@@ -95,13 +125,29 @@ export const getSalesReportData = async (startDate, endDate) => {
               _id: 0,
               date: "$_id",
               ordersCount: 1,
-              grossSales: 1,
-              discount: 1,
-              refunds: { $literal: 0 },
-              netRevenue: 1
+              grossSales: { $round: ["$grossSales", 2] },
+              discount: { $round: ["$discount", 2] },
+              refunds: { $round: ["$refunds", 2] },
+              netRevenue: { $round: [{ $subtract: ["$netRevenue", "$refunds"] }, 2] }
             }
           },
           { $sort: { date: 1 } }
+        ],
+        // New facet for the detailed orders table used in PDF
+        detailedOrders: [
+          {
+             $group: {
+                _id: "$_id",
+                orderId: { $first: "$orderId" },
+                createdAt: { $first: "$createdAt" },
+                customerName: { $first: "$address.name" },
+                orderStatus: { $first: "$orderStatus" },
+                totalAmount: { $first: "$totalAmount" },
+                subtotal: { $first: "$subtotal" },
+                discount: { $first: { $ifNull: ["$coupon.discount", 0] } }
+             }
+          },
+          { $sort: { createdAt: -1 } }
         ]
       }
     }
@@ -110,14 +156,16 @@ export const getSalesReportData = async (startDate, endDate) => {
   const totals = result[0]?.totals[0] || {};
   const refunds = result[0]?.refunds[0] || {};
   const daily = result[0]?.daily || [];
+  const detailedOrders = result[0]?.detailedOrders || [];
 
   return {
     totalOrders: totals.orders ? totals.orders.length : 0,
-    totalSales: totals.totalSales || 0,
-    totalDiscount: totals.totalDiscount || 0,
-    totalRevenue: totals.totalRevenue || 0,
+    totalSales: Math.round((totals.totalSales || 0) * 100) / 100,
+    totalDiscount: Math.round((totals.totalDiscount || 0) * 100) / 100,
+    totalRevenue: Math.round(((totals.totalRevenue || 0) - (refunds.totalRefunds || 0)) * 100) / 100,
     totalItemsSold: totals.totalItemsSold || 0,
-    totalRefunds: refunds.totalRefunds || 0,
-    reportData: daily
+    totalRefunds: Math.round((refunds.totalRefunds || 0) * 100) / 100,
+    reportData: daily,
+    detailedOrders: detailedOrders
   };
 };

@@ -33,7 +33,7 @@
         <div class="cr-item-list">
           <% if(!item){ %>
             <% order.items.forEach(item=>{ %>
-
+              <% if(item.status != "Delivered") return %>
            
           <div class="cr-item">
             <div class="cr-item-details">
@@ -75,7 +75,7 @@
           <% if(item){ %>
           <div class="cr-refund-amount"><%= formatINR(item.finalTotal) %></div>
           <% }else{ %>
-            <div class="cr-refund-amount"><%= formatINR(order.totalAmount) %></div>
+            <div class="cr-refund-amount"><%= formatINR(total) %></div>
           <% } %>
         </div>
       </div>
@@ -128,7 +128,7 @@
 <script>
     async function sendRequest(id){
         const reason = document.getElementById("cancel-reason").value
-        const comment = document.getElementById("cancel-comments").textContent || ""
+        const comment = document.getElementById("cancel-comments").value || ""
         try {
             const res = await axios.patch(`/orders/${id}/return`,{
                 reason,
@@ -151,7 +151,7 @@
 
     async function sendItemRequest(id,itemId){
         const reason = document.getElementById("cancel-reason").value
-        const comment = document.getElementById("cancel-comments").textContent || ""
+        const comment = document.getElementById("cancel-comments").value || ""
         try {
             const res = await axios.patch(`/orders/${id}/return/${itemId}`,{
                 reason,

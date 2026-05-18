@@ -19,7 +19,7 @@ export const getProductList = async ({ page, search, status, brand, category }) 
 
   let products = await Product.find(filter)
     .populate('categoryId', 'name')
-    .sort({ createdAt: -1 })
+    .sort({ createdAt : -1 })
     .lean()
 
   if (status) {

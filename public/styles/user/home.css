@@ -826,13 +826,30 @@ button {
     top: 1rem;
     right: 1rem;
     z-index: 10;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #9ca3af;
-    transition: color 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s;
 }
 
-.wishlist-btn:hover,
-.wishlist-btn.active {
+.wishlist-btn:hover {
     color: #ef4444;
+    transform: scale(1.1);
+}
+
+.wishlist-btn.active {
+    background-color: #ef4444;
+    color: white;
+}
+
+.wishlist-btn.active .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1;
 }
 
 .product-image {

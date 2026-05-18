@@ -314,7 +314,7 @@
 
         <input
             type="range"
-            id="minRange"
+            id="minRangeMobile"
             name="minPrice"
             min="0"
             max="50000"
@@ -325,7 +325,7 @@
 
         <input
             type="range"
-            id="maxRange"
+            id="maxRangeMobile"
             name="maxPrice"
             min="0"
             max="50000"
@@ -334,7 +334,10 @@
             class="range-input range-max"
         >
     </div>
-                    <div class="price-labels"><span>₹0</span><span>₹500+</span></div>
+                    <div class="price-labels">
+                        <span id="minPriceLabelMobile">₹<%= minPrice !== '' && minPrice != null ? minPrice : defaultMin %></span>
+                        <span id="maxPriceLabelMobile">₹<%= maxPrice !== '' && maxPrice != null ? maxPrice : defaultMax %></span>
+                    </div>
                 </div>
                 <div style="margin-bottom: 2rem;">
                     <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem; color: var(--slate-700);">Compatibility</h3>
@@ -344,8 +347,9 @@
                     </div>
                 </div>
             </div>
-            <div class="drawer-footer">
-                <button class="btn-full" type="submit" form="filterForm" onclick="toggleDrawer('mobile-filter-drawer', false)">Apply Filters</button>
+            <div class="drawer-footer" style="display: flex; gap: 1rem;">
+                <button class="btn-full-light" type="button" onclick="window.location.href='/products'" style="flex: 1; border: 1px solid var(--slate-300); border-radius: var(--radius-lg); font-weight: 600; color: var(--slate-700); background: var(--white);">Clear</button>
+                <button class="btn-full" type="submit" form="filterForm" onclick="toggleDrawer('mobile-filter-drawer', false)" style="flex: 1;">Apply</button>
             </div>
         </div>
     </div>
@@ -360,15 +364,35 @@
                 </button>
             </div>
             <div class="drawer-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                <button class="sort-option <%= !selectedSort ? '' : '' %>" type="button" onclick="applySort('')">
+                <button class="sort-option <%= !selectedSort ? 'active' : '' %>" data-sort="" style="display: flex; justify-content: space-between; width: 100%; align-items: center;" type="button" onclick="applySort('')">
                     Default
-                    <div class="h-5 w-5" style="color: var(--slate-800);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                    <% if (!selectedSort) { %>
+                    <div class="h-5 w-5 checkmark-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                    <% } %>
                 </button>
-                <button class="sort-option <%= selectedSort === 'newest' ? 'active' : '' %>" type="button"  onclick="applySort('newest')">Newest</button>
-                <button class="sort-option <%= selectedSort === 'priceLowToHigh' ? 'active' : '' %>" type="button" onclick="applySort('priceLowToHigh')" >Price: Low to High</button>
-                <button class="sort-option <%= selectedSort === 'priceHighToLow' ? 'active' : '' %>" type="button" onclick="applySort('priceHighToLow')">Price: High to Low</button>
-                <button class="sort-option <%= selectedSort === 'nameAZ' ? 'active' : '' %>" type="button" onclick="applySort('nameAZ')">
+                <button class="sort-option <%= selectedSort === 'newest' ? 'active' : '' %>" data-sort="newest" style="display: flex; justify-content: space-between; width: 100%; align-items: center;" type="button" onclick="applySort('newest')">
+                    Newest
+                    <% if (selectedSort === 'newest') { %>
+                    <div class="h-5 w-5 checkmark-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                    <% } %>
+                </button>
+                <button class="sort-option <%= selectedSort === 'priceLowToHigh' ? 'active' : '' %>" data-sort="priceLowToHigh" style="display: flex; justify-content: space-between; width: 100%; align-items: center;" type="button" onclick="applySort('priceLowToHigh')" >
+                    Price: Low to High
+                    <% if (selectedSort === 'priceLowToHigh') { %>
+                    <div class="h-5 w-5 checkmark-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                    <% } %>
+                </button>
+                <button class="sort-option <%= selectedSort === 'priceHighToLow' ? 'active' : '' %>" data-sort="priceHighToLow" style="display: flex; justify-content: space-between; width: 100%; align-items: center;" type="button" onclick="applySort('priceHighToLow')">
+                    Price: High to Low
+                    <% if (selectedSort === 'priceHighToLow') { %>
+                    <div class="h-5 w-5 checkmark-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                    <% } %>
+                </button>
+                <button class="sort-option <%= selectedSort === 'nameAZ' ? 'active' : '' %>" data-sort="nameAZ" style="display: flex; justify-content: space-between; width: 100%; align-items: center;" type="button" onclick="applySort('nameAZ')">
                      Name: A to Z
+                     <% if (selectedSort === 'nameAZ') { %>
+                     <div class="h-5 w-5 checkmark-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+                     <% } %>
                 </button>
             </div>
             <div class="drawer-footer" style="padding-bottom: 2.5rem;">

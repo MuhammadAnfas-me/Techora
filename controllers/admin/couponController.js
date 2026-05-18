@@ -50,13 +50,13 @@ export const addCoupon = async (req, res) => {
     const {
       couponCode, discountType, discountValue,
       minOrder, usageLimit, limitPerUser,
-      startDate, expiryDate, isActive, internalNotes
+      startDate, expiryDate, isActive, internalNotes, maxDiscount
     } = req.body
 
     await createCoupon({
       couponCode, discountType, discountValue,
       minOrder, usageLimit, limitPerUser,
-      startDate, expiryDate, isActive, internalNotes
+      startDate, expiryDate, isActive, internalNotes, maxDiscount
     })
 
     return res.status(200).json({ success: true, message: 'Coupon created successfully' })
@@ -96,13 +96,13 @@ export const editCoupon = async (req, res) => {
     const {
       couponCode, discountType, discountValue,
       minOrder, usageLimit, limitPerUser,
-      startDate, expiryDate, isActive, internalNotes
+      startDate, expiryDate, isActive, internalNotes, maxDiscount
     } = req.body
 
     await updateCoupon(req.params.code, {
       couponCode, discountType, discountValue,
       minOrder, usageLimit, limitPerUser,
-      startDate, expiryDate, isActive, internalNotes
+      startDate, expiryDate, isActive, internalNotes, maxDiscount
     })
 
     return res.status(200).json({ success: true, message: 'Coupon updated successfully' })

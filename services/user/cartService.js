@@ -132,6 +132,8 @@ export async function addItemToCart (userId, { productId, variantId, quantity })
 
   if (variant.stock < qty) {
     throw Object.assign(new Error('Not enough stock available'), { status: 400 })
+  }else if(qty > 5) {
+    throw Object.assign(new Error('You can only purchase up to 5 items of this product'), { status: 400 })
   }
 
   // Remove from wishlist if present
@@ -166,7 +168,9 @@ export async function addItemToCart (userId, { productId, variantId, quantity })
 
   if (existingItem) {
     const newQty = existingItem.quantity + qty
-    if (newQty > variant.stock) {
+    if(newQty > 5) {
+      throw Object.assign(new Error('You can only purchase up to 5 items of this product'), { status: 400 })
+    }else if (newQty > variant.stock) {
       throw Object.assign(new Error('Quantity exceeds available stock'), { status: 400 })
     }
     existingItem.total = total.toFixed()
@@ -176,7 +180,7 @@ export async function addItemToCart (userId, { productId, variantId, quantity })
   }
 
   await cart.save()
-  return { cartCount: cart.items.length ,wishCount : wishlist.items.length}
+  return { cartCount: cart.items.length ,wishCount : wishlist ? wishlist.items.length : 0}
 }
 
 // ─────────────────────────────────────────────
@@ -259,8 +263,11 @@ export async function updateItemQuantity (userId, { productId, variantId, action
   const offerPrice = getOfferPrice(product, variant.price, activeOffers)
 
   if (action === 'increase') {
+    if(cartItem.quantity >= variant.stock){
+      throw Object.assign(new Error(`Stock limit reached`), { status: 400 })
+    }
     if (cartItem.quantity >= allowedQuantity) {
-      throw Object.assign(new Error("You can only purchase up to 5 items of this product"), { status: 400 })
+      throw Object.assign(new Error(`You can only purchase up to ${allowedQuantity} items of this product`), { status: 400 })
     }
     cartItem.quantity += 1
     cartItem.total = Number(cartItem.total) + offerPrice

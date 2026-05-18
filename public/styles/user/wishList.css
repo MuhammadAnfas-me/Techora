@@ -339,9 +339,7 @@ background-color: var(--white);
     font-size: 0.85rem;
   }
 
-  .page-num, .page-dots {
-    display: none; /* Hide numbers on very small screens, keep next/prev */
-  }
+
 }
 
 

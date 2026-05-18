@@ -5,9 +5,11 @@ import {
   changeOrderStatus,
   processItemReturn,
   cancelAdminOrder,
-  processReturnStatus
+  processReturnStatus,
+  changeItemStatus
 } from '../../services/admin/orderService.js' 
-
+import { generateOrderInvoice } from '../../services/user/orderService.js'
+import { ORDER_STATUS } from '../../constants/orderConstants.js'
 // ─────────────────────────────────────────────
 // Order List — Page render
 // ─────────────────────────────────────────────
@@ -19,7 +21,7 @@ export const orderListLoad = async (req, res) => {
 
     const data = await fetchAdminOrderList({ page, search, status, dateSort })
 
-    res.render('Admin/order/orderListPage.ejs', data)
+    res.render('Admin/order/orderListPage.ejs', { ...data, ORDER_STATUS })
   } catch (error) {
     console.error('Error from orderListLoad:', error)
     const statusCode = error.status || 500
@@ -53,7 +55,8 @@ export const orderDetailsPage = async (req, res) => {
 
     res.render('Admin/order/orderDetailsPage.ejs', {
       order,
-      currentPage: 'orders'
+      currentPage: 'orders',
+      ORDER_STATUS
     })
   } catch (error) {
     console.log('Error From orderDetailsPage:', error)
@@ -79,6 +82,31 @@ export const updateOrderStatus = async (req, res) => {
     return res.status(200).json({ success: true, message: 'Status updated successfully' })
   } catch (error) {
     console.log('Error from updateOrderStatus:', error)
+    const statusCode = error.status || 500
+    const message    = error.message || 'Server error'
+    return res.status(statusCode).json({ success: false, message })
+  }
+}
+
+// ─────────────────────────────────────────────
+// Update Individual Item Status
+// ─────────────────────────────────────────────
+
+export const updateItemStatus = async (req, res) => {
+  try {
+    const admin = req.session.admin
+    if (!admin) {
+      return res.status(400).json({ success: false, message: 'Please login first' })
+    }
+
+    const { orderId, itemId } = req.params
+    const { status } = req.body
+
+    await changeItemStatus(orderId, itemId, status)
+
+    return res.status(200).json({ success: true, message: 'Item status updated successfully' })
+  } catch (error) {
+    console.log('Error from updateItemStatus:', error)
     const statusCode = error.status || 500
     const message    = error.message || 'Server error'
     return res.status(statusCode).json({ success: false, message })
@@ -148,3 +176,24 @@ export const updateReturnStatus = async (req, res) => {
     return res.status(statusCode).json({ success: false, message })
   }
 }
+
+// ─────────────────────────────────────────────
+// Generate Invoice
+// ─────────────────────────────────────────────
+
+export const generateInvoice = async (req, res) => {
+  try {
+    const { pdf, orderId } = await generateOrderInvoice(req.params.orderId)
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=invoice-${orderId}.pdf`
+    })
+
+    res.send(pdf)
+  } catch (error) {
+    if (error.status === 404) return res.status(404).send(error.message)
+    console.error('Puppeteer Error:', error)
+    res.status(500).send('PDF generation failed')
+  }
+}
