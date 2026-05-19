@@ -234,7 +234,6 @@ const contactLoad = (req, res) => {
 }
 
 const contactMail = async (req, res) => {
-  console.log(req.body)
   try {
     const { name, email, phone, subject, message } = req.body.data
 
