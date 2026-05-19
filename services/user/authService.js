@@ -90,6 +90,13 @@ export async function createUserWithWallet (
   { name, email, password },
   referredUser = null
 ) {
+  // Delete any existing unverified user with the same email to prevent unique index conflicts and orphaned wallets
+  const existingUnverifiedUser = await User.findOne({ email, isVerified: false })
+  if (existingUnverifiedUser) {
+    await Wallet.deleteOne({ userId: existingUnverifiedUser._id })
+    await User.deleteOne({ _id: existingUnverifiedUser._id })
+  }
+
   const hashedPassword = await bcrypt.hash(password, SALT_ROUND)
   const userId = generateUserId()
   const referralCode = generateReferralCode()
@@ -182,7 +189,7 @@ export async function processOtpVerification (email, otp, purpose) {
   await verifyOtp({ model: User, email, enteredOtp: otp })
 
   if (purpose === 'EMAIL_VERIFICATION') {
-    await User.updateOne({ email }, { $set: { isVerified: true } })
+    await User.updateOne({ email }, { $set: { isVerified: true }, $unset: { otpExpiresAt: 1, otp: 1 } })
     return { verified: true }
   }
 

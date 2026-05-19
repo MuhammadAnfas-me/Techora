@@ -28,6 +28,7 @@
     "dotenv": "^17.2.3",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "express-session": "^1.19.0",
     "mongoose": "^9.1.5",
     "multer": "^2.0.2",
@@ -40,7 +41,8 @@
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.18.0",
     "puppeteer": "^24.40.0",
-    "razorpay": "^2.9.6"
+    "razorpay": "^2.9.6",
+    "xlsx": "^0.18.5"
   },
   "type": "module",
   "devDependencies": {

@@ -531,21 +531,27 @@
                           </div>
                         </td>
                         <td>
-                          <% if([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_REJECTED].includes(item.status)) { %>
+                          <% if([ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED, ORDER_STATUS.RETURN_REJECTED,ORDER_STATUS.DELIVERED].includes(item.status)) { %>
                             <span class="status-pill <%= item.status === ORDER_STATUS.CANCELLED ? 'status-cancelled' : 'status-delivered' %>">
                               <%= item.status %>
                             </span>
                           <% } else { %>
                             <select class="status-select" onchange="updateItemStatus('<%= order.orderId %>', '<%= item._id %>', this.value)">
-                              <option value="<%= ORDER_STATUS.PLACED %>" <%= item.status === ORDER_STATUS.PLACED ? 'selected' : '' %>>Placed</option>
-                              <option value="<%= ORDER_STATUS.CONFIRMED %>" <%= item.status === ORDER_STATUS.CONFIRMED ? 'selected' : '' %>>Confirmed</option>
-                              <option value="<%= ORDER_STATUS.SHIPPED %>" <%= item.status === ORDER_STATUS.SHIPPED ? 'selected' : '' %>>Shipped</option>
-                              <option value="<%= ORDER_STATUS.DELIVERED %>" <%= item.status === ORDER_STATUS.DELIVERED ? 'selected' : '' %>>Delivered</option>
-                              <% if(item.status === ORDER_STATUS.RETURN_REQUESTED) { %>
+                              <% if (item.status === ORDER_STATUS.PLACED) { %>
+                                <option value="<%= ORDER_STATUS.PLACED %>" selected>Placed</option>
+                                <option value="<%= ORDER_STATUS.CONFIRMED %>">Confirmed</option>
+                              <% } else if (item.status === ORDER_STATUS.CONFIRMED) { %>
+                                <option value="<%= ORDER_STATUS.CONFIRMED %>" selected>Confirmed</option>
+                                <option value="<%= ORDER_STATUS.SHIPPED %>">Shipped</option>
+                              <% } else if (item.status === ORDER_STATUS.SHIPPED) { %>
+                                <option value="<%= ORDER_STATUS.SHIPPED %>" selected>Shipped</option>
+                                <option value="<%= ORDER_STATUS.DELIVERED %>">Delivered</option>
+                              <% } else if (item.status === ORDER_STATUS.RETURN_REQUESTED) { %>
                                 <option value="<%= ORDER_STATUS.RETURN_REQUESTED %>" selected>Return Requested</option>
-                              <% } %>
-                              <% if(item.status === ORDER_STATUS.RETURN_APPROVED) { %>
+                              <% } else if (item.status === ORDER_STATUS.RETURN_APPROVED) { %>
                                 <option value="<%= ORDER_STATUS.RETURN_APPROVED %>" selected>Return Approved</option>
+                              <% } else { %>
+                                <option value="<%= item.status %>" selected><%= item.status %></option>
                               <% } %>
                             </select>
                           <% } %>

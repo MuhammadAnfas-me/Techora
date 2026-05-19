@@ -86,6 +86,18 @@
   </div>
 </div>
 
+                <!-- Custom Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3 id="confirmTitle">Confirm Action</h3>
+    <p id="confirmMessage">Are you sure?</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" id="confirmCancel">Cancel</button>
+      <button class="btn-confirm" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
           <div class="table-card">
             <div style="overflow-x: auto;">
               <table class="product-table">
@@ -137,7 +149,7 @@
                     <td>
                       <div class="action-icons">
                         <button class="action-btn" type="button" title="Edit"><span class="material-symbols-outlined" onclick="updateProduct('<%= product._id %>')" style="font-size: 20px;">edit</span></button>
-                        <button class="action-btn" type="button" title="<%= product.status == "inactive" ? 'Block' : 'Unblock' %>" onclick="toggleCategoryStatus('<%= product._id %>')">
+                        <button class="action-btn" type="button" title="<%= product.status == "inactive" ? 'Block' : 'Unblock' %>" onclick="toggleProductStatus('<%= product._id %>')">
                           <span class="material-symbols-outlined" style="font-size:20px;">
                             <%= product.status == "inactive" ? "block" : "check_circle" %>
                           </span>
@@ -149,7 +161,7 @@
                 <% }else{ %>
                   <tr>
         <td colspan="8" class="category-muted" style="text-align:center; padding:16px;">
-          No categories found
+          No products found
         </td>
       </tr>
                 <% } %>
@@ -333,7 +345,8 @@
   }
 
   
-    async function toggleCategoryStatus(id) {
+    async function toggleProductStatus(id) {
+      showConfirm("Are you sure you want to block/unblock this product?",async ()=>{
   try {
     const res = await axios.patch(`/admin/products/${id}/block`);
 
@@ -343,7 +356,10 @@
   } catch (error) {
     showToast(error.response?.data?.message || "Failed to update status", "error");
   }
+  
+   })
 }
+
 function addProduct(){
   showLoader()
   setTimeout(()=>{
@@ -351,6 +367,10 @@ function addProduct(){
     window.location.href='/admin/products/add'
   },300)
 }
+
+            
+
+
 
 </script>
 </html>

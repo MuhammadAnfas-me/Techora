@@ -1,6 +1,7 @@
 import { Order } from '../../models/orderModel.js';
 import { User } from '../../models/userModel.js';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../../constants/orderConstants.js';
+import { MONTH_NAMES } from '../../constants/constant.js';
 
 export const dashboardLoad = async (req, res) => {
   try {
@@ -11,7 +12,7 @@ export const dashboardLoad = async (req, res) => {
     const totalOrders = allOrders.length;
     const totalUsers = await User.countDocuments({ role: { $ne: 'admin' } }); 
 
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = MONTH_NAMES
     const now = new Date();
     
     const chartLabels = [];

@@ -85,5 +85,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
+userSchema.index({ otpExpiresAt: 1 }, { expireAfterSeconds: 0 })
+
 export const User = mongoose.model("User", userSchema)
 

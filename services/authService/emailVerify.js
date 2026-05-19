@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt"
+import { Wallet } from "../../models/walletModel.js"
 
 export const generateOtp = ()=>{
     return Math.floor(100000 + Math.random()*900000).toString()
@@ -13,6 +14,10 @@ export const verifyOtp = async ({model , email , enteredOtp})=>{
     }
 
     if(user.otpExpiresAt < new Date()){
+        if (!user.isVerified) {
+            await Wallet.deleteOne({ userId: user._id })
+            await model.deleteOne({ _id: user._id })
+        }
         throw new Error("OTP_EXPIRED")
     }
 

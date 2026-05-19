@@ -183,7 +183,7 @@
                                 item.variantId === currentVariantId
                               );
                             %>
-                    <button class="btn-icon-outline wish-btn <%= isWishlisted ? "active" : "" %>" id="wishBtn" data-product-id="<%= product._id %>" data-variant-id="<%= currentVariantId %>">
+                    <button class="btn-icon-outline wish-btn <%= isWishlisted ? "active" : "" %>" id="wishBtn" data-product-id="<%= product._id %>" data-variant-id="<%= currentVariantId %>" <%= product.status === 'inactive' ? 'disabled' : '' %>>
                         <i class=" far fa-heart"></i>
                     </button>
                 </div>
@@ -627,6 +627,7 @@ function moveLens(e) {
         qtyAddBtn.disabled = true;
         qtyLessBtn.disabled = true;
         cartAdd.disabled = true;
+        if (wishBtn) wishBtn.disabled = true;
       } else if (variant.stock === 0) {
         stockStatus.className = "stock-status out-of-stock";
         stockStatus.innerHTML = `<span class="dot out"></span> Out of Stock`;
@@ -725,7 +726,7 @@ function moveLens(e) {
     }
   } catch (error) {
     console.error(error)
-    showToast(error?.response?.message || "Something went wrong","error")
+    showToast(error?.response?.data?.message || "Something went wrong","error")
   }
 }
 

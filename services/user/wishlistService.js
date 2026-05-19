@@ -1,5 +1,6 @@
 import { Wishlist } from '../../models/wishListModel.js'
 import { Cart } from '../../models/cartModel.js'
+import Product from '../../models/productModel.js'
 
 // ─────────────────────────────────────────────
 // Wishlist Load
@@ -78,6 +79,20 @@ export async function toggleWishlistItem (userId, { productId, variantId }) {
     wishlist.items.splice(existingIndex, 1)
     await wishlist.save()
     return { added: false , wishCount : wishlist.items?.length}
+  }
+
+  const product = await Product.findById(productId)
+  if (!product) {
+    throw Object.assign(new Error('Product not found'), { status: 404 })
+  }
+
+  if (product.status === 'inactive') {
+    throw Object.assign(new Error('This product is currently unavailable'), { status: 400 })
+  }
+
+  const variant = product.variants.find(v => v.varientId === variantId)
+  if (!variant) {
+    throw Object.assign(new Error('Variant not found'), { status: 404 })
   }
 
   wishlist.items.push({ productId, variantId: variantId || '' })

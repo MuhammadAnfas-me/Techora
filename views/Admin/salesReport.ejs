@@ -298,9 +298,9 @@
   .badge-refunded    { background: var(--red-bg);    color: var(--red); }
 
   /* ── Table footer totals ── */
-  tfoot tr { background: #EEF1F4; }
+  .totals-row { background: #EEF1F4 !important; }
 
-  tfoot td {
+  .totals-row td {
     padding: 9px 13px;
     border-top: 2px solid var(--border);
     font-size: 8pt;
@@ -308,9 +308,9 @@
     color: var(--navy);
   }
 
-  tfoot td.right { text-align: right; }
+  .totals-row td.right { text-align: right; }
 
-  tfoot .total-label {
+  .totals-row .total-label {
     font-size: 7pt;
     font-weight: 700;
     color: var(--muted);
@@ -318,16 +318,16 @@
     text-transform: uppercase;
   }
 
-  tfoot .total-val {
+  .totals-row .total-val {
     font-family: 'DM Mono', monospace;
     font-size: 9pt;
     font-weight: 700;
     text-align: right;
   }
 
-  tfoot .total-val.blue  { color: var(--blue); }
-  tfoot .total-val.red   { color: var(--red); }
-  tfoot .total-val.green { color: var(--green); }
+  .totals-row .total-val.blue  { color: var(--blue); }
+  .totals-row .total-val.red   { color: var(--red); }
+  .totals-row .total-val.green { color: var(--green); }
 
   /* ── Footer ── */
   .footer {
@@ -435,16 +435,15 @@
                 <td colspan="7" class="center" style="padding: 40px; color: var(--muted);">No orders found for this period.</td>
               </tr>
             <% } %>
-          </tbody>
-          <tfoot>
-            <tr>
+            <!-- Totals Summary Row -->
+            <tr class="totals-row">
               <td colspan="3" class="total-label">Totals Summary</td>
               <td class="total-val blue">₹<%= grossSales.toLocaleString('en-IN') %></td>
               <td class="total-val red">−₹<%= (totalDiscount + totalRefunds).toLocaleString('en-IN') %></td>
               <td class="total-val green">₹<%= netRevenue.toLocaleString('en-IN') %></td>
               <td></td>
             </tr>
-          </tfoot>
+          </tbody>
         </table>
       </div>
     </div>

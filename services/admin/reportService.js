@@ -207,30 +207,38 @@ export const generateSalesReportExcel = async (startDate, endDate) => {
 
   const wb = XLSX.utils.book_new()
 
-  // 1. Summary Sheet
-  const summaryData = [
-    { 'Report Metric': 'Start Date', 'Value': startDate },
-    { 'Report Metric': 'End Date', 'Value': endDate },
-    { 'Report Metric': 'Total Orders', 'Value': data.totalOrders },
-    { 'Report Metric': 'Total Items Sold', 'Value': data.totalItemsSold },
-    { 'Report Metric': 'Gross Sales', 'Value': data.totalSales },
-    { 'Report Metric': 'Total Discount', 'Value': data.totalDiscount },
-    { 'Report Metric': 'Total Refunds', 'Value': data.totalRefunds },
-    { 'Report Metric': 'Net Revenue', 'Value': data.totalRevenue }
+  const sheetData = [
+    ['Sales Report', '', '', '', '', '', ''],
+    ['Start Date', startDate, 'End Date', endDate, '', '', ''],
+    [],
+    ['Overview Metrics', '', '', '', '', '', ''],
+    ['Total Transactions', 'Gross Sales Amount', 'Total Deductions', 'Net Revenue', '', '', ''],
+    [
+      data.totalOrders || 0,
+      data.totalSales || 0,
+      (data.totalDiscount || 0) + (data.totalRefunds || 0),
+      data.totalRevenue || 0
+    ],
+    [],
+    ['Order Details', '', '', '', '', '', ''],
+    ['Order ID', 'Date', 'Customer', 'Base', 'Disc', 'Paid', 'Status']
   ]
-  const wsSummary = XLSX.utils.json_to_sheet(summaryData)
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary')
 
-  const detailedData = data.reportData.map(row => ({
-    'Date': row.date,
-    'Orders': row.ordersCount,
-    'Gross Sales': row.grossSales,
-    'Discounts': row.discount,
-    'Refunds': row.refunds,
-    'Net Revenue': row.netRevenue
-  }))
-  const wsDetailed = XLSX.utils.json_to_sheet(detailedData)
-  XLSX.utils.book_append_sheet(wb, wsDetailed, 'Daily Breakdown')
+  // Add individual orders
+  ;(data.detailedOrders || []).forEach(row => {
+    sheetData.push([
+      row.orderId,
+      new Date(row.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' }),
+      row.customerName || 'N/A',
+      row.subtotal || 0,
+      row.discount || 0,
+      row.totalAmount || 0,
+      row.orderStatus
+    ])
+  })
+
+  const ws = XLSX.utils.aoa_to_sheet(sheetData)
+  XLSX.utils.book_append_sheet(wb, ws, 'Sales Report')
 
   const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
 

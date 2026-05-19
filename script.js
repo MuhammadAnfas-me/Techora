@@ -8,13 +8,19 @@ import flash from "connect-flash"
 import passport from "passport"
 import nocache from "nocache"
 import "./config/passport.js"
+import rateLimit from "express-rate-limit"
 import { setUser } from "./middlewares/user/auth.js"
 
 
 const PORT = process.env.PORT
 const app = express()
+const globalLimiter = rateLimit({
+  windowMs : 15 * 60 * 1000,
+  max : 200
+})
 
 
+app.use(globalLimiter)
 app.set("view engine","ejs")
 app.use(express.static("public"))
 app.use(express.json())

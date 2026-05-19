@@ -1,5 +1,7 @@
 import express from 'express'
+import rateLimit from 'express-rate-limit'
 const router = express.Router()
+
 import * as userController from '../../controllers/user/authController.js'
 import * as profileController from '../../controllers/user/profileController.js'
 
@@ -16,6 +18,35 @@ import * as referelController from "../../controllers/user/referrelController.js
 
 import * as middlewares from '../../middlewares/user/auth.js'
 import upload from '../../middlewares/cloudinary/upload.js'
+import { RATE_LIMIT } from '../../constants/constant.js'
+
+const loginLimiter = rateLimit({
+  windowMs : RATE_LIMIT.LOGIN.WINDOW_MS,
+  max : RATE_LIMIT.LOGIN.MAX,
+  message : "Too many login attempts"
+})
+
+const signupLimiter = rateLimit({
+  windowMs: RATE_LIMIT.SIGNUP.WINDOW_MS, // 15 minutes
+  max: RATE_LIMIT.SIGNUP.MAX, 
+  message: "Too many signup attempts, try again later"
+});
+
+const checkoutLimiter = rateLimit({
+  windowMs: RATE_LIMIT.CHECKOUT.WINDOW_MS, // 15 minutes
+  max: RATE_LIMIT.CHECKOUT.MAX,
+  message: "Too many checkout attempts, try again later"
+});
+
+const paymentPageLimiter = rateLimit({
+  windowMs: RATE_LIMIT.PAYMENT.WINDOW_MS,
+  max: 40 // page loads
+});
+
+const paymentSubmitLimiter = rateLimit({
+  windowMs: RATE_LIMIT.PAYMENT.WINDOW_MS,
+  max: RATE_LIMIT.PAYMENT.MAX // actual payments
+});
 
 /*---------------------------------------Auth section-----------------------------------------*/
 /*---------------------------------------Auth section-----------------------------------------*/
@@ -24,12 +55,12 @@ import upload from '../../middlewares/cloudinary/upload.js'
 router
   .route('/login')
   .get(middlewares.isLogged, userController.loginLoad)
-  .post(userController.login)
+  .post(loginLimiter ,userController.login)
 
 router
   .route('/signup')
   .get(middlewares.isLogged, userController.signupLoad)
-  .post(userController.signUp)
+  .post(signupLimiter ,userController.signUp)
 
  router
   .route('/check-referral').post(referelController.checkReferral) 
@@ -158,15 +189,15 @@ router.delete('/wishlist/remove', wishListController.removeProduct)
 
 router
   .route('/checkout')
-  .get(middlewares.isBlocked, checkOutController.checkOutLoad)
-  .post(middlewares.isBlocked, checkOutController.validateCart)
+  .get(checkoutLimiter, middlewares.isBlocked, checkOutController.checkOutLoad)
+  .post(checkoutLimiter ,middlewares.isBlocked, checkOutController.validateCart)
 
 // --------------------------- Payment section ----------------------------------------------
 // --------------------------- Payment section ----------------------------------------------
 // --------------------------- Payment section ----------------------------------------------
 
-router.get('/checkout/payment',middlewares.isBlocked,  paymentController.paymentPageLoad)
-router.get('/checkout/payment/success',middlewares.isBlocked, paymentController.orderSuccess)
+router.get('/checkout/payment', paymentPageLimiter, middlewares.isBlocked,  paymentController.paymentPageLoad)
+router.get('/checkout/payment/success', paymentSubmitLimiter, middlewares.isBlocked, paymentController.orderSuccess)
 
 router.post('/place-order',middlewares.isBlocked, paymentController.placeOrder)
 router.get('/order-details',middlewares.isBlocked, paymentController.fetchOrderDetails)
