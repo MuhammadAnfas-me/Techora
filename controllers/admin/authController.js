@@ -43,8 +43,14 @@ const login = async (req, res) => {
 }
 
 const logout =(req,res)=>{
-    req.session.admin = null
-    res.redirect("/admin/login")
+    delete req.session.admin
+
+    req.session.save((err)=>{
+      if(err){
+        console.log(err)
+      }
+      res.redirect("/admin/login")
+    })
 }
 
 export { loginLoad, login ,logout}

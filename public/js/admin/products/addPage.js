@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
               </span>
               <span class="variant-tab-price">
-                +$${Number(variant.price || 0).toFixed(2)}
+                +₹${Number(variant.price || 0).toFixed(2)}
               </span>
             </div>
             ${

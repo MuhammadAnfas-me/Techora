@@ -235,9 +235,15 @@ const homeLoad = async (req, res) => {
 // ─────────────────────────────────────────────
 
 const logout = (req, res) => {
-  req.session.user = null
+  delete req.session.user
   req.user = null
-  res.redirect('/login')
+
+  req.session.save((err)=>{
+    if(err){
+      console.log(err)
+    }
+    res.redirect('/login')
+  })
 }
 
 export {
