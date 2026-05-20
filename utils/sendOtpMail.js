@@ -1,8 +1,8 @@
 import nodeMailer from 'nodemailer'
-import bcrypt from "bcrypt"
-import { generateOtp }from "../services/authService/emailVerify.js"
+import bcrypt from 'bcrypt'
+import { generateOtp } from '../services/authService/emailVerify.js'
 
-const sendOtpMail = async (reciverEmail, otp,name) => {
+const sendOtpMail = async (reciverEmail, otp, name) => {
   const transporter = nodeMailer.createTransport({
     service: 'gmail',
     auth: {
@@ -15,13 +15,13 @@ const sendOtpMail = async (reciverEmail, otp,name) => {
     from: `"Techora" <anfasmuhammadkclm@gmail.com>`,
     to: reciverEmail,
     subject: 'Verify Your Account',
-    html: otpTemplate(otp,name)
+    html: otpTemplate(otp, name)
   })
   console.log('Email sended')
 }
 
-const otpTemplate = (otp,name) => {
-    return `
+const otpTemplate = (otp, name) => {
+  return `
 <!DOCTYPE html>
 <html>
   <body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
@@ -84,19 +84,25 @@ const otpTemplate = (otp,name) => {
   `
 }
 
-export const sendOtp = async ({model , email  , expiryTime, name})=>{
-    const otp = generateOtp();
-    const hashedOtp = await bcrypt.hash(otp,10);
-    await model.updateOne(
-        {email},
-        {
-            otp : hashedOtp,
-            otpExpiresAt : new Date(Date.now() + expiryTime * 60 * 1000),
-            otpAttempts : 0
-        }
-    )
+export const sendOtp = async ({ model, email, expiryTime, name }) => {
+  const otp = generateOtp()
+  const hashedOtp = await bcrypt.hash(otp, 10)
 
-    await sendOtpMail(email,otp,name)
+  const updateData = {
+    otp: hashedOtp,
+    otpExpiresAt: new Date(Date.now() + expiryTime * 60 * 1000),
+    otpAttempts: 0
+  }
+
+  // Only refresh signupExpiresAt if this is the User model and they are unverified
+  if (model.modelName === 'User') {
+    const user = await model.findOne({ email })
+    if (user && !user.isVerified) {
+      updateData.signupExpiresAt = new Date(Date.now() + 15 * 60 * 1000)
+    }
+  }
+  
+  await model.updateOne({email}, updateData)
+  await sendOtpMail(email, otp, name)
 }
-
 export default sendOtpMail

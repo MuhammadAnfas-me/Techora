@@ -109,7 +109,8 @@ export async function createUserWithWallet (
     profileImage: process.env.DEFAULT_IMAGE,
     isVerified: false,
     role: 'Customer',
-    referralCode
+    referralCode,
+    signupExpiresAt: new Date(Date.now() + 15 * 60 * 1000)
   })
 
   await newUser.save()
@@ -189,7 +190,7 @@ export async function processOtpVerification (email, otp, purpose) {
   await verifyOtp({ model: User, email, enteredOtp: otp })
 
   if (purpose === 'EMAIL_VERIFICATION') {
-    await User.updateOne({ email }, { $set: { isVerified: true }, $unset: { otpExpiresAt: 1, otp: 1 } })
+    await User.updateOne({ email }, { $set: { isVerified: true }, $unset: { otpExpiresAt: 1, otp: 1, signupExpiresAt: 1 } })
     return { verified: true }
   }
 

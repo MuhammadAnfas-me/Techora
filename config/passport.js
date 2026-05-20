@@ -106,7 +106,12 @@ passport.use(
             })
           }
           if (!user.googleId) user.googleId = profile.id;
-          if (!user.isVerified) user.isVerified = true;
+          if (!user.isVerified) {
+            user.isVerified = true;
+            user.signupExpiresAt = undefined;
+            user.otpExpiresAt = undefined;
+            user.otp = undefined;
+          }
           if (!user.profileImage) {
             user.profileImage = process.env.DEFAULT_IMAGE;
           }
