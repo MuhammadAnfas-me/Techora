@@ -5,6 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { getSalesReportData } from '../../utils/reportHelper.js'
 import { Order } from '../../models/orderModel.js'
+import { getBrowser } from '../../utils/pupeteer.js'
 import {
   ORDER_STATUS,
   PAYMENT_METHOD,
@@ -181,14 +182,10 @@ export const generateSalesReportPDF = async (startDate, endDate) => {
   const templatePath = path.join(__dirname, '../../views/Admin/salesReport.ejs')
   const htmlContent = await ejs.renderFile(templatePath, templateData)
 
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    executablePath : process.env.CHROME_PATH,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  })
+  const browser = await getBrowser()
 
   const page = await browser.newPage()
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' })
+  await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' })
 
   const pdfBuffer = await page.pdf({
     format: 'A4',

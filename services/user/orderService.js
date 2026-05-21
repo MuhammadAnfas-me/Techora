@@ -1,9 +1,14 @@
+import puppeteer from 'puppeteer'
+import ejs from 'ejs'
+import path from 'path'
+
 import { Order } from '../../models/orderModel.js'
 import Product from '../../models/productModel.js'
 import { Wallet } from '../../models/walletModel.js'
 import { Review } from '../../models/reviewModel.js'
 import { Coupon } from '../../models/couponModel.js'
 import { formatDate } from '../../services/dateFormat.js'
+import { getBrowser } from '../../utils/pupeteer.js'
 import {
   ORDER_STATUS,
   PAYMENT_METHOD,
@@ -11,9 +16,6 @@ import {
   REFUND_STATUS,
   RETURN_STATUS
 } from '../../constants/orderConstants.js'
-import puppeteer from 'puppeteer'
-import ejs from 'ejs'
-import path from 'path'
 
 // ─────────────────────────────────────────────
 // Shared helper
@@ -141,13 +143,10 @@ export async function generateOrderInvoice (orderId) {
   const filePath = path.join('views/User/invoice.ejs')
   const html = await ejs.renderFile(filePath, { order: invoiceData, ORDER_STATUS, PAYMENT_STATUS })
 
-  const browser = await puppeteer.launch({
-    executablePath : process.env.CHROME_PATH,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  })
+  const browser = await getBrowser()
 
   const page = await browser.newPage()
-  await page.setContent(html, { waitUntil: 'networkidle0' })
+  await page.setContent(html, { waitUntil: 'domcontentloaded' })
 
   const pdf = await page.pdf({
     format: 'A4',
