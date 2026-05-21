@@ -4,7 +4,7 @@ import { getUserListData, toggleUserBlock } from '../../services/admin/userServi
 
 const userList = (req, res) => {
   try {
-    return res.render('admin/users', {
+    return res.render('Admin/users', {
       currentPage: 'users',
       users: [],
       totalUsers: 0,
