@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "script.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node script.js",
-    "dev": "nodemon --exec node --import dotenv/config script.js"
-  },
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node script.js",
+      "dev": "nodemon script.js"
+    },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MuhammadAnfas-me/Techora.git"
