@@ -1,6 +1,6 @@
 import XLSX from 'xlsx'
 import ejs from 'ejs'
-import puppeteer from 'puppeteer'
+import puppeteer, { executablePath } from 'puppeteer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getSalesReportData } from '../../utils/reportHelper.js'
@@ -183,6 +183,7 @@ export const generateSalesReportPDF = async (startDate, endDate) => {
 
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath : process.env.CHROME_PATH,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
 

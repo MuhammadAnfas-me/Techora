@@ -142,6 +142,7 @@ export async function generateOrderInvoice (orderId) {
   const html = await ejs.renderFile(filePath, { order: invoiceData, ORDER_STATUS, PAYMENT_STATUS })
 
   const browser = await puppeteer.launch({
+    executablePath : process.env.CHROME_PATH,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
 
