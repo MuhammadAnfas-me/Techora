@@ -1,3 +1,5 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from "express"
 import userRoute from "./routes/user/userRoute.js"
 import authRoute from "./routes/user/authRoute.js"
@@ -70,4 +72,4 @@ app.use((err, req, res, next) => {
 
 
 connectDB()
-app.listen(PORT,()=>console.log(`Server running at http://localhost:${PORT}`))
+app.listen(PORT,()=>console.log(`Server running on port ${PORT}`))
