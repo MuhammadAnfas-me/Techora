@@ -11,7 +11,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
+      callbackURL: "/techora.anfas.in/auth/google/callback",
       passReqToCallback: true // ✅ IMPORTANT
     },
     async (req, accessToken, refreshToken, profile, done) => {
