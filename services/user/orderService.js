@@ -153,7 +153,7 @@ export async function generateOrderInvoice (orderId) {
     printBackground: true,
     margin: { top: '20px', bottom: '20px', left: '15px', right: '15px' }
   })
-
+  await page.close();
   await browser.close()
 
   return { pdf, orderId: order.orderId }

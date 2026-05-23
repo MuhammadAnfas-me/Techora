@@ -192,7 +192,8 @@ export const generateSalesReportPDF = async (startDate, endDate) => {
     printBackground: true,
     margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' }
   })
-
+  
+  await page.close();
   await browser.close()
 
   return pdfBuffer

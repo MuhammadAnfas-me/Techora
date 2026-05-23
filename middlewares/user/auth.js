@@ -1,6 +1,7 @@
 import { User } from '../../models/userModel.js'
 import { Cart } from '../../models/cartModel.js'
 import { Wishlist } from '../../models/wishListModel.js'
+import { Categories } from '../../models/categoryModel.js'
 
 const checkAuth = (req, res, next) => {
   if (req.session?.user || req?.user) {
@@ -49,12 +50,16 @@ const isBlocked = async (req, res, next) => {
 
 const setUser = async (req, res, next) => {
   try {
+    const categories = await Categories.find().lean()
+    res.locals.categories = categories
     if (req.session?.user?.userId) {
       const user = await User.findOne({
         userId: req.session.user.userId
-      }).select('-password')
+      }).select('-password').lean()
+
 
       res.locals.user = user
+      res.locals.categories = categories
       const cart = await Cart.findOne({ userId: req.session.user?.id })
       const wishlist = await Wishlist.findOne({ userId: req.session.user?.id })
       res.locals.cartCount = cart ? cart.items.length : 0;

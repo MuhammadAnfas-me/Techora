@@ -52,11 +52,9 @@
                                     <div class="dropdown-column">
                                         <h4>Audio Accessories</h4>
                                         <ul>
-                                            <li><a href="/products?category=69a9b338e3f99130d71b888b&minPrice=0&maxPrice=50000&page=1&sort=&search=">TWS</a></li>
-                                            <li><a href="/products?category=69a9b36be3f99130d71b8895&minPrice=0&maxPrice=50000&page=1&sort=&search=">Neckbands</a></li>
-                                            <li><a href="/products?category=69a9b387e3f99130d71b889a&minPrice=0&maxPrice=50000&page=1&sort=&search=">Wired Headphones</a></li>
-                                            <li><a href="/products?category=69a9b3a1e3f99130d71b889f&minPrice=0&maxPrice=50000&page=1&sort=&search=">Wireless Headphones</a></li>
-                                            <li><a href="/products?category=69a9b34de3f99130d71b8890&minPrice=0&maxPrice=50000&page=1&sort=&search=">Gaming Headsets</a></li>
+                                            <% categories.forEach(cat=>{ %>
+                                                <li><a href="/products?category=<%= cat._id %>&minPrice=0&maxPrice=50000&page=1&sort=&search="><%= cat.name %></a></li>
+                                            <% }) %>
                                         </ul>
                                     </div>
                                 </div>
