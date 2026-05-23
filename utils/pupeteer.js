@@ -1,12 +1,12 @@
 import puppeteer from 'puppeteer-core';
 
-export async function generatePdf(content) {
+export async function generatePdf(html) {
   let browser;
   try {
     console.log('Launching Puppeteer browser...');
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.CHROME_PATH,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -34,16 +34,8 @@ export async function generatePdf(content) {
       }
     });
 
-    // Check if content is a URL or HTML
-    const isUrl = content.startsWith('http://') || content.startsWith('https://');
-
-    if (isUrl) {
-      console.log(`Navigating to URL: ${content}`);
-      await page.goto(content, { waitUntil: 'domcontentloaded' });
-    } else {
-      console.log('Setting HTML content');
-      await page.setContent(content, { waitUntil: 'domcontentloaded' });
-    }
+    console.log('Setting HTML content for PDF generation...');
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
     console.log('Generating PDF...');
     const pdf = await page.pdf({
