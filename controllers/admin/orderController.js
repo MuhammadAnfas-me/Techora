@@ -16,10 +16,10 @@ import { ORDER_STATUS } from '../../constants/orderConstants.js'
 
 export const orderListLoad = async (req, res) => {
   try {
-    const { search, status, dateSort } = req.query
+    const { search, status, dateSort, startDate, endDate } = req.query
     const page = parseInt(req.query.page) || 1
 
-    const data = await fetchAdminOrderList({ page, search, status, dateSort })
+    const data = await fetchAdminOrderList({ page, search, status, dateSort, startDate, endDate })
 
     res.render('Admin/order/orderListPage.ejs', { ...data, ORDER_STATUS })
   } catch (error) {
@@ -36,7 +36,8 @@ export const orderListLoad = async (req, res) => {
 
 export const exportOrdersPDF = async (req, res) => {
   try {
-    await streamOrdersPDF(res)
+    const { search, status, dateSort, startDate, endDate } = req.query
+    await streamOrdersPDF(res, { search, status, dateSort, startDate, endDate })
   } catch (error) {
     console.error('PDF Export Error:', error)
     const statusCode = error.status || 500

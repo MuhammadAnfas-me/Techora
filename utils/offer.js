@@ -27,8 +27,7 @@ export function getDiscountAmount (offer, price) {
   if (offer.type === 'flat') return offer.value
 
   const rawDiscount = (price * offer.value) / 100
-
-  // Cap percentage discount by maxDiscount if set
+  
   if (offer.maxDiscount && rawDiscount > offer.maxDiscount) {
     return offer.maxDiscount
   }

@@ -258,23 +258,12 @@
 
 
   
-    // if (cartDiscount) {
-    //   cartDiscount.textContent = Number(summary.discount || 0).toFixed();
-    // }
-  
-    // if (deliveryCharge) {
-    //   deliveryCharge.textContent = Number(summary.deliveryCharge || 0).toFixed();
-    // }
-  
     if (cartTotal) {
       cartTotal.textContent =  formatINR(summary.cartTotal);
     }
   }
 
-  // const checkoutBtn =  document.getElementById("checkoutBtn")
-  // checkoutBtn.addEventListener('click',async()=>{
-  //   window.location.href="/checkout"
-  // })
+
 const errorMsg = document.getElementById('error')
  async function validateCart() {
   try {

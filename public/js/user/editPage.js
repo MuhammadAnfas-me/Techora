@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
       allowInput: true,
       animate: true,
 
-      // ✅ Premium month navigation (no dropdown)
       monthSelectorType: 'dropdown',
 
       prevArrow: `

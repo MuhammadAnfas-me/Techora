@@ -28,7 +28,6 @@ export const dashboardLoad = async (req, res) => {
         pendingOrdersCount++;
       }
       
-      // Calculate Net Revenue for this order (Paid items only, excluding cancelled/returned)
       let orderNetRevenue = 0;
       if (order.paymentStatus === PAYMENT_STATUS.PAID || order.paymentStatus === PAYMENT_STATUS.REFUNDED) {
          order.items.forEach(item => {

@@ -491,38 +491,7 @@ function highlightLoginButton () {
   loginBtn.classList.add('shake-highlight')
 }
 
-// async function addToCart (e, productId, variantId, isLogged) {
-//   e.stopPropagation()
 
-//   if (!isLogged) {
-//     highlightLoginButton()
-//     return
-//   }
-
-//   try {
-//     const res = await axios.post('/cart/add', {
-//       productId,
-//       variantId,
-//       quantity: 1
-//     })
-
-//     const cartCountEl = document.getElementById('cartCount')
-//     if (cartCountEl) {
-//       if (res.data.cartCount !== undefined) {
-//         cartCountEl.textContent = res.data.cartCount
-//       }
-
-//       cartCountEl.classList.add('cart-bounce')
-//       setTimeout(() => {
-//         cartCountEl.classList.remove('cart-bounce')
-//       }, 300)
-//     }
-//     loadFilteredProducts(1)
-//     showToast(res.data.message || 'Added to cart')
-//   } catch (error) {
-//     showToast(error.response?.data?.message || 'Failed to add to cart', 'error')
-//   }
-// }
 
 async function addToWishlist(e, productId, variantId, isLogged,btn) {
   e.stopPropagation()

@@ -352,6 +352,8 @@
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="/js/popup.js" defer></script>
   <script src="/js/partitials/Admin/sidebar.js" defer></script>
 </head>
@@ -465,6 +467,15 @@
                 <option value="oldest" <%=dateSort==='oldest' ? 'selected' : '' %>>Oldest</option>
               </select>
 
+              <!-- 📅 Date Range Filter -->
+              <div class="date-input-group" onclick="openDatePicker()" style="cursor: pointer; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 6px; background-color: #fafafa; font-size: 14px; color: #374151; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="dateText"><%= locals.startDate && locals.endDate ? `${new Date(startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} - ${new Date(endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'Select Date Range' %></span>
+              </div>
+              <input type="hidden" name="startDate" id="startDate" value="<%= locals.startDate || '' %>">
+              <input type="hidden" name="endDate" id="endDate" value="<%= locals.endDate || '' %>">
+              <input type="text" id="dateRangePicker" style="display:none;">
+
               <!-- 🔍 Search -->
               <div class="search-wrapper">
                 <input type="text" id="search-input" placeholder="Customer / Order ID" name="search" value="<%= search || '' %>" />
@@ -561,7 +572,7 @@
 
                   <!-- ⬅ Previous -->
                   <% if(currentPage> 1){ %>
-                    <a href="?page=<%= currentPage - 1 %>&search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>"
+                    <a href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>&status=<%= status || '' %>&dateSort=<%= dateSort || '' %>&startDate=<%= locals.startDate || '' %>&endDate=<%= locals.endDate || '' %>"
                       class="page-link">
                       &lt; Previous
                     </a>
@@ -569,7 +580,7 @@
 
                       <!-- 🔢 Pages -->
                       <% for(let i=1; i <=totalPages; i++){ %>
-                        <a href="?page=<%= i %>&search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>"
+                        <a href="?page=<%= i %>&search=<%= search || '' %>&status=<%= status || '' %>&dateSort=<%= dateSort || '' %>&startDate=<%= locals.startDate || '' %>&endDate=<%= locals.endDate || '' %>"
                           class="page-link <%= currentPage === i ? 'active' : '' %>">
                           <%= i %>
                         </a>
@@ -577,7 +588,7 @@
 
                           <!-- ➡ Next -->
                           <% if(currentPage < totalPages){ %>
-                            <a href="?page=<%= currentPage + 1 %>&search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>"
+                            <a href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>&status=<%= status || '' %>&dateSort=<%= dateSort || '' %>&startDate=<%= locals.startDate || '' %>&endDate=<%= locals.endDate || '' %>"
                               class="page-link">
                               Next &gt;
                             </a>
@@ -616,6 +627,52 @@
   });
 
   orderStatusSelect.addEventListener("change", applyFilters);
+
+  const picker = flatpickr("#dateRangePicker", {
+    mode: "range",
+    maxDate : "today",
+    dateFormat: "Y-m-d",
+    defaultDate: ["<%= locals.startDate || '' %>", "<%= locals.endDate || '' %>"],
+    positionElement: document.querySelector('.date-input-group'),
+    monthSelectorType: 'static',
+    onClose: function(selectedDates) {
+      if (selectedDates.length === 2) {
+        const options = { day: '2-digit', month: 'short', year: 'numeric' };
+        const start = selectedDates[0].toLocaleDateString('en-IN', options);
+        const end = selectedDates[1].toLocaleDateString('en-IN', options);
+        const formatDate = (d) => {
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+        document.getElementById('startDate').value = formatDate(selectedDates[0]);
+        document.getElementById('endDate').value = formatDate(selectedDates[1]);
+        document.getElementById('dateText').innerText = `${start} - ${end}`;
+        
+        // Auto-apply filter when dates are selected
+        const search = searchInput.value.trim();
+        const status = orderStatusSelect.value;
+        const dateSort = document.querySelector('select[name="dateSort"]').value;
+        window.location.href = `?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&dateSort=${encodeURIComponent(dateSort)}&startDate=${document.getElementById('startDate').value}&endDate=${document.getElementById('endDate').value}`;
+      } else if (selectedDates.length === 0) {
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('dateText').innerText = 'Select Date Range';
+        
+        // Auto-apply filter when dates are cleared
+        const search = searchInput.value.trim();
+        const status = orderStatusSelect.value;
+        const dateSort = document.querySelector('select[name="dateSort"]').value;
+        window.location.href = `?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&dateSort=${encodeURIComponent(dateSort)}`;
+      }
+    }
+  });
+
+  function openDatePicker() {
+    picker.open();
+  }
+
 
   
   const drawer = document.getElementById("returnDrawer");
@@ -662,9 +719,11 @@ async function updateReturnStatus(id, type, status) {
 }
 
 function download(search, status, dateSort){
+  const startDate = document.getElementById('startDate').value || '';
+  const endDate = document.getElementById('endDate').value || '';
   showLoader()
   setTimeout(()=>{
-    window.location.href = '/admin/orders/export-pdf?search=<%= search %>&status=<%= status %>&dateSort=<%= dateSort %>'
+    window.location.href = `/admin/orders/export-pdf?search=${encodeURIComponent(search || '')}&status=${encodeURIComponent(status || '')}&dateSort=${encodeURIComponent(dateSort || '')}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
     hideLoader()
   },200)
 }

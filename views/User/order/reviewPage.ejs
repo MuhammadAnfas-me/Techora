@@ -517,58 +517,6 @@
 <%- include('../../partitials/user/footer.ejs') %>
 
 <script>
-//   // Star rating interaction
-//   const stars = document.querySelectorAll('#starRating .star');
-//   let currentRating = 5;
-
-//   stars.forEach((star, idx) => {
-//     star.addEventListener('mouseenter', () => {
-//       stars.forEach((s, i) => {
-//         s.classList.toggle('active', i <= idx);
-//         s.classList.toggle('empty', i > idx);
-//       });
-//     });
-//     star.addEventListener('mouseleave', () => {
-//       stars.forEach((s, i) => {
-//         s.classList.toggle('active', i < currentRating);
-//         s.classList.toggle('empty', i >= currentRating);
-//       });
-//     });
-//     star.addEventListener('click', () => {
-//       currentRating = idx + 1;
-//       stars.forEach((s, i) => {
-//         s.classList.toggle('active', i < currentRating);
-//         s.classList.toggle('empty', i >= currentRating);
-//       });
-//     });
-//   });
-
-//   // File upload preview
-//   document.getElementById('fileInput').addEventListener('change', function () {
-//     const previews = document.getElementById('photoPreviews');
-//     // Keep existing placeholder, add new ones
-//     Array.from(this.files).forEach(file => {
-//       const reader = new FileReader();
-//       reader.onload = e => {
-//         const img = document.createElement('img');
-//         img.src = e.target.result;
-//         img.className = 'photo-thumb';
-//         previews.appendChild(img);
-//       };
-//       reader.readAsDataURL(file);
-//     });
-//   });
-
-//   // Drag and drop
-//   const zone = document.getElementById('uploadZone');
-//   zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#4a7fc1'; });
-//   zone.addEventListener('dragleave', () => { zone.style.borderColor = '#c8d0de'; });
-//   zone.addEventListener('drop', e => {
-//     e.preventDefault();
-//     zone.style.borderColor = '#c8d0de';
-//     document.getElementById('fileInput').files = e.dataTransfer.files;
-//     document.getElementById('fileInput').dispatchEvent(new Event('change'));
-//   });
 
 
 const stars = document.querySelectorAll("#starRating .star");

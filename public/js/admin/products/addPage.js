@@ -441,8 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderVariants()
   })
 
-  function isValidSku(value) {
-    return /^[A-Za-z0-9_-]{3,30}$/.test(String(value || "").trim());
+  function isValidSku (value) {
+    return /^[A-Za-z0-9_-]{3,30}$/.test(String(value || '').trim())
   }
 
   form?.addEventListener('submit', async e => {
@@ -471,13 +471,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return
       }
 
-      if(!isValidSku(v.sku)){
-         setTimeout(() => {
-          const el = variantContentArea.querySelector('.variant-input[data-field="sku"]');
-          setFieldError(el, "SKU must be 3-30 chars and only letters, numbers, _ or -");
-          el?.focus();
-         }, 0)
-         return
+      if (!isValidSku(v.sku)) {
+        setTimeout(() => {
+          const el = variantContentArea.querySelector(
+            '.variant-input[data-field="sku"]'
+          )
+          setFieldError(
+            el,
+            'SKU must be 3-30 chars and only letters, numbers, _ or -'
+          )
+          el?.focus()
+        }, 0)
+        return
       }
 
       if (v.price === '' || Number(v.price) < 0) {

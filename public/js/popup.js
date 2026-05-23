@@ -1,52 +1,4 @@
-// function showToast (message, type = 'success') {
-//   const toast = document.getElementById('toast')
 
-//   toast.textContent = message
-//   toast.className = `toast show ${type}`
-
-//   setTimeout(() => {
-//     toast.className = 'toast'
-//   }, 1500)
-// }
-
-// function showToast(msg, type = 'success') {
-//     const toast = document.getElementById('toast');
-//     toast.textContent = msg;
-//   console.log("Working",msg)
-//     // Remove any previous type classes
-//     toast.classList.remove('toast-success', 'toast-error');
-
-//     if (type === 'default') toast.classList.add('show');
-//     if (type === 'error')   toast.classList.add('toast-error');
-
-//     toast.classList.add('show');
-//     toast.classList.add('toast-success');
-//     setTimeout(() => {
-//         toast.classList.remove('show', 'toast-success', 'toast-error');
-//     }, 2500);
-// }
-
-// function showToast(msg, type = 'success') {
-//     const toast = document.getElementById('toast');
-//     if (!toast) return;
-
-//     const icons = {
-//         success: '✓',
-//         error:   '✕',
-//         default: 'ℹ'
-//     };
-
-//     toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.default}</span> ${msg}`;
-
-//     toast.classList.remove('toast-success', 'toast-error');
-//     if (type === 'success') toast.classList.add('toast-success');
-//     if (type === 'error')   toast.classList.add('toast-error');
-
-//     toast.classList.add('show');
-//     setTimeout(() => {
-//         toast.classList.remove('show', 'toast-success', 'toast-error');
-//     }, 2800);
-// }
 function showToast(title, type = 'success', sub = '') {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -54,7 +6,6 @@ function showToast(title, type = 'success', sub = '') {
     // remove classes first
     toast.classList.remove('show', 'toast-success', 'toast-error');
 
-    // 🔥 force reflow to restart animation
     void toast.offsetWidth;
 
     // set type

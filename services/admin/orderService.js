@@ -32,8 +32,33 @@ class AppError extends Error {
 // ─────────────────────────────────────────────
 
 /** Base aggregation pipeline: joins users and unwinds. */
-function buildBasePipeline (search, status) {
-  const pipeline = [
+function buildBasePipeline (search, status, startDate, endDate) {
+  const pipeline = []
+
+  // Pre-filter: status and dates apply to the Order collection directly
+  const preMatch = {}
+  
+  if (status) {
+    preMatch.orderStatus = status
+  }
+  
+  if (startDate && endDate) {
+    const start = new Date(startDate)
+    start.setHours(0, 0, 0, 0)
+    const end = new Date(endDate)
+    end.setHours(23, 59, 59, 999)
+    preMatch.createdAt = {
+      $gte: start,
+      $lte: end
+    }
+  }
+  
+  if (Object.keys(preMatch).length > 0) {
+    pipeline.push({ $match: preMatch })
+  }
+
+  // Then perform the lookup
+  pipeline.push(
     {
       $lookup: {
         from:         'users',
@@ -43,8 +68,9 @@ function buildBasePipeline (search, status) {
       }
     },
     { $unwind: '$user' }
-  ]
+  )
 
+  // Post-filter: search applies to populated fields
   if (search) {
     pipeline.push({
       $match: {
@@ -54,10 +80,6 @@ function buildBasePipeline (search, status) {
         ]
       }
     })
-  }
-
-  if (status) {
-    pipeline.push({ $match: { orderStatus: status } })
   }
 
   return pipeline
@@ -126,11 +148,11 @@ function collectReturnRequests (orders) {
  *   status, dateSort, search, returnRequests, returnRequestsCount
  * }
  */
-export async function fetchAdminOrderList ({ page, search, status, dateSort }) {
+export async function fetchAdminOrderList ({ page, search, status, dateSort, startDate, endDate }) {
   const limit = 10
   const skip  = (page - 1) * limit
 
-  const basePipeline = buildBasePipeline(search, status)
+  const basePipeline = buildBasePipeline(search, status, startDate, endDate)
 
   // Run count and paginated data in parallel
   const [countResult, orders] = await Promise.all([
@@ -157,6 +179,8 @@ export async function fetchAdminOrderList ({ page, search, status, dateSort }) {
     status,
     dateSort,
     search,
+    startDate,
+    endDate,
     returnRequests,
     returnRequestsCount
   }
@@ -166,22 +190,13 @@ export async function fetchAdminOrderList ({ page, search, status, dateSort }) {
 // Export Orders PDF
 // ─────────────────────────────────────────────
 
-/**
- * Builds and streams a PDF of all orders.
- * Accepts the Express `res` object so PDFKit can pipe directly —
- * streaming is an HTTP concern but tightly coupled to pdfkit; kept
- * here for consistency, controller simply calls and awaits.
- */
-export async function streamOrdersPDF (res) {
-  const orders = await Order.aggregate([
-    {
-      $lookup: {
-        from: 'users', localField: 'userId', foreignField: '_id', as: 'user'
-      }
-    },
-    { $unwind: '$user' },
-    { $sort: { createdAt: -1 } }
-  ])
+
+export async function streamOrdersPDF (res, { search, status, dateSort, startDate, endDate } = {}) {
+  const pipeline = buildBasePipeline(search, status, startDate, endDate)
+
+  pipeline.push({ $sort: { createdAt: dateSort === 'oldest' ? 1 : -1 } })
+
+  const cursor = Order.aggregate(pipeline).cursor({ batchSize: 100 })
 
   const doc = new PDFDocument({ margin: 30, size: 'A4' })
 
@@ -207,7 +222,7 @@ export async function streamOrdersPDF (res) {
 
   let y = startY + 25
 
-  orders.forEach(order => {
+  for await (const order of cursor) {
     if (y > 750) { doc.addPage(); y = 50 }
 
     doc.fontSize(9)
@@ -222,7 +237,7 @@ export async function streamOrdersPDF (res) {
     doc.font('Helvetica')
 
     y += 20
-  })
+  }
 
   doc.end()
 }
@@ -245,12 +260,7 @@ export async function fetchOrderDetails (orderId) {
 // Update Order Status
 // ─────────────────────────────────────────────
 
-/**
- * Applies a new status to an order, updates the timeline, and handles:
- *  - COD payment marking on Delivered
- *  - Wallet refund + item refund flags on Returned
- *  - Item-level status sync (skipping Cancelled / Returned items)
- */
+
 export async function changeOrderStatus (orderId, newStatus) {
   if (!orderId)   throw new AppError('Order id not found', 400)
   if (!newStatus) throw new AppError('Nothing to update', 400)

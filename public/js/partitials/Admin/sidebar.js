@@ -1,26 +1,21 @@
-// Get elements
 const sidebar = document.getElementById("sidebar");
 const sidebarOverlay = document.getElementById("sidebarOverlay");
 const collapseBtn = document.getElementById("collapseBtn");
 const mobileMenuBtn = document.getElementById("mobileMenuBtn");
 const sidebarClose = document.getElementById("sidebarClose");
 
-// ✅ Prevent animation on first paint
 document.body.classList.add("preload");
 
-// ✅ Apply saved collapsed state ONCE
 const shouldCollapse = localStorage.getItem("sidebarCollapsed") === "true";
 if (sidebar) {
   sidebar.classList.toggle("collapsed", shouldCollapse);
 }
 document.body.classList.toggle("sidebar-collapsed", shouldCollapse);
 
-// ✅ Enable transitions after first frame
 requestAnimationFrame(() => {
   document.body.classList.remove("preload");
 });
 
-// ✅ Desktop collapse toggle
 if (collapseBtn && sidebar) {
   collapseBtn.addEventListener("click", () => {
     const isCollapsed = !sidebar.classList.contains("collapsed");
@@ -30,7 +25,6 @@ if (collapseBtn && sidebar) {
   });
 }
 
-// ✅ Mobile menu open
 if (mobileMenuBtn && sidebar && sidebarOverlay) {
   mobileMenuBtn.addEventListener("click", () => {
     sidebar.classList.add("show");
@@ -38,7 +32,6 @@ if (mobileMenuBtn && sidebar && sidebarOverlay) {
   });
 }
 
-// ✅ Mobile menu close button
 if (sidebarClose && sidebar && sidebarOverlay) {
   sidebarClose.addEventListener("click", () => {
     sidebar.classList.remove("show");
@@ -46,7 +39,6 @@ if (sidebarClose && sidebar && sidebarOverlay) {
   });
 }
 
-// ✅ Close sidebar when clicking overlay
 if (sidebarOverlay && sidebar) {
   sidebarOverlay.addEventListener("click", () => {
     sidebar.classList.remove("show");
@@ -54,7 +46,6 @@ if (sidebarOverlay && sidebar) {
   });
 }
 
-// ✅ Close sidebar when clicking a link on mobile
 document.querySelectorAll(".sidebar-nav .nav-item").forEach((link) => {
   link.addEventListener("click", () => {
     if (window.innerWidth <= 1023 && sidebar && sidebarOverlay) {
@@ -64,7 +55,6 @@ document.querySelectorAll(".sidebar-nav .nav-item").forEach((link) => {
   });
 });
 
-// ✅ Always reset mobile open state on page load
 if (sidebar) sidebar.classList.remove("show");
 if (sidebarOverlay) sidebarOverlay.classList.remove("active");
 
@@ -107,10 +97,8 @@ function showConfirm(message, callback) {
 }
 
 function applySidebarState(collapsed) {
-  // ✅ always use body (consistent with your CSS: body.sidebar-collapsed ...)
   document.body.classList.toggle("sidebar-collapsed", collapsed);
 
-  // (optional) if any old code added it to <html>, remove it to avoid confusion
   document.documentElement.classList.remove("sidebar-collapsed");
 }
 

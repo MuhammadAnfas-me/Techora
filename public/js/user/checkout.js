@@ -4,14 +4,11 @@ async function removeCoupon () {
     const res = await axios.post('/remove-coupon')
 
     if (res.data.success) {
-      // ✅ Update UI values
       document.getElementById('discount').innerText = '-₹0.00'
       document.getElementById('total').innerText = '₹' + res.data.finalTotal
 
-      // ✅ Show coupon input again
       document.getElementById('coupon-section').style.display = 'block'
 
-      // ✅ Hide applied coupon box
       document.getElementById('applied-coupon').style.display = 'none'
     }
   } catch (err) {
@@ -25,7 +22,6 @@ const formatINR = function (amount) {
 document
   .querySelector('.proceed')
   .addEventListener('click', async function (e) {
-    // Basic interaction for the "Place Order" button
     let originalText = this.textContent
     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'
     this.disabled = true
@@ -73,15 +69,12 @@ function selectAddress (id) {
 }
 
 function selectCard (card) {
-  // remove active class from all cards
   document.querySelectorAll('.address-card').forEach(c => {
     c.classList.remove('active')
   })
 
-  // add active class to clicked card
   card.classList.add('active')
 
-  // select radio inside clicked card
   const radio = card.querySelector('input[type="radio"]')
   radio.checked = true
   selectedAddressId = radio.value
@@ -89,7 +82,7 @@ function selectCard (card) {
 
 document.querySelectorAll('.address-card input').forEach(input => {
   input.addEventListener('click', e => {
-    e.stopPropagation() // prevent double triggering
+    e.stopPropagation() 
   })
 })
 
@@ -106,7 +99,6 @@ function confirmAddress () {
   </div>
   `
 
-  // close modal
   document.getElementById('addressModal').classList.add('hidden')
 }
 
@@ -119,21 +111,17 @@ const modalOverlay = document.getElementById('addAddressModalOverlay')
 const closeBtn = document.getElementById('closeAddAddressModalBtn')
 const cancelBtn = document.getElementById('cancelAddAddressBtn')
 
-// Function to open the drawer
 function openDrawer () {
   modalOverlay.classList.add('open')
 }
 
-// Function to close the drawer
 function closeDrawer () {
   modalOverlay.classList.remove('open')
 }
 
-// Event Listeners for closing
 closeBtn.addEventListener('click', closeDrawer)
 cancelBtn.addEventListener('click', closeDrawer)
 
-// Optional: Close when clicking on the dark overlay outside the drawer
 modalOverlay.addEventListener('click', e => {
   if (e.target === modalOverlay) {
     closeDrawer()
@@ -155,12 +143,11 @@ const inputs = {
   default: document.getElementById('addDefaultAddress')
 }
 
-// Error elements (only for custom ones you already added)
 const phoneError = document.querySelector('.addPhoneError')
 const zipError = document.querySelector('.addZipCodeError')
 
 // =========================
-// 🔹 Error Helpers
+//  Error Helpers
 // =========================
 function showError (input, message) {
   let error = input.parentElement.querySelector('small')
@@ -183,7 +170,7 @@ function clearError (input) {
 }
 
 // =========================
-// 🔹 Live Error Clearing
+//  Live Error Clearing
 // =========================
 document
   .querySelectorAll('#addAddressForm input, #addAddressForm select')
@@ -193,7 +180,7 @@ document
   })
 
 // =========================
-// 🔹 Form Submit
+//  Form Submit
 // =========================
 addressForm.addEventListener('submit', async e => {
   e.preventDefault()
@@ -404,7 +391,6 @@ async function openCouponModal () {
   }
 }
 
-// 🔥 THIS IS THE KEY PART
 function selectCoupon (code) {
   document.getElementById('coupon-code').value = code
   closeCouponModal()
@@ -414,7 +400,6 @@ function closeCouponModal () {
   document.getElementById('couponModal').style.display = 'none'
 }
 
-// /////////////////////////////////////////////////
 async function applyCoupon () {
   const input = document.getElementById('coupon-code')
   const couponBox = document.querySelector('.coupon-box')
@@ -466,19 +451,19 @@ async function removeCoupon () {
     const res = await axios.post('/remove-coupon')
 
     if (res.data.success) {
-      //       // ✅ Update UI values
-      //       document.getElementById("discount").innerText = "-₹0.00";
-      //       document.getElementById("finalTotal").innerText =
-      //       formatINR(res.data.finalTotal)
+            // ✅ Update UI values
+            document.getElementById("discount").innerText = "-₹0.00";
+            document.getElementById("finalTotal").innerText =
+            formatINR(res.data.finalTotal)
 
-      //     //   // ✅ Show coupon input again
-      //     //   document.getElementById("coupon-section").style.display = "block";
+          //   // ✅ Show coupon input again
+          //   document.getElementById("coupon-section").style.display = "block";
 
-      //    document.querySelector(".coupon-input-group").style.display = "flex";
-      //    document.querySelector(".coupon-header").style.display = "block";
+         document.querySelector(".coupon-input-group").style.display = "flex";
+         document.querySelector(".coupon-header").style.display = "block";
 
-      //       // ✅ Hide applied coupon box
-      //       document.querySelector(".applied-coupon-box").style.display = "none";
+            // ✅ Hide applied coupon box
+            document.querySelector(".applied-coupon-box").style.display = "none";
       location.reload()
     }
   } catch (err) {

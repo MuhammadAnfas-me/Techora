@@ -3,7 +3,6 @@ import puppeteer from 'puppeteer-core';
 export async function generatePdf(html) {
   let browser;
   try {
-    console.log('Launching Puppeteer browser...');
     browser = await puppeteer.launch({
       headless: true,
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium-browser",
@@ -33,7 +32,6 @@ export async function generatePdf(html) {
       }
     });
 
-    console.log('Setting HTML content for PDF generation...');
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
     console.log('Generating PDF...');
@@ -43,14 +41,12 @@ export async function generatePdf(html) {
       margin: { top: '20px', bottom: '20px', left: '15px', right: '15px' },
     });
 
-    console.log('PDF generated successfully.');
     return pdf;
   } catch (error) {
     console.error('Error during PDF generation:', error);
     throw error;
   } finally {
     if (browser) {
-      console.log('Closing browser...');
       await browser.close().catch(err => console.error('Error closing browser:', err));
     }
   }

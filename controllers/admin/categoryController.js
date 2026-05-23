@@ -32,7 +32,7 @@ const categoryListPage = (req, res) => {
   try {
     return res.render('Admin/category/categoryList', {
       currentPage: 'category',
-      categories:  [],          // initial empty — filled via AJAX
+      categories:  [],          
       total:       0,
       filter:      { search: '', status: '' },
       totalPages:  1,

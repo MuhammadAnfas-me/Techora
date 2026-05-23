@@ -1,10 +1,8 @@
-// Dropdown functionality
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Categories dropdown
             const categoriesDropdown = document.querySelector('.nav-link.dropdown');
             const categoriesMenu = document.querySelector('.categories-dropdown');
             
-            // Profile dropdown
             const profileWrapper = document.querySelector('.profile-wrapper');
             const profileBtn = document.querySelector('.avatar');
             const profileMenu = document.querySelector('.profile-dropdown');
@@ -29,7 +27,6 @@
                 });
             }
             
-            // Close dropdowns when clicking outside
             document.addEventListener('click', function(e) {
                 if (categoriesMenu && !categoriesDropdown.contains(e.target)) {
                     categoriesMenu.classList.remove('show');
@@ -39,7 +36,6 @@
                 }
             });
             
-            // Prevent dropdown menus from closing when clicking inside them
             if (categoriesMenu) {
                 categoriesMenu.addEventListener('click', function(e) {
                     e.stopPropagation();
