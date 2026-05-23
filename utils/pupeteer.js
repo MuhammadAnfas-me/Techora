@@ -6,14 +6,13 @@ export async function generatePdf(html) {
     console.log('Launching Puppeteer browser...');
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH ||  "/usr/bin/chromium",
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium-browser",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-gpu",
         "--no-zygote",
-        "--single-process",
       ],
     });
 
@@ -27,7 +26,7 @@ export async function generatePdf(html) {
     await page.setRequestInterception(true);
     page.on('request', (request) => {
       const resourceType = request.resourceType();
-      if (['image', 'font', 'stylesheet'].includes(resourceType)) {
+      if (['image', 'font'].includes(resourceType)) {
         request.abort();
       } else {
         request.continue();
