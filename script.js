@@ -8,6 +8,7 @@ import session from "express-session"
 import flash from "connect-flash"
 import passport from "passport"
 import nocache from "nocache"
+import compression from 'compression'
 import "./config/passport.js"
 import { setUser } from "./middlewares/user/auth.js"
 
@@ -15,7 +16,7 @@ import { setUser } from "./middlewares/user/auth.js"
 const PORT = process.env.PORT || 3000
 const app = express()
 
-
+app.use(compression())
 app.set("view engine","ejs")
 app.use(express.static("public"))
 app.use(express.json())
