@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "script.js",
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "start": "node script.js",
-      "dev": "nodemon script.js"
-    },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node script.js",
+    "dev": "nodemon script.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MuhammadAnfas-me/Techora.git"
@@ -42,6 +42,7 @@
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.18.0",
     "puppeteer": "^24.40.0",
+    "puppeteer-core": "^25.0.4",
     "razorpay": "^2.9.6",
     "xlsx": "^0.18.5"
   },

@@ -1,6 +1,5 @@
 import XLSX from 'xlsx'
 import ejs from 'ejs'
-import puppeteer, { executablePath } from 'puppeteer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getSalesReportData } from '../../utils/reportHelper.js'
