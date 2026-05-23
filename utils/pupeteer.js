@@ -6,7 +6,7 @@ export async function generatePdf(content) {
     console.log('Launching Puppeteer browser...');
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+      executablePath: process.env.CHROME_PATH,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
