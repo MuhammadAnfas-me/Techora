@@ -5,7 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { getSalesReportData } from '../../utils/reportHelper.js'
 import { Order } from '../../models/orderModel.js'
-import { getBrowser } from '../../utils/pupeteer.js'
+import { generatePdf } from '../../utils/pupeteer.js'
 import {
   ORDER_STATUS,
   PAYMENT_METHOD,
@@ -182,19 +182,7 @@ export const generateSalesReportPDF = async (startDate, endDate) => {
   const templatePath = path.join(__dirname, '../../views/Admin/salesReport.ejs')
   const htmlContent = await ejs.renderFile(templatePath, templateData)
 
-  const browser = await getBrowser()
-
-  const page = await browser.newPage()
-  await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' })
-
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' }
-  })
-  
-  await page.close();
-  await browser.close()
+  const pdfBuffer = await generatePdf(htmlContent)
 
   return pdfBuffer
 }

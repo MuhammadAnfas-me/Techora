@@ -1,4 +1,3 @@
-import puppeteer from 'puppeteer'
 import ejs from 'ejs'
 import path from 'path'
 
@@ -8,7 +7,7 @@ import { Wallet } from '../../models/walletModel.js'
 import { Review } from '../../models/reviewModel.js'
 import { Coupon } from '../../models/couponModel.js'
 import { formatDate } from '../../services/dateFormat.js'
-import { getBrowser } from '../../utils/pupeteer.js'
+import { generatePdf } from '../../utils/pupeteer.js'
 import {
   ORDER_STATUS,
   PAYMENT_METHOD,
@@ -142,19 +141,7 @@ export async function generateOrderInvoice (orderId) {
   }
   const filePath = path.join('views/User/invoice.ejs')
   const html = await ejs.renderFile(filePath, { order: invoiceData, ORDER_STATUS, PAYMENT_STATUS })
-
-  const browser = await getBrowser()
-
-  const page = await browser.newPage()
-  await page.setContent(html, { waitUntil: 'domcontentloaded' })
-
-  const pdf = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: { top: '20px', bottom: '20px', left: '15px', right: '15px' }
-  })
-  await page.close();
-  await browser.close()
+  const pdf = await generatePdf(html)
 
   return { pdf, orderId: order.orderId }
 }
