@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer-core';
 export async function generatePdf(html) {
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: "/usr/bin/chromium-browser",
+    executablePath: process.env.CHROME_PATH,
       args: [
     "--no-sandbox",
     "--disable-setuid-sandbox",
