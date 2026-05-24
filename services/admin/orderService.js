@@ -1,8 +1,11 @@
 import { Order } from '../../models/orderModel.js'
 import { Wallet } from '../../models/walletModel.js'
 import { Coupon } from '../../models/couponModel.js'
-import PDFDocument from 'pdfkit'
+import ejs from 'ejs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import Product from '../../models/productModel.js'
+import { generatePdf } from '../../utils/pupeteer.js'
 import {
   ORDER_STATUS,
   PAYMENT_METHOD,
@@ -10,6 +13,10 @@ import {
   REFUND_STATUS,
   RETURN_STATUS
 } from '../../constants/orderConstants.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname  = path.dirname(__filename)
+const ORDERS_REPORT_TPL = path.join(__dirname, '../../views/Admin/order/ordersReport.ejs')
 
 // ─────────────────────────────────────────────
 // AppError — guaranteed to carry status + message
@@ -193,53 +200,39 @@ export async function fetchAdminOrderList ({ page, search, status, dateSort, sta
 
 export async function streamOrdersPDF (res, { search, status, dateSort, startDate, endDate } = {}) {
   const pipeline = buildBasePipeline(search, status, startDate, endDate)
-
   pipeline.push({ $sort: { createdAt: dateSort === 'oldest' ? 1 : -1 } })
 
-  const cursor = Order.aggregate(pipeline).cursor({ batchSize: 100 })
+  // Fetch all matching orders (no pagination — full export)
+  const orders = await Order.aggregate(pipeline)
 
-  const doc = new PDFDocument({ margin: 30, size: 'A4' })
+  // ── Summary statistics ───────────────────────────────────────────────────────
+  const totalOrders  = orders.length
+  const totalItems   = orders.reduce((sum, o) => sum + (o.items?.length || 0), 0)
+  const totalRevenue = Math.round(
+    orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0) * 100
+  ) / 100
+
+  // ── Date labels ─────────────────────────────────────────────────────────────
+  const fmtDate = (d) =>
+    new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+
+  // ── Render EJS template ──────────────────────────────────────────────────────
+  const htmlContent = await ejs.renderFile(ORDERS_REPORT_TPL, {
+    reportData:    orders,
+    totalOrders,
+    totalItems,
+    totalRevenue,
+    generatedDate: new Date().toLocaleString('en-IN'),
+    startDate:     startDate ? fmtDate(startDate) : 'All Time',
+    endDate:       endDate   ? fmtDate(endDate)   : fmtDate(new Date())
+  })
+
+  // ── Generate PDF via Puppeteer ───────────────────────────────────────────────
+  const pdf = await generatePdf(htmlContent)
 
   res.setHeader('Content-Type', 'application/pdf')
-  res.setHeader('Content-Disposition', 'attachment; filename=orders.pdf')
-  doc.pipe(res)
-
-  doc.fontSize(18).text('Orders Report', { align: 'center' }).moveDown()
-
-  let startY = 100
-  const col  = { orderId: 40, customer: 120, status: 260, date: 330, amount: 450 }
-
-  // Header row
-  doc.fontSize(10).font('Helvetica-Bold')
-  doc.text('Order ID',  col.orderId,  startY)
-  doc.text('Customer',  col.customer, startY)
-  doc.text('Status',    col.status,   startY)
-  doc.text('Date',      col.date,     startY)
-  doc.font('Helvetica-Bold').text('Amount', col.amount, startY, { width: 90, align: 'right' })
-  doc.font('Helvetica')
-
-  doc.moveTo(40, startY + 15).lineTo(550, startY + 15).stroke()
-
-  let y = startY + 25
-
-  for await (const order of cursor) {
-    if (y > 750) { doc.addPage(); y = 50 }
-
-    doc.fontSize(9)
-    doc.text(order.orderId,                                    col.orderId,  y, { width: 70 })
-    doc.text(order.user?.fullName || 'N/A',                   col.customer, y, { width: 120 })
-    doc.text(order.orderStatus,                                col.status,   y)
-    doc.text(new Date(order.createdAt).toISOString().split('T')[0], col.date, y)
-
-    const amount = Number(order.totalAmount).toLocaleString('en-IN')
-    doc.font('Helvetica-Bold').fillColor('#000000')
-       .text(`₹ ${amount}`, col.amount, y, { width: 100, align: 'right', lineBreak: false })
-    doc.font('Helvetica')
-
-    y += 20
-  }
-
-  doc.end()
+  res.setHeader('Content-Disposition', 'attachment; filename=orders-report.pdf')
+  res.send(pdf)
 }
 
 // ─────────────────────────────────────────────

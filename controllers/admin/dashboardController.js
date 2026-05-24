@@ -1,6 +1,6 @@
 import { Order } from '../../models/orderModel.js';
 import { User } from '../../models/userModel.js';
-import { ORDER_STATUS, PAYMENT_STATUS } from '../../constants/orderConstants.js';
+import { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHOD } from '../../constants/orderConstants.js';
 import { MONTH_NAMES } from '../../constants/constant.js';
 
 export const dashboardLoad = async (req, res) => {
@@ -29,7 +29,24 @@ export const dashboardLoad = async (req, res) => {
       }
       
       let orderNetRevenue = 0;
-      if (order.paymentStatus === PAYMENT_STATUS.PAID || order.paymentStatus === PAYMENT_STATUS.REFUNDED) {
+
+      // ── Revenue condition: must exactly match the report page logic ──────────
+      // Only count orders that are paid (or COD delivered as a safety net)
+      // AND whose status is one of the active/positive statuses.
+      // This excludes RETURN_REQUESTED, RETURN_APPROVED, RETURN_REJECTED, RETURNED, CANCELLED.
+      const COUNTABLE_STATUSES = [
+        ORDER_STATUS.DELIVERED,
+        ORDER_STATUS.SHIPPED,
+        ORDER_STATUS.CONFIRMED,
+        ORDER_STATUS.PLACED,
+        ORDER_STATUS.PARTIALLY_RETURNED
+      ];
+
+      const isPaid =
+        order.paymentStatus === PAYMENT_STATUS.PAID ||
+        (order.paymentMethod === PAYMENT_METHOD.COD && order.orderStatus === ORDER_STATUS.DELIVERED);
+
+      if (isPaid && COUNTABLE_STATUSES.includes(order.orderStatus)) {
          order.items.forEach(item => {
            if (![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
              orderNetRevenue += (item.finalTotal || item.total || 0);

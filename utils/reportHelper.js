@@ -133,19 +133,29 @@ export const getSalesReportData = async (startDate, endDate) => {
           },
           { $sort: { date: 1 } }
         ],
-        // New facet for the detailed orders table used in PDF
+        // Detailed orders table — same payment filter as the totals facet
+        // so the table rows match exactly what is counted in the summary cards
         detailedOrders: [
           {
-             $group: {
-                _id: "$_id",
-                orderId: { $first: "$orderId" },
-                createdAt: { $first: "$createdAt" },
-                customerName: { $first: "$address.name" },
-                orderStatus: { $first: "$orderStatus" },
-                totalAmount: { $first: "$totalAmount" },
-                subtotal: { $first: "$subtotal" },
-                discount: { $first: { $ifNull: ["$coupon.discount", 0] } }
-             }
+            $match: {
+              $or: [
+                { paymentStatus: PAYMENT_STATUS.PAID },
+                { paymentMethod: PAYMENT_METHOD.COD, orderStatus: { $nin: [ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED] } }
+              ],
+              "items.status": { $nin: [ORDER_STATUS.CANCELLED] }
+            }
+          },
+          {
+            $group: {
+              _id: "$_id",
+              orderId:      { $first: "$orderId" },
+              createdAt:    { $first: "$createdAt" },
+              customerName: { $first: "$address.name" },
+              orderStatus:  { $first: "$orderStatus" },
+              totalAmount:  { $first: "$totalAmount" },
+              subtotal:     { $first: "$subtotal" },
+              discount:     { $first: { $ifNull: ["$coupon.discount", 0] } }
+            }
           },
           { $sort: { createdAt: -1 } }
         ]
