@@ -1,13 +1,19 @@
+import fs from "fs";
+import path from "path";
 import puppeteer from "puppeteer-core";
 
 export async function generatePdf(html) {
   let browser;
   let page;
 
+  // ✅ create unique temp profile
+  const userDataDir = `/tmp/puppeteer_${Date.now()}`;
+
   try {
     browser = await puppeteer.launch({
       headless: "new",
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium-browser",
+      userDataDir, // 🔥 IMPORTANT FIX
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -20,19 +26,13 @@ export async function generatePdf(html) {
 
     page = await browser.newPage();
 
-    // ✅ safer timeout handling
-    page.setDefaultTimeout(30000);
-    page.setDefaultNavigationTimeout(30000);
-
-
     await page.setContent(html, {
-      waitUntil: "networkidle0", // ✅ IMPORTANT (ensures full load)
+      waitUntil: "networkidle0",
     });
 
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "20px", bottom: "20px", left: "15px", right: "15px" },
     });
 
     return pdf;
@@ -43,8 +43,14 @@ export async function generatePdf(html) {
 
   } finally {
     try {
-      if (page) await page.close();   
-      if (browser) await browser.close(); 
+      if (page) await page.close();
+      if (browser) await browser.close();
+
+      // ✅ cleanup profile folder
+      if (fs.existsSync(userDataDir)) {
+        fs.rmSync(userDataDir, { recursive: true, force: true });
+      }
+
     } catch (err) {
       console.error("Cleanup error:", err);
     }
