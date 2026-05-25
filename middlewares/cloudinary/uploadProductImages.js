@@ -7,7 +7,7 @@ const storage = new CloudinaryStorage({
     params : {
         folder : "techora/Product-Images",
         allowed_formats : ["jpg","jpeg","png","webp"],
-        transformation : [{width :900, height : 900, crop : "fit" }]
+        transformation : [{width :900, height : 900, crop : "pad",background: "auto",}]
     }
 })
 

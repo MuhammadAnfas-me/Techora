@@ -1,5 +1,6 @@
 import { sendOtp } from '../../utils/sendOtpMail.js'
 import { User } from '../../models/userModel.js'
+import { Categories } from '../../models/categoryModel.js'
 import { getWishlistIds } from '../../services/user/productService.js'
 import {
   getErrorMessage,
@@ -223,7 +224,9 @@ const homeLoad = async (req, res) => {
     const products = await getHomeProducts()
     const userId = req.session?.user?.id || null
     const wishListIds = await getWishlistIds(userId)
-    res.render('User/home', { products, wishListIds })
+    const categories = await Categories.find().limit(4).lean()
+
+    res.render('User/home', { products, wishListIds, categories })
   } catch (error) {
     console.log('Error from Home page :', error)
     res.status(500).json({ success: false, message: 'Server error' })
