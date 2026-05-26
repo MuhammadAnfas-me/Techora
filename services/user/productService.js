@@ -77,7 +77,7 @@ export const applyBestOfferToAllVariants = (product, offers) => {
 
     const categoryMatch =
       offer.scope === 'category' &&
-      offer.category?.toString() === product.categoryId?.toString()
+      offer.category?.toString() === (product.categoryId?._id || product.categoryId)?.toString()
 
     if (productMatch || categoryMatch) {
       const discount = getDiscountAmount(offer, product.variants[0].price)
