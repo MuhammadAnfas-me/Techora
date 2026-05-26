@@ -156,6 +156,8 @@ router
 router
   .route('/dashboard').get(middleWares.checkAdminAuth, dashboardController.dashboardLoad)
 
+router
+  .route('/dashboard/chart').get(middleWares.checkAdminAuth, dashboardController.getChartData)
 
 router
   .route('/report').get(middleWares.checkAdminAuth, reportController.reportLoad)

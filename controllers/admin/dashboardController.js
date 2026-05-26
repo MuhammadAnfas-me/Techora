@@ -162,3 +162,96 @@ export const dashboardLoad = async (req, res) => {
     res.status(500).send("Server Error");
   }
 }
+
+export const getChartData = async (req, res) => {
+  try {
+    const { filter } = req.query; // 'yearly', 'monthly', 'weekly'
+    const allOrders = await Order.find().populate('userId').lean();
+    
+    const now = new Date();
+    const chartLabels = [];
+    const chartData = [];
+    
+    if (filter === 'yearly') {
+      for (let i = 4; i >= 0; i--) {
+        chartLabels.push((now.getFullYear() - i).toString());
+        chartData.push(0);
+      }
+    } else if (filter === 'weekly') {
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        chartLabels.push(dayNames[d.getDay()]);
+        chartData.push(0);
+      }
+    } else {
+      // Default: monthly (last 6 months)
+      const monthNames = MONTH_NAMES;
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        chartLabels.push(monthNames[d.getMonth()]);
+        chartData.push(0);
+      }
+    }
+
+    const COUNTABLE_STATUSES = [
+      ORDER_STATUS.DELIVERED,
+      ORDER_STATUS.SHIPPED,
+      ORDER_STATUS.CONFIRMED,
+      ORDER_STATUS.PLACED,
+      ORDER_STATUS.PARTIALLY_RETURNED
+    ];
+
+    for (const order of allOrders) {
+      let orderNetRevenue = 0;
+
+      const isPaid =
+        order.paymentStatus === PAYMENT_STATUS.PAID ||
+        (order.paymentMethod === PAYMENT_METHOD.COD && order.orderStatus === ORDER_STATUS.DELIVERED);
+
+      if (isPaid && COUNTABLE_STATUSES.includes(order.orderStatus)) {
+         order.items.forEach(item => {
+           if (![ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(item.status)) {
+             orderNetRevenue += (item.finalTotal || item.total || 0);
+           }
+         });
+      }
+
+      if (orderNetRevenue > 0) {
+        const orderDate = new Date(order.createdAt);
+        
+        if (filter === 'yearly') {
+          const yearDiff = now.getFullYear() - orderDate.getFullYear();
+          if (yearDiff >= 0 && yearDiff <= 4) {
+            const idx = 4 - yearDiff;
+            chartData[idx] += orderNetRevenue;
+          }
+        } else if (filter === 'weekly') {
+          const timeDiff = now.getTime() - orderDate.getTime();
+          const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+          if (dayDiff >= 0 && dayDiff <= 6) {
+            // Need to match exact date difference to put in right bucket
+            // Start from 6 days ago (index 0) to today (index 6)
+            // A dayDiff of 0 means today, which is index 6.
+            // A dayDiff of 6 means 6 days ago, which is index 0.
+            const idx = 6 - dayDiff;
+            chartData[idx] += orderNetRevenue;
+          }
+        } else {
+          // monthly
+          const monthDiff = (now.getFullYear() - orderDate.getFullYear()) * 12 + now.getMonth() - orderDate.getMonth();
+          if (monthDiff >= 0 && monthDiff <= 5) {
+            const idx = 5 - monthDiff; 
+            chartData[idx] += orderNetRevenue;
+          }
+        }
+      }
+    }
+
+    res.json({ success: true, labels: chartLabels, data: chartData });
+  } catch (error) {
+    console.error("Get Chart Data Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+}

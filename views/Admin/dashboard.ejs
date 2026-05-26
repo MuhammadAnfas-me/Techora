@@ -180,6 +180,38 @@
     .table-scroll {
       overflow-x: auto;
     }
+
+    /* ── Premium Chart Filter ── */
+    .chart-filter-group {
+      display: inline-flex;
+      background-color: #f3f4f6;
+      border-radius: 8px;
+      padding: 4px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-filter-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chart-filter-btn:hover {
+      color: #374151;
+    }
+
+    .chart-filter-btn.active {
+      background: #fff;
+      color: #1B3C53;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -223,7 +255,14 @@
 
         <!-- ── Sales Overview Chart ── -->
         <div class="section-card">
-          <h2 class="section-title">Sales Overview</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="section-title" style="margin: 0;">Sales Overview</h2>
+            <div class="chart-filter-group" id="chartFilterGroup">
+              <button class="chart-filter-btn" data-value="weekly">Weekly</button>
+              <button class="chart-filter-btn active" data-value="monthly">Monthly</button>
+              <button class="chart-filter-btn" data-value="yearly">Yearly</button>
+            </div>
+          </div>
           <div class="chart-wrapper">
             <canvas id="salesChart"></canvas>
           </div>
@@ -361,7 +400,7 @@
     // ── Sales Overview Bar Chart ──
     const ctx = document.getElementById("salesChart").getContext("2d");
 
-    new Chart(ctx, {
+    let salesChart = new Chart(ctx, {
       type: "bar",
       data: {
         labels: <%- chartLabels %>,
@@ -410,9 +449,28 @@
         }
       }
     });
+
+    const filterBtns = document.querySelectorAll('.chart-filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', async function() {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        const filter = this.getAttribute('data-value');
+        try {
+          const response = await axios.get(`/admin/dashboard/chart?filter=${filter}`);
+          if (response.data.success) {
+            salesChart.data.labels = response.data.labels;
+            salesChart.data.datasets[0].data = response.data.data;
+            salesChart.update();
+          } else {
+            console.error("Failed to fetch chart data");
+          }
+        } catch (error) {
+          console.error("Error fetching chart data:", error);
+        }
+      });
+    });
   </script>
 </body>
-<script>
-
-</script>
 </html>
